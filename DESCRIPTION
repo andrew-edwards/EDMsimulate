@@ -1,0 +1,15 @@
+Package: EDMsimulate
+Title: Simulating Fish Populations for Empirical Dynamic Modeling
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Andrew",
+           family = "Edwards",
+           role = c("aut", "cre"),
+           email = "andrew.edwards@dfo-mpo.gc.ca",
+           comment = c(ORCID = "0000-0003-2749-8198"))
+Description: Simulates fish stocks to then test using Empirical Dynamic Modelling methods. Primarily for use within PBS for now.
+License: GPL (>=2)
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/andrew-edwards/EDMsimulate
+BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
