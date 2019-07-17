@@ -1,6 +1,10 @@
 # EDMsimulate - an R package for simulating fish populations and testing using Empirical Dynamic Modelling
 
-Not operational yet. Set up Travis also.
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/andrew-edwards/EDMsimulate.svg?branch=master)](https://travis-ci.org/andrew-edwards/EDMsimulate)
+<!-- badges: end -->
+
+Not operational yet.
 
 ### Vignette
 
