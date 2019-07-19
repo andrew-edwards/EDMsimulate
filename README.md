@@ -1,4 +1,4 @@
-# EDMsimulate - an R package for simulating fish populations and testing using Empirical Dynamic Modelling
+# EDMsimulate - an R package for simulating fish populations in the context of Empirical Dynamic Modelling
 
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/andrew-edwards/EDMsimulate.svg?branch=master)](https://travis-ci.org/andrew-edwards/EDMsimulate)
