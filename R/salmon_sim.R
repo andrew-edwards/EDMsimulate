@@ -25,13 +25,17 @@
 ##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T.
 ##' @param R_t_init Vector of eight years of recruit abundance (units of
 ##'   10,000 fish??) to initialize the model.
-##' @return Data frame of years (rows) with columns (plus their notation):
+##' @return Matrix of years (rows) with named columns:
+##'   t: year;
 ##'   R_t: total recruits returning in year t;
 ##'   R_prime_t: number of adult recruits generated from spawners in year t that
 ##'     will return to freshwater (and then be subject to fishing and can then
 ##'     spawn);
+##'   S_t: number of fish that spawn in year t;
+##'   h_t: harvest rate in year t;
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
+##'
 salmon_sim <- function(alpha = 0.8,
                        beta = c(0.8, 0.2, 0.1, 0.1),   # Andy made up
                        p_prime = c(0.01, 0.98, 0.01),
@@ -40,7 +44,7 @@ salmon_sim <- function(alpha = 0.8,
                        sigma_nu = 0.75,
                        sigma_epsilon = 1,
                        phi_1 = 0.1,
-                       T = 100,
+                       T = 15,
                        h_t = rep(0.2, T),
                        R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
                        ){
@@ -59,13 +63,22 @@ salmon_sim <- function(alpha = 0.8,
     phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
   }
 
-  R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
-
   # Initialize - depend on initial conditions
+  R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
+  S_t <- (1 - h_t) * R_t
 
+  R_prime_t <- alpha * S_t * exp(1 - beta[1] * S_t
+                                 - beta[2] * shift(S_t, -1)
+                                 - beta[3] * shift(S_t, -2)
+                                 - beta[4] * shift(S_t, -3)
+                                 + phi_t)        # beta[1] is beta_0
 
   # Loop of full run
 
-  # Return data frame of results
-  R_t
+  # Returns matrix frame of results
+  cbind("t" = 1:T,
+        "R_t" = R_t,
+        "R_prime_t" = R_prime_t,
+        "S_t" = S_t,
+        "h_t" = h_t)
 }
