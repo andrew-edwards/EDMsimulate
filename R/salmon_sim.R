@@ -3,8 +3,7 @@
 ##' @description Simulates Larkin population dynamics model, based on Appendix F of Holt
 ##'   et al. 2018/011 Res Doc (and what's in our draft manuscript), Ricker
 ##'   Appendix, and Grant 2010/042 Res. Doc.
-##' Currently just Ricker, then extend for Larkin. Notation matches that of our
-##'   write up.
+##'   Notation matches that of our write up.
 ##'
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
@@ -15,13 +14,13 @@
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
 ##'   in the vector).
-##' @param omega
-##' @param sigma_nu
 ##' @param sigma_epsilon Standard deviation of annual normal deviates on the
 ##'     proportions returning at each age.
-##' @param init Vector of five years of initial spawner abundance (units of
-##'   10,000 fish?).
-##' @param T Number of years to run the simulation.
+##' @param T Number of years to run the simulation, including the eight years
+##'   needed for initialising the simulation.
+##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T.
+##' @param R_t_init Vector of eight years of recruit abundance (units of
+##'   10,000 fish??) to initialize the model.
 ##' @return Data frame of years (rows) with columns (plus their notation):
 ##'   R_t: total recruits returning in year t;
 ##'   R_prime_t: number of adult recruits generated from spawners in year t that
@@ -29,15 +28,16 @@
 ##'     spawn);
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
-salmon_sim <- function(a = 1,
+salmon_sim <- function(alpha = 0.8,
                        beta = c(0.8, 0.2, 0.1, 0.1)   # Andy made up
                        p_prime = c(0.01, 0.98, 0.01),
                        rho = 0.6,
                        omega = 0.8,
                        sigma_nu = 0.75,
                        sigma_epsilon = 1,
-                       init = c(0.6, 0.01, 0.01, 0.01, 0.6),
-                       T = 100
+                       T = 100,
+                       h_t = rep(0.2, T),
+                       R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
                        ){
 
   init_years <- length(init)       # Initial number of years
@@ -50,7 +50,7 @@ salmon_sim <- function(a = 1,
   p_tg_unnormalized = exp(omega * epsilon_tg) * p_prime
   p_tg = p_tg_unnormalized / rowSums(p_tg_unnormalized)
 
-  # Initialize - run for five years to get some randomness
+  # Initialize - depend on initial conditions
 
 
   # Loop of full run
