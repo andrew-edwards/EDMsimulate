@@ -4,7 +4,8 @@
 ##'   et al. 2018/011 Res Doc (and what's in our draft manuscript), Ricker
 ##'   Appendix, and Grant 2010/042 Res. Doc.
 ##'   Notation matches that of our write up.
-##'
+##'   The harvest rate has to be prescribed for all years, and to initialize the
+##'   model the recruitment R_t has to be given for the first eight years.
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
@@ -16,6 +17,9 @@
 ##'   in the vector).
 ##' @param sigma_epsilon Standard deviation of annual normal deviates on the
 ##'     proportions returning at each age.
+##' @param sigma_nu Standard deviation of process noise.
+##' @param rho Autocorrelation parameter for process noise.
+##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
 ##'   needed for initialising the simulation.
 ##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T.
@@ -29,26 +33,33 @@
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
 salmon_sim <- function(alpha = 0.8,
-                       beta = c(0.8, 0.2, 0.1, 0.1)   # Andy made up
+                       beta = c(0.8, 0.2, 0.1, 0.1),   # Andy made up
                        p_prime = c(0.01, 0.98, 0.01),
                        rho = 0.6,
                        omega = 0.8,
                        sigma_nu = 0.75,
                        sigma_epsilon = 1,
+                       phi_1 = 0.1,
                        T = 100,
                        h_t = rep(0.2, T),
                        R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
                        ){
 
-  init_years <- length(init)       # Initial number of years
-
   # Generate stochastic variation in p_{t,g}
-  epsilon_tg = matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
+  epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
                       T, length(p_prime) )
-                                        # 0 should be -sigma_eplison^2 / 2?
+                                        # 0 should be -sigma_eplison^2 / 2 ?
+  p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
+  p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
 
-  p_tg_unnormalized = exp(omega * epsilon_tg) * p_prime
-  p_tg = p_tg_unnormalized / rowSums(p_tg_unnormalized)
+  # Generate autocorrelated process noise phi_t
+  phi_t <-  c(phi_1, rep(NA, T-1))
+  nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
+  for(i in 2:T){
+    phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
+  }
+
+  R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
 
   # Initialize - depend on initial conditions
 
@@ -56,4 +67,5 @@ salmon_sim <- function(alpha = 0.8,
   # Loop of full run
 
   # Return data frame of results
+  R_t
 }
