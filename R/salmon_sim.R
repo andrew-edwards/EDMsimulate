@@ -119,12 +119,12 @@ plot_sim <- function(x, new_plot=TRUE, ...){
               type = "o",
               ...),
          points(x$t,
-              x$S_t,
-              xlab = "Time, years",
-              ylab = "Spawners",
-              type = "o",
-              col = "red",
-              ...))
+                x$S_t,
+                xlab = "Time, years",
+                ylab = "Spawners",
+                type = "o",
+                col = "red",
+                ...))
 }
 
 
