@@ -44,7 +44,7 @@ salmon_sim <- function(alpha = 0.8,
                        sigma_nu = 0.75,
                        sigma_epsilon = 1,
                        phi_1 = 0.1,
-                       T = 15,
+                       T = 100,
                        h_t = rep(0.2, T),
                        R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
                        ){
@@ -53,11 +53,11 @@ salmon_sim <- function(alpha = 0.8,
 
   # Generate stochastic variation in p_{t,g}
   epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
-                      T, length(p_prime) )
+                       T, length(p_prime) )
                                         # 0 should be -sigma_eplison^2 / 2 ?
   p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
   p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
-
+  # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
   # Generate autocorrelated process noise phi_t
   phi_t <-  c(phi_1, rep(NA, T-1))
   nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
@@ -78,23 +78,29 @@ salmon_sim <- function(alpha = 0.8,
 
   # Loop of full run
   for(i in (T_init+1):T){
+    R_t[i] <- p_tg[i-3,1] * R_prime_t[i-3] +
+              p_tg[i-4,2] * R_prime_t[i-4] +
+              p_tg[i-5,3] * R_prime_t[i-5]
+    S_t[i] <- (1 - h_t[i]) * R_t[i]
     R_prime_t[i] <- alpha * S_t[i] * exp(1 -
                                          beta[1] * S_t[i] -
                                          beta[2] * S_t[i-1] -
                                          beta[3] * S_t[i-2] -
                                          beta[4] * S_t[i-3] +
                                          phi_t[i])         # beta[1] is beta_0
-    R_t[i] <- p_tg[i-3] * R_prime_t[i-3] +
-              p_tg[i-4] * R_prime_t[i-4] +
-              p_tg[i-5] * R_prime_t[i-5]
-    S_t[i] <- (1 - h_t[i]) * R_t[i]
-
   }
 
-  # Returns matrix frame of results
-  cbind("t" = 1:T,
-        "R_t" = R_t,
-        "R_prime_t" = R_prime_t,
-        "S_t" = S_t,
-        "h_t" = h_t)
+  # Returns data frame of results
+  as.data.frame(
+                cbind("t" = 1:T,
+                      "R_t" = R_t,
+                      "R_prime_t" = R_prime_t,
+                      "S_t" = S_t,
+                      "h_t" = h_t,
+                      "p_t3" = p_tg[, 1],
+                      "p_t4" = p_tg[, 2],
+                      "p_t5" = p_tg[, 3],
+                      "epsilon_t3" = epsilon_tg[, 1],
+                      "epsilon_t4" = epsilon_tg[, 2],
+                      "epsilon_t5" = epsilon_tg[, 3]))
 }
