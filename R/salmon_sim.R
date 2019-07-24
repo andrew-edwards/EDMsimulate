@@ -46,7 +46,7 @@ salmon_sim <- function(alpha = 0.8,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = rep(0.2, T),
-                       R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
+                       R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)
                        ){
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
@@ -106,14 +106,34 @@ salmon_sim <- function(alpha = 0.8,
 }
 
 
-
 ##' Plot output from salmon_sim()
 ##'
 ##' @param x Output data frame from salmon_sim()
 ##' @return
-plot_sim <- function(x){
-  plot(x$t,
-       x$S_t,
-       xlab="Time, years",
-       ylab="Spawners")
+plot_sim <- function(x, new_plot=TRUE, ...){
+  ifelse(new_plot,
+         plot(x$t,
+              x$S_t,
+              xlab = "Time, years",
+              ylab = "Spawners",
+              type = "o",
+              ...),
+         points(x$t,
+              x$S_t,
+              xlab = "Time, years",
+              ylab = "Spawners",
+              type = "o",
+              col = "red",
+              ...))
+}
+
+
+##' Simulate Larkin model and plot results
+##'
+##' @param ... Inputs for salmon_sim()
+##' @return Plot of results
+salmon_run <- function(..., new_plot=TRUE){
+  x <- salmon_sim(...)
+  plot_sim(x,
+           new_plot = new_plot)
 }
