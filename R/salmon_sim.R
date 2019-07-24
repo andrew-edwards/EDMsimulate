@@ -104,3 +104,16 @@ salmon_sim <- function(alpha = 0.8,
                       "epsilon_t4" = epsilon_tg[, 2],
                       "epsilon_t5" = epsilon_tg[, 3]))
 }
+
+
+
+##' Plot output from salmon_sim()
+##'
+##' @param x Output data frame from salmon_sim()
+##' @return
+plot_sim <- function(x){
+  plot(x$t,
+       x$S_t,
+       xlab="Time, years",
+       ylab="Spawners")
+}
