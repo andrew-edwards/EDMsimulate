@@ -48,6 +48,8 @@ salmon_sim <- function(alpha = 0.8,
                        h_t = rep(0.2, T),
                        R_t_init = c(0.6, 0.01, 0.01, 0.01, 0.6, 0.01, 0.01, 0.01)
                        ){
+  T_init <- length(R_t_init)
+  if(T_init != 8) stop("R_t_init must have length 8.")
 
   # Generate stochastic variation in p_{t,g}
   epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
@@ -63,17 +65,20 @@ salmon_sim <- function(alpha = 0.8,
     phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
   }
 
-  # Initialize - depend on initial conditions
+  # Initialize - depends directly on initial conditions
   R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
   S_t <- (1 - h_t) * R_t
 
   R_prime_t <- alpha * S_t * exp(1 - beta[1] * S_t
-                                 - beta[2] * shift(S_t, -1)
-                                 - beta[3] * shift(S_t, -2)
-                                 - beta[4] * shift(S_t, -3)
+                                 - beta[2] * shift(S_t, 1)
+                                 - beta[3] * shift(S_t, 2)
+                                 - beta[4] * shift(S_t, 3)
                                  + phi_t)        # beta[1] is beta_0
 
   # Loop of full run
+  for(i in (T_init+1):T){
+    R_prime_t
+  }
 
   # Returns matrix frame of results
   cbind("t" = 1:T,
