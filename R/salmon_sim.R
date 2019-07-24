@@ -108,8 +108,10 @@ salmon_sim <- function(alpha = 0.8,
 
 ##' Plot output from salmon_sim()
 ##'
-##' @param x Output data frame from salmon_sim()
-##' @return
+##' @param x Output data frame from salmon_sim().
+##' @param new_plot Start a new plot or not.
+##' @param ...
+##' @return Plot of simulated spawners against time.
 plot_sim <- function(x, new_plot=TRUE, ...){
   if(new_plot){
                plot(x$t,
@@ -131,8 +133,9 @@ plot_sim <- function(x, new_plot=TRUE, ...){
 
 ##' Simulate Larkin model and plot results
 ##'
-##' @param ... Inputs for salmon_sim()
-##' @return Plot of results
+##' @param ... Inputs for salmon_sim().
+##' @param new_plot Start a new plot or not.
+##' @return Plot of results.
 salmon_run <- function(..., new_plot=TRUE){
   x <- salmon_sim(...)
   plot_sim(x,
