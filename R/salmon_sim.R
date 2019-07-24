@@ -111,20 +111,21 @@ salmon_sim <- function(alpha = 0.8,
 ##' @param x Output data frame from salmon_sim()
 ##' @return
 plot_sim <- function(x, new_plot=TRUE, ...){
-  ifelse(new_plot,
-         plot(x$t,
-              x$S_t,
-              xlab = "Time, years",
-              ylab = "Spawners",
-              type = "o",
-              ...),
-         points(x$t,
-                x$S_t,
-                xlab = "Time, years",
-                ylab = "Spawners",
-                type = "o",
-                col = "red",
-                ...))
+  if(new_plot){
+               plot(x$t,
+               x$S_t,
+               xlab = "Time, years",
+               ylab = "Spawners",
+               type = "o",
+               ...)
+  } else {
+               points(x$t,
+               x$S_t,
+               xlab = "Time, years",
+               ylab = "Spawners",
+               type = "o",
+               col = "red",
+               ...)}
 }
 
 
