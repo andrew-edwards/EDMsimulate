@@ -10,7 +10,7 @@ Not operational yet.
 ### Vignette
 
 (From eDNA:
-The vignette showing examples of the functions is available [here](http://htmlpreview.github.io/?https://github.com/andrew-edwards/EDMsimulate/blob/master/inst/doc/salmon_sim.html), and directly in the package (see below).
+The vignette showing examples of the functions is available [here](http://htmlpreview.github.io/?https://github.com/andrew-edwards/EDMsimulate/blob/master/doc/salmon_sim.html), and directly in the package (see below).
 )
 
 ### To install from GitHub
