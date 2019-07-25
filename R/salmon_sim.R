@@ -141,3 +141,17 @@ salmon_run <- function(..., new_plot=TRUE){
   plot_sim(x,
            new_plot = new_plot)
 }
+
+# Tried this but was giving dim(xx) = 1000,11; seems okay now. It's using an
+# exising value of T to set h_t I think, it doesn't get overwritten here. Fix that.
+xx <- salmon_sim(alpha = 0.8,
+                                  beta = c(0.8, 0.2, 0.1, 0.1),
+                                  p_prime = c(0.01, 0.98, 0.01),
+                                  rho = 0.6,
+                                  omega = 0.8,
+                                  sigma_nu = 0.75,
+                                  sigma_epsilon = 1,
+                                  phi_1 = 0.1,
+                                  T = 100,
+                                  h_t = rep(0.2, T),
+                                  R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1))
