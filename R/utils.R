@@ -10,6 +10,7 @@
 #' @param invert Whether or not the default shift directions
 #'    should be inverted.
 #' @param default The value that should be inserted by default.
+#' @export
 
 shift <- function(x, n, invert=FALSE, default=NA){
   stopifnot(length(x)>=n)

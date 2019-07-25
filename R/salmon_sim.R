@@ -35,7 +35,7 @@
 ##'   h_t: harvest rate in year t;
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
-##'
+##' @export
 salmon_sim <- function(alpha = 0.8,
                        beta = c(0.8, 0.2, 0.1, 0.1),   # Andy made up
                        p_prime = c(0.01, 0.98, 0.01),
@@ -71,9 +71,9 @@ salmon_sim <- function(alpha = 0.8,
 
   R_prime_t <- alpha * S_t * exp(1 -
                                  beta[1] * S_t -
-                                 beta[2] * shift(S_t, 1) -
-                                 beta[3] * shift(S_t, 2) -
-                                 beta[4] * shift(S_t, 3) +
+                                 beta[2] * EDMsimulate::shift(S_t, 1) -
+                                 beta[3] * EDMsimulate::shift(S_t, 2) -
+                                 beta[4] * EDMsimulate::shift(S_t, 3) +
                                  phi_t)        # beta[1] is beta_0
 
   # Loop of full run
@@ -144,14 +144,12 @@ salmon_run <- function(..., new_plot=TRUE){
 
 # Tried this but was giving dim(xx) = 1000,11; seems okay now. It's using an
 # exising value of T to set h_t I think, it doesn't get overwritten here. Fix that.
-xx <- salmon_sim(alpha = 0.8,
-                                  beta = c(0.8, 0.2, 0.1, 0.1),
-                                  p_prime = c(0.01, 0.98, 0.01),
-                                  rho = 0.6,
-                                  omega = 0.8,
-                                  sigma_nu = 0.75,
-                                  sigma_epsilon = 1,
-                                  phi_1 = 0.1,
-                                  T = 100,
-                                  h_t = rep(0.2, T),
-                                  R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1))
+#xx <- salmon_sim(alpha = 0.8,
+ #                                 beta = c(0.8, 0.2, 0.1, 0.1),
+  #                                p_prime = c(0.01, 0.98, 0.01),
+   #                               rho = 0.6,
+    #                              omega = 0.8,
+     #                             sigma_nu = 0.75,
+      #                            sigma_epsilon = 1,
+       #                           phi_1 = 0.1,
+        #                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1))
