@@ -20,3 +20,8 @@ test_that("salmon_sim() gives error if length(h_t) is not T",{
           expect_error(salmon_sim(T = 50,
                                   h_t = rep(0.2, 49)))
 })
+
+test_that("plot_sim() can create a plot for default run (no seed set)",{
+          expect_silent(salmon_run())
+          dev.off()
+})
