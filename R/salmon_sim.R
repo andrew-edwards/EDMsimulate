@@ -50,6 +50,7 @@ salmon_sim <- function(alpha = 0.8,
                        ){
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
+  if(length(h_t) != T) stop("h_t must have length T.")
 
   # Generate stochastic variation in p_{t,g}
   epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
@@ -141,15 +142,3 @@ salmon_run <- function(..., new_plot=TRUE){
   plot_sim(x,
            new_plot = new_plot)
 }
-
-# Tried this but was giving dim(xx) = 1000,11; seems okay now. It's using an
-# exising value of T to set h_t I think, it doesn't get overwritten here. Fix that.
-#xx <- salmon_sim(alpha = 0.8,
- #                                 beta = c(0.8, 0.2, 0.1, 0.1),
-  #                                p_prime = c(0.01, 0.98, 0.01),
-   #                               rho = 0.6,
-    #                              omega = 0.8,
-     #                             sigma_nu = 0.75,
-      #                            sigma_epsilon = 1,
-       #                           phi_1 = 0.1,
-        #                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1))
