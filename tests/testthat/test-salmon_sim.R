@@ -15,3 +15,8 @@ test_that("salmon_sim() gives correct answer with original default inputs",{
                                   R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)),
                        default_sim_seed_42)
 })
+
+test_that("salmon_sim() gives error if length(h_t) is not T",{
+          expect_error(salmon_sim(T = 50,
+                                  h_t = rep(0.2, 49)))
+})
