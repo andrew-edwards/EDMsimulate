@@ -130,6 +130,7 @@ salmon_sim <- function(alpha = 0.8,
 ##' @param new_plot Start a new plot or not.
 ##' @param ...
 ##' @return Plot of simulated spawners against time.
+##' @export
 plot_sim <- function(x, new_plot=TRUE, ...){
   if(new_plot){
                plot(x$t,
@@ -154,6 +155,7 @@ plot_sim <- function(x, new_plot=TRUE, ...){
 ##' @param ... Inputs for salmon_sim().
 ##' @param new_plot Start a new plot or not.
 ##' @return Plot of results.
+##' @export
 salmon_run <- function(..., new_plot=TRUE){
   x <- salmon_sim(...)
   plot_sim(x,

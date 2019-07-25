@@ -58,5 +58,6 @@ Simulates Larkin population dynamics model, based on Appendix F of Holt
   Appendix, and Grant 2010/042 Res. Doc.
   Notation matches that of our write up.
   The harvest rate has to be prescribed for all years, and to initialize the
-  model the recruitment R_t has to be given for the first eight years.
+  model the recruitment R_t has to be given for the first eight years. All
+  parameters should be >=0.
 }

@@ -1,0 +1,40 @@
+---
+title: "salmon_sim"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{salmon_sim}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE,
+  fig.width = 6
+)
+```
+
+```{r setup}
+library(EDMsimulate)
+```
+
+## To run a simulation
+```{r}
+x <- salmon_sim()
+head(x)
+```
+
+##  Simple plot of resulting time series of spawners
+```{r}
+plot_sim(x)
+```
+
+## To run and plot in one go
+```{r}
+salmon_run()
+```
+
+See `?salmon_sim` for settings to change the default parameters and initial
+conditions for the simulations.

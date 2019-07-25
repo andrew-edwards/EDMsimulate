@@ -14,5 +14,8 @@ LazyData: true
 URL: https://github.com/andrew-edwards/EDMsimulate
 BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 RoxygenNote: 6.1.1
+VignetteBuilder: knitr
