@@ -13,3 +13,5 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/andrew-edwards/EDMsimulate
 BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
+Suggests: 
+    testthat
