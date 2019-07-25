@@ -52,7 +52,7 @@ salmon_sim <- function(alpha = 0.8,
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
   if(length(h_t) != T) stop("h_t must have length T.")
-  if(!testthat::expect_equal(sum(p_prime), 1)) {
+  if(sum(p_prime) != 1) {
     stop("p_prime components must sum to 1.")
   }
   if(min(c(alpha,
