@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+The notation in the code matches that in the write up (in the `edm-work` repository).
+
 ```{r setup}
 library(EDMsimulate)
 ```
