@@ -5,7 +5,7 @@
 [![Coverage status](https://codecov.io/gh/andrew-edwards/EDMsimulate/branch/master/graph/badge.svg)](https://codecov.io/github/andrew-edwards/EDMsimulate?branch=master)
 <!-- badges: end -->
 
-Not operational yet.
+Under development.
 
 ### Vignette
 
@@ -17,7 +17,7 @@ I gave you access to push to this repo. So no need to fork on GitHub, just clone
 ```
 git clone https://github.com/andrew-edwards/EDMsimulate
 ```
-then in R in the `EDMsimulate/` directory
+then in R in the `EDMsimulate/` directory:
 ```
 install(build_vignettes = TRUE)
 ```
