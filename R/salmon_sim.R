@@ -49,6 +49,33 @@ salmon_sim <- function(alpha = 0.8,
                        h_t = rep(0.2, T),
                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)
                        ){
+  if(!all(is.numeric(c(alpha,
+                       beta,
+                       p_prime,
+                       rho,
+                       omega,
+                       sigma_nu,
+                       sigma_epsilon,
+                       phi_1,
+                       T,
+                       h_t,
+                       R_t_init)))){
+    stop("All arguments must be numeric.", call.=FALSE)
+  }
+  if(min(c(alpha,
+           beta,
+           p_prime,
+           rho,
+           omega,
+           sigma_nu,
+           sigma_epsilon,
+           phi_1,
+           T,
+           h_t,
+           R_t_init)) < 0 ) {
+    stop("all parameters and initialisation variables must be >=0", call.=FALSE)
+   }
+
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.", call.=FALSE)
   if(length(h_t) != T) stop("h_t must have length T.", call.=FALSE)
