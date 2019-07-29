@@ -60,7 +60,7 @@ salmon_sim <- function(alpha = 0.8,
                        T,
                        h_t,
                        R_t_init)))){
-    stop("All arguments must be numeric.", call.=FALSE)
+    stop("All arguments must be numeric.")
   }
   if(min(c(alpha,
            beta,
@@ -73,14 +73,14 @@ salmon_sim <- function(alpha = 0.8,
            T,
            h_t,
            R_t_init)) < 0 ) {
-    stop("all parameters and initialisation variables must be >=0", call.=FALSE)
+    stop("all parameters and initialisation variables must be >=0")
    }
 
   T_init <- length(R_t_init)
-  if(T_init != 8) stop("R_t_init must have length 8.", call.=FALSE)
-  if(length(h_t) != T) stop("h_t must have length T.", call.=FALSE)
+  if(T_init != 8) stop("R_t_init must have length 8.")
+  if(length(h_t) != T) stop("h_t must have length T.")
   if(sum(p_prime) != 1) {
-    stop("p_prime components must sum to 1.", call.=FALSE)
+    stop("p_prime components must sum to 1.")
   }
   if(min(c(alpha,
            beta,
@@ -93,7 +93,7 @@ salmon_sim <- function(alpha = 0.8,
            T,
            h_t,
            R_t_init)) < 0 ) {
-    stop("all parameters and initialisation variables must be >=0", call.=FALSE)
+    stop("all parameters and initialisation variables must be >=0")
    }
 
   # Generate stochastic variation in p_{t,g}
