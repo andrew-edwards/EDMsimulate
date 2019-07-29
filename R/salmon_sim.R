@@ -115,8 +115,8 @@ salmon_sim <- function(alpha = 0.8,
     stop("p_prime must have length 3 and sum to 1")
   }
 
-
   if(length(h_t) != T) stop("h_t must have length T.")
+  if(max(h_t) >= 1) stop("h_t values must be <1.")
 
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
