@@ -23,7 +23,9 @@
 ##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
 ##'   needed for initialising the simulation, must be >=9.
-##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T.
+##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T. Or if a
+##'   single value then this will be the constant rate for all years. If NULL
+##'   then harvest rate will be set to 0.2 for all years.
 ##' @param R_t_init Vector of eight years of recruit abundance (units of
 ##'   10,000 fish??) to initialize the model.
 ##' @return Matrix of years (rows) with named columns:
@@ -46,21 +48,37 @@ salmon_sim <- function(alpha = 0.8,
                        sigma_epsilon = 1,
                        phi_1 = 0.1,
                        T = 100,
-                       h_t = rep(0.2, T),
+                       h_t = NULL,
                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)
                        ){
-  if(!all(is.numeric(c(alpha,
-                       beta,
-                       p_prime,
-                       rho,
-                       omega,
-                       sigma_nu,
-                       sigma_epsilon,
-                       phi_1,
-                       T,
-                       h_t,
-                       R_t_init)))){
-    stop("All arguments must be numeric.")
+
+  if(!is.numeric(c(alpha,
+                   beta,
+                   p_prime,
+                   rho,
+                   omega,
+                   sigma_nu,
+                   sigma_epsilon,
+                   phi_1,
+                   T,
+                   R_t_init))){
+    stop("all arguments must be numeric")
+  }
+
+  if(T < 9) stop("T must be >=9")
+
+  if(is.null(h_t)){
+    h_t <- rep(0.2, T)
+  } else {
+    if(!is.null(h_t)){
+      if(!is.numeric(h_t)){
+        stop("h_t must be numeric")
+      }
+    }
+  }
+
+  if(length(h_t) == 1){    # Repeat a single given value
+    h_t <- rep(h_t, T)
   }
 
   if(min(c(alpha,
@@ -93,7 +111,7 @@ salmon_sim <- function(alpha = 0.8,
     stop("p_prime must have length 3 and sum to 1")
   }
 
-  if(T < 9) stop("T must be >=9")
+
   if(length(h_t) != T) stop("h_t must have length T.")
 
   T_init <- length(R_t_init)

@@ -16,6 +16,10 @@ test_that("salmon_sim() gives correct answer with original default inputs",{
                        default_sim_seed_42)
 })
 
+test_that("salmon_sim() gives error if any non-numeric inputs",{
+          expect_error(salmon_sim(T = "a"))
+})
+
 test_that("salmon_sim() gives error if length(h_t) != T",{
           expect_error(salmon_sim(T = 50,
                                   h_t = rep(0.2, 49)))
