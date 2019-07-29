@@ -6,7 +6,7 @@
 ##'   Notation matches that of our write up.
 ##'   The harvest rate has to be prescribed for all years, and to initialize the
 ##'   model the recruitment R_t has to be given for the first eight years. All
-##'   parameters should be >=0.
+##'   parameters must be >=0, some >0.
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
@@ -15,14 +15,14 @@
 ##'   beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model.
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
-##'   in the vector).
+##'   in the vector, which must sum to 1).
 ##' @param sigma_epsilon Standard deviation of annual normal deviates on the
 ##'     proportions returning at each age.
 ##' @param sigma_nu Standard deviation of process noise.
 ##' @param rho Autocorrelation parameter for process noise.
 ##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
-##'   needed for initialising the simulation.
+##'   needed for initialising the simulation, must be >=9.
 ##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T.
 ##' @param R_t_init Vector of eight years of recruit abundance (units of
 ##'   10,000 fish??) to initialize the model.
@@ -62,6 +62,7 @@ salmon_sim <- function(alpha = 0.8,
                        R_t_init)))){
     stop("All arguments must be numeric.")
   }
+
   if(min(c(alpha,
            beta,
            p_prime,
@@ -76,25 +77,27 @@ salmon_sim <- function(alpha = 0.8,
     stop("all parameters and initialisation variables must be >=0")
    }
 
+  if(min(c(alpha,
+           max(R_t_init))) == 0 ) {
+    stop("alpha and at least one of R_t_init must be >0")
+   }
+
+  if(length(c(alpha, rho, omega, sigma_nu, sigma_epsilon, phi_1, T)) != 7){
+    stop("alpha, rho, omega, sigma_nu, sigma_epsilon, phi_1 and T must all have length 1")
+  }
+  if(length(beta) != 4){
+    stop("beta must have length 4")
+  }
+
+  if(length(p_prime) != 3 | sum(p_prime) != 1){
+    stop("p_prime must have length 3 and sum to 1")
+  }
+
+  if(T < 9) stop("T must be >=9")
+  if(length(h_t) != T) stop("h_t must have length T.")
+
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
-  if(length(h_t) != T) stop("h_t must have length T.")
-  if(sum(p_prime) != 1) {
-    stop("p_prime components must sum to 1.")
-  }
-  if(min(c(alpha,
-           beta,
-           p_prime,
-           rho,
-           omega,
-           sigma_nu,
-           sigma_epsilon,
-           phi_1,
-           T,
-           h_t,
-           R_t_init)) < 0 ) {
-    stop("all parameters and initialisation variables must be >=0")
-   }
 
   # Generate stochastic variation in p_{t,g}
   epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
