@@ -70,10 +70,8 @@ salmon_sim <- function(alpha = 0.8,
   if(is.null(h_t)){
     h_t <- rep(0.2, T)
   } else {
-    if(!is.null(h_t)){
-      if(!is.numeric(h_t)){
-        stop("h_t must be numeric")
-      }
+    if(!is.numeric(h_t)){
+      stop("h_t must be numeric")
     }
   }
 
@@ -93,14 +91,20 @@ salmon_sim <- function(alpha = 0.8,
            h_t,
            R_t_init)) < 0 ) {
     stop("all parameters and initialisation variables must be >=0")
-   }
+  }
 
   if(min(c(alpha,
            max(R_t_init))) == 0 ) {
-    stop("alpha and at least one of R_t_init must be >0")
+    stop("alpha and at least one value of R_t_init must be >0")
    }
 
-  if(length(c(alpha, rho, omega, sigma_nu, sigma_epsilon, phi_1, T)) != 7){
+  if(length(c(alpha,
+              rho,
+              omega,
+              sigma_nu,
+              sigma_epsilon,
+              phi_1,
+              T)) != 7){
     stop("alpha, rho, omega, sigma_nu, sigma_epsilon, phi_1 and T must all have length 1")
   }
   if(length(beta) != 4){
