@@ -8,7 +8,6 @@ test_that("salmon_sim() gives correct answer with original default inputs", {
                                   rho = 0.6,
                                   omega = 0.8,
                                   sigma_nu = 0.75,
-                                  sigma_epsilon = 1,
                                   phi_1 = 0.1,
                                   T = 100,
                                   # h_t = rep(0.2, T), # in case T is globally defined
