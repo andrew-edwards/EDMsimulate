@@ -16,8 +16,8 @@
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
 ##'   in the vector, which must sum to 1).
-##' @param sigma_epsilon Standard deviation of annual normal deviates on the
-##'     proportions returning at each age.
+##' @param omega Scales the annual normal deviates on the proportions returning
+##'   at each age.
 ##' @param sigma_nu Standard deviation of process noise.
 ##' @param rho Autocorrelation parameter for process noise.
 ##' @param phi_1 Initial value of process noise.
@@ -45,7 +45,6 @@ salmon_sim <- function(alpha = 0.8,
                        rho = 0.6,
                        omega = 0.8,
                        sigma_nu = 0.75,
-                       sigma_epsilon = 1,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = NULL,
@@ -58,7 +57,6 @@ salmon_sim <- function(alpha = 0.8,
                    rho,
                    omega,
                    sigma_nu,
-                   sigma_epsilon,
                    phi_1,
                    T,
                    R_t_init))){
@@ -85,7 +83,6 @@ salmon_sim <- function(alpha = 0.8,
            rho,
            omega,
            sigma_nu,
-           sigma_epsilon,
            phi_1,
            T,
            h_t,
@@ -102,10 +99,9 @@ salmon_sim <- function(alpha = 0.8,
               rho,
               omega,
               sigma_nu,
-              sigma_epsilon,
               phi_1,
-              T)) != 7){
-    stop("alpha, rho, omega, sigma_nu, sigma_epsilon, phi_1 and T must all have length 1")
+              T)) != 6){
+    stop("alpha, rho, omega, sigma_nu, phi_1 and T must all have length 1")
   }
   if(length(beta) != 4){
     stop("beta must have length 4")
@@ -122,9 +118,8 @@ salmon_sim <- function(alpha = 0.8,
   if(T_init != 8) stop("R_t_init must have length 8.")
 
   # Generate stochastic variation in p_{t,g}
-  epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, sigma_epsilon),
+  epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, 1),
                        T, length(p_prime) )
-                                        # 0 should be -sigma_eplison^2 / 2 ?
   p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
   p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
   # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
