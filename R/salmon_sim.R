@@ -132,14 +132,11 @@ salmon_sim <- function(alpha = 0.8,
     omega <- 0
     sigma_nu <- 0
     phi_1 <- 0
-
     # Generate no stochastic variation in p_{t,g}
     epsilon_tg <- matrix(0,
                          T,
                          length(p_prime) )  # Not used but is returned
-    # p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
-    p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
-    # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
+    p_tg <- matrix(p_prime, nrow=T, ncol=length(p_prime), byrow=TRUE)
 
     # Generate autocorrelated process noise phi_t
     phi_t <-  c(phi_1, rep(NA, T-1))
@@ -147,14 +144,13 @@ salmon_sim <- function(alpha = 0.8,
     for(i in 2:T){
       phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
     }
-
   } else {
 
     # Generate stochastic variation in p_{t,g}
     epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, 1),
                          T, length(p_prime) )
-    p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
-    p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
+    p_tg_unnormalized <- t( t(exp(omega * epsilon_tg)) * p_prime)
+    p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)  # repeats columnwise
     # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
 
     # Generate autocorrelated process noise phi_t
