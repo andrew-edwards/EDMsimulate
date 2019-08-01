@@ -17,9 +17,10 @@
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
 ##'   in the vector, which must sum to 1).
 ##' @param omega Scales the annual normal deviates on the proportions returning
-##'   at each age.
-##' @param sigma_nu Standard deviation of process noise.
-##' @param rho Autocorrelation parameter for process noise.
+##'   at each age. If omega = 0 then no stochasticity for the proportions.
+##' @param sigma_nu Standard deviation of process noise. If sigma_nu = 0 and
+##'   rho = 0 then no process noise.
+##' @param rho Autocorrelation parameter for process noise, >= 0.
 ##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
 ##'   needed for initialising the simulation, must be >=9.
@@ -28,6 +29,9 @@
 ##'   then harvest rate will be set to 0.2 for all years.
 ##' @param R_t_init Vector of eight years of recruit abundance (units of
 ##'   10,000 fish??) to initialize the model.
+##' @param deterministic If TRUE then include no stochasticity and any
+##'   given values of rho, omega, sigma_nu and phi_1 are redundant and set to
+##'   0.
 ##' @return Matrix of years (rows) with named columns:
 ##'   t: year;
 ##'   R_t: total recruits returning in year t;
@@ -48,7 +52,8 @@ salmon_sim <- function(alpha = 0.8,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = NULL,
-                       R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)
+                       R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1),
+                       deterministic = FALSE
                        ){
 
   if(!is.numeric(c(alpha,
@@ -60,8 +65,13 @@ salmon_sim <- function(alpha = 0.8,
                    phi_1,
                    T,
                    R_t_init))){
-    stop("all arguments must be numeric")
+    stop("all arguments (except deterministic) must be numeric")
   }
+
+  if(!is.logical(deterministic) | length(deterministic) != 1){
+    stop("deterministic must be TRUE or FALSE")
+  }
+  if(is.na(deterministic)) stop("deterministic must be TRUE or FALSE, not NA")
 
   if(T < 9) stop("T must be >=9")
 
@@ -117,17 +127,42 @@ salmon_sim <- function(alpha = 0.8,
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
 
-  # Generate stochastic variation in p_{t,g}
-  epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, 1),
-                       T, length(p_prime) )
-  p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
-  p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
-  # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
-  # Generate autocorrelated process noise phi_t
-  phi_t <-  c(phi_1, rep(NA, T-1))
-  nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
-  for(i in 2:T){
-    phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
+  if(deterministic){
+    rho <- 0
+    omega <- 0
+    sigma_nu <- 0
+    phi_1 <- 0
+
+    # Generate no stochastic variation in p_{t,g}
+    epsilon_tg <- matrix(0,
+                         T,
+                         length(p_prime) )  # Not used but is returned
+    # p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
+    p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
+    # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
+
+    # Generate autocorrelated process noise phi_t
+    phi_t <-  c(phi_1, rep(NA, T-1))
+    nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
+    for(i in 2:T){
+      phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
+    }
+
+  } else {
+
+    # Generate stochastic variation in p_{t,g}
+    epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, 1),
+                         T, length(p_prime) )
+    p_tg_unnormalized <- exp(omega * epsilon_tg) * p_prime
+    p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)
+    # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
+
+    # Generate autocorrelated process noise phi_t
+    phi_t <-  c(phi_1, rep(NA, T-1))
+    nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
+    for(i in 2:T){
+      phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
+    }
   }
 
   # Initialize - depends directly on initial conditions

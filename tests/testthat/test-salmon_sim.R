@@ -20,6 +20,13 @@ test_that("salmon_sim() gives error if any non-numeric inputs", {
           expect_error(salmon_sim(h_t = "a"))
 })
 
+test_that("salmon_sim() gives error if deterministic not TRUE or FALSE", {
+          expect_error(salmon_sim(deterministic = "a"))
+          expect_error(salmon_sim(deterministic = c(TRUE, FALSE)))
+          expect_error(salmon_sim(deterministic = NA))
+})
+
+
 test_that("salmon_sim() gives error if length(h_t) != T (if h_t not scalar), T too small, h_t too big ", {
           expect_error(salmon_sim(T = 50,
                                   h_t = rep(0.2, 49)))
