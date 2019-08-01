@@ -61,6 +61,24 @@ test_that("salmon_sim() gives error if beta wrong length", {
           expect_error(salmon_sim(beta = c(1, 2, 3)))
 })
 
+test_that("salmon_sim() gives correct steady state for deterministic run", {
+  # Use defaults
+  h_star <- 0.2
+  alpha <- 0.8
+  beta_vec <- c(0.8, 0.2, 0.1, 0.1)
+  T <- 1000
+  R_star <- (1 + log(alpha) + log(1 - h_star)) / (sum(beta_vec) * (1 - h_star))
+  R_numeric_tail <- salmon_sim(alpha = alpha,
+                          h_t = h_star,
+                          beta = beta_vec,
+                          T = T
+                          )$R_t[(T-9):T]
+  expect_equal(min(R_numeric_tail), R_star)
+  expect_equal(max(R_numeric_tail), R_star)
+})
+
+
+
 test_that("plot_sim() can create a plot for default run (no seed set)", {
           expect_silent(salmon_run())
           expect_silent(salmon_run(new_plot=FALSE))
