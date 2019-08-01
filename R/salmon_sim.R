@@ -138,12 +138,9 @@ salmon_sim <- function(alpha = 0.8,
                          length(p_prime) )  # Not used but is returned
     p_tg <- matrix(p_prime, nrow=T, ncol=length(p_prime), byrow=TRUE)
 
-    # Generate autocorrelated process noise phi_t
-    phi_t <-  c(phi_1, rep(NA, T-1))
-    nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
-    for(i in 2:T){
-      phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
-    }
+    # Generate no process noise phi_t
+    phi_t <- rep(0, T)
+
   } else {
 
     # Generate stochastic variation in p_{t,g}
