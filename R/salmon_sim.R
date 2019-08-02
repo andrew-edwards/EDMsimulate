@@ -236,3 +236,82 @@ salmon_run <- function(..., new_plot=TRUE){
   plot_sim(x,
            new_plot = new_plot)
 }
+
+
+
+##' Create a bifurcation-type plot for deterministic simulations
+##'
+##' Plots the last values for a deterministic run for different values of (for
+##'   now) alpha.
+##' @param alpha_vec Vector of alpha values to use.
+##' @param last How many of the final time steps to save.
+##' @param T Number of years to run the simulation.
+##' @param new_plot Start a new plot or not.
+##' @param ...
+##' @return matrix of final R_t values as columns, with each column
+##'   corresponding to a value of alpha
+##' @export
+salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
+                       last = 50,
+                       T = 10000,
+                       new_plot=TRUE,
+                       ...){
+  R_last <- matrix(nrow = last,
+                   ncol = length(alpha_vec))
+                                    # Each columns is last R_t for a
+                                    #  value of alpha
+  for(j in 1:(length(alpha_vec))){
+    R_last[,j] <- salmon_sim(alpha = alpha_vec[j],
+                             T = T,
+                             deterministic = TRUE
+                             )$R_t[(T-last+1):T]
+  }
+  return(R_last)
+}
+##' Plot a bifurcation-type diagram
+##'
+##' .. content for \details{} ..
+##' @title
+##' @param x Output from salmon_bif()
+##' @param alpha_vec Vector of alpha values to try
+##' @return Figure gets plotted
+##' @export
+plot_salmon_bif <- function(alpha_vec,
+                            x,
+                            ...){
+  matplot(alpha_vec,
+          t(x),
+          pch = 20,
+          col="black",
+          cex=0.1,
+          xlab = "alpha",
+          ylab = "Final R_t values",
+          ...)
+}
+##' .. content for \description{} (no empty lines) ..
+##'
+##' Defaults give great looking bifurcation diagram (work out what model reduces
+##'   to...)
+##' @title
+##' @param alpha_vec
+##' @param beta
+##' @param p_prime
+##' @param T
+##' @param ...
+##' @return
+##' @author
+salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
+                           beta = c(0, 0.8, 0, 0),
+                           p_prime = c(0, 1, 0),
+                           T = 10000,
+                           # col = 1:6 shows up some rich structure
+                           ...){
+  x <- salmon_bif(alpha_vec = alpha_vec,
+                  beta = beta,
+                  p_prime = p_prime,
+                  T = T,
+                  ...)
+  plot_salmon_bif(alpha_vec,
+                x,
+                ...)
+}
