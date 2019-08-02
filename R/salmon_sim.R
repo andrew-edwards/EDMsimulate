@@ -163,7 +163,7 @@ salmon_sim <- function(alpha = 0.8,
   R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
   S_t <- (1 - h_t) * R_t
 
-  R_prime_t <- alpha * S_t * exp(beta[1] * S_t -
+  R_prime_t <- alpha * S_t * exp(- beta[1] * S_t -
                                  beta[2] * EDMsimulate::shift(S_t, 1) -
                                  beta[3] * EDMsimulate::shift(S_t, 2) -
                                  beta[4] * EDMsimulate::shift(S_t, 3) +
@@ -175,7 +175,7 @@ salmon_sim <- function(alpha = 0.8,
               p_tg[i-4,2] * R_prime_t[i-4] +
               p_tg[i-5,3] * R_prime_t[i-5]
     S_t[i] <- (1 - h_t[i]) * R_t[i]
-    R_prime_t[i] <- alpha * S_t[i] * exp(beta[1] * S_t[i] -
+    R_prime_t[i] <- alpha * S_t[i] * exp(- beta[1] * S_t[i] -
                                          beta[2] * S_t[i-1] -
                                          beta[3] * S_t[i-2] -
                                          beta[4] * S_t[i-3] +
