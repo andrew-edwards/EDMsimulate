@@ -67,7 +67,8 @@ test_that("salmon_sim() gives correct steady state for deterministic run", {
   alpha <- 0.8
   beta_vec <- c(0.8, 0.2, 0.1, 0.1)
   T <- 1000
-  R_star <- (1 + log(alpha) + log(1 - h_star)) / (sum(beta_vec) * (1 - h_star))
+  R_star <- max((log(alpha) + log(1 - h_star)) / (sum(beta_vec) * (1 - h_star)),
+                0)         # Don't care about a -ve steady state
   R_numeric_tail <- salmon_sim(alpha = alpha,
                           h_t = h_star,
                           beta = beta_vec,
