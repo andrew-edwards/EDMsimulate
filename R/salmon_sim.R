@@ -127,6 +127,7 @@ salmon_sim <- function(alpha = 0.8,
   T_init <- length(R_t_init)
   if(T_init != 8) stop("R_t_init must have length 8.")
 
+  # If deterministic then can run simpler model
   if(deterministic){
     rho <- 0
     omega <- 0
