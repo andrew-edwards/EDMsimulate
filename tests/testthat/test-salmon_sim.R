@@ -72,8 +72,8 @@ test_that("salmon_sim() gives correct steady state for deterministic run", {
   R_numeric_tail <- salmon_sim(alpha = alpha,
                           h_t = h_star,
                           beta = beta_vec,
-                          T = T
-#                          deterministic = TRUE
+                          T = T,
+                          deterministic = TRUE
                           )$R_t[(T-9):T]
   expect_equal(min(R_numeric_tail), R_star)
   expect_equal(max(R_numeric_tail), R_star)
@@ -90,9 +90,8 @@ test_that("salmon_sim() results in R^* = 0 steady state if alpha < 1/(1-h_star)"
                           h_t = h_star,
                           beta = beta_vec,
                           T = T,
-#                          deterministic = TRUE
-                          ) # $R_t[(T-9):T]
-                    browser()
+                          deterministic = TRUE
+                          )$R_t[(T-9):T]
   expect_equal(min(R_numeric_tail), 0)
   expect_equal(max(R_numeric_tail), 0)
 })
