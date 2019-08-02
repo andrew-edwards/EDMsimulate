@@ -193,7 +193,8 @@ salmon_sim <- function(alpha = 0.8,
                       "p_t5" = p_tg[, 3],
                       "epsilon_t3" = epsilon_tg[, 1],
                       "epsilon_t4" = epsilon_tg[, 2],
-                      "epsilon_t5" = epsilon_tg[, 3]))
+                      "epsilon_t5" = epsilon_tg[, 3],
+                      "phi_t" = phi_t))
 }
 
 
