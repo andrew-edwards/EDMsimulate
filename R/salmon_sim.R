@@ -230,6 +230,15 @@ plot_sim <- function(x, new_plot=TRUE, ...){
 ##' @param ... Inputs for salmon_sim().
 ##' @param new_plot Start a new plot or not.
 ##' @return Plot of results, and matrix of results from salmon_sim().
+##' @examples \dontrun{
+##'   salmon_run(alpha = 1.5,
+##'              beta = c(0, 0.8, 0, 0),
+##'              p_prime=c(0, 1, 0),
+##'              T = 1000,
+##'              deterministic = TRUE)# no densitity dependence on alternate
+##'                                   #  years, so unconstrained increase in
+##'                                   #  population
+##' }
 ##' @export
 salmon_run <- function(..., new_plot=TRUE){
   x <- salmon_sim(...)
@@ -240,9 +249,9 @@ salmon_run <- function(..., new_plot=TRUE){
 
 
 
-##' Create a bifurcation-type plot for deterministic simulations
+##' Create calculations for bifurcation-type plot for deterministic simulations
 ##'
-##' Plots the last values for a deterministic run for different values of (for
+##' Calculates the last values for a deterministic run for different values of (for
 ##'   now) alpha.
 ##' @param alpha_vec Vector of alpha values to use.
 ##' @param last How many of the final time steps to save.
@@ -297,16 +306,21 @@ plot_salmon_bif <- function(alpha_vec,
 ##' @param alpha_vec Vector of alpha values to use.
 ##' @param beta Vector of beta values for input into salmon_sim().
 ##' @param p_prime
-##' @param T Number of years to run the simulation.
-##' @param ... Further inputs for salmon_sim().
-##' @return matrix of final R_t values as columns, with each column
+##' @param T Number of years to run the simulation. May need longer to see full structure.
+##' @param ... Further inputs for salmon_bif().
+##' @return (invisible) matrix of final R_t values as columns, with each column
 ##'   corresponding to a value of alpha.
-
-##' @author
+##' @examples
+##' \dontrun{
+##'   # beautiful bifurcation diagram (short T for quickness):
+##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
+##'   0), T = 1000)
+##' }
+##' @export
 salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                            beta = c(0, 0.8, 0, 0),
                            p_prime = c(0, 1, 0),
-                           T = 10000,
+                           T = 1000,
                            # col = 1:6 shows up some rich structure
                            ...){
   x <- salmon_bif(alpha_vec = alpha_vec,
@@ -315,6 +329,6 @@ salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                   T = T,
                   ...)
   plot_salmon_bif(alpha_vec,
-                x)
-  return(x)
+                  x)
+  invisible(x)
 }
