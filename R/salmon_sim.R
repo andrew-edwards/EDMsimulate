@@ -229,12 +229,13 @@ plot_sim <- function(x, new_plot=TRUE, ...){
 ##'
 ##' @param ... Inputs for salmon_sim().
 ##' @param new_plot Start a new plot or not.
-##' @return Plot of results.
+##' @return Plot of results, and matrix of results from salmon_sim().
 ##' @export
 salmon_run <- function(..., new_plot=TRUE){
   x <- salmon_sim(...)
   plot_sim(x,
            new_plot = new_plot)
+  return(x)
 }
 
 
@@ -258,12 +259,13 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
                        ...){
   R_last <- matrix(nrow = last,
                    ncol = length(alpha_vec))
-                                    # Each columns is last R_t for a
+                                    # Each column is last R_t for a
                                     #  value of alpha
   for(j in 1:(length(alpha_vec))){
     R_last[,j] <- salmon_sim(alpha = alpha_vec[j],
                              T = T,
-                             deterministic = TRUE
+                             deterministic = TRUE,
+                             ...
                              )$R_t[(T-last+1):T]
   }
   return(R_last)
@@ -288,17 +290,18 @@ plot_salmon_bif <- function(alpha_vec,
           ylab = "Final R_t values",
           ...)
 }
-##' .. content for \description{} (no empty lines) ..
+##' Calculate and plot bifurcation diagram for Larkin model
 ##'
-##' Defaults give great looking bifurcation diagram (work out what model reduces
-##'   to...)
-##' @title
-##' @param alpha_vec
-##' @param beta
+##' Defaults give great looking bifurcation diagram (need to work out what they
+##'   reduce the model to). Bifurcation diagram calculated by simple simulation.
+##' @param alpha_vec Vector of alpha values to use.
+##' @param beta Vector of beta values for input into salmon_sim().
 ##' @param p_prime
-##' @param T
-##' @param ...
-##' @return
+##' @param T Number of years to run the simulation.
+##' @param ... Further inputs for salmon_sim().
+##' @return matrix of final R_t values as columns, with each column
+##'   corresponding to a value of alpha.
+
 ##' @author
 salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                            beta = c(0, 0.8, 0, 0),
@@ -312,6 +315,6 @@ salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                   T = T,
                   ...)
   plot_salmon_bif(alpha_vec,
-                x,
-                ...)
+                x)
+  return(x)
 }
