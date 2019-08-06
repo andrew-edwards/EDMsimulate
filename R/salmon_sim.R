@@ -289,11 +289,12 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
 ##' @export
 plot_salmon_bif <- function(alpha_vec,
                             x,
+                            col = "black",
                             ...){
   matplot(alpha_vec,
           t(x),
           pch = 20,
-          col="black",
+          col=col,
           cex=0.1,
           xlab = "alpha",
           ylab = "Final R_t values",
@@ -312,23 +313,30 @@ plot_salmon_bif <- function(alpha_vec,
 ##'   corresponding to a value of alpha.
 ##' @examples
 ##' \dontrun{
-##'   # beautiful bifurcation diagram (short T for quickness):
+##'   # beautiful bifurcation diagram:
 ##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
-##'   0), T = 1000)
+##'     0), T = 1000, col = 1:6)
+##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
+##'     0), T = 100, col = 1:6)  # quicker, contains some nice transients
+##'
+##' salmon_bif_run(T=100, col=1:6)   # squid plot, contains transients
+##' salmon_bif_run(col=1:6)   # squid plot, but blurry than one above (!?)
 ##' }
 ##' @export
 salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
-                           beta = c(0, 0.8, 0, 0),
+                           # beta = c(0, 0.8, 0, 0),
                            p_prime = c(0, 1, 0),
                            T = 1000,
+                           col = "black",
                            # col = 1:6 shows up some rich structure
                            ...){
   x <- salmon_bif(alpha_vec = alpha_vec,
-                  beta = beta,
+                  # beta = beta,
                   p_prime = p_prime,
                   T = T,
                   ...)
   plot_salmon_bif(alpha_vec,
-                  x)
+                  x,
+                  col = col)
   invisible(x)
 }
