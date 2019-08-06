@@ -318,9 +318,15 @@ plot_salmon_bif <- function(alpha_vec,
 ##'     0), T = 1000, col = 1:6)
 ##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
 ##'     0), T = 100, col = 1:6)  # quicker, contains some nice transients
+##'   salmon_bif_run()           # the mixing up of density dependence smears
+##'                              #   the plot a litte
 ##'
-##' salmon_bif_run(T=100, col=1:6)   # squid plot, contains transients
-##' salmon_bif_run(col=1:6)   # squid plot, but blurry than one above (!?)
+##'   salmon_bif_run(T=100, col=1:6)   # squid plot, contains transients
+##'   salmon_bif_run(col=1:6)   # squid plot, but blurry than one above (!?)
+##'
+##'   alpha_vec <- seq(1.231, 1.27, by = 0.001)
+##'   x <- salmon_bif_run(alpha_vec = seq(1.231, 1.27, by = 0.001), T = 10000)
+##'   tail(x[,17:23])            # shows bifurcation at 1.25
 ##' }
 ##' @export
 salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
