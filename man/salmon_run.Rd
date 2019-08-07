@@ -12,8 +12,19 @@ salmon_run(..., new_plot = TRUE)
 \item{new_plot}{Start a new plot or not.}
 }
 \value{
-Plot of results.
+Plot of results, and matrix of results from salmon_sim().
 }
 \description{
 Simulate Larkin model and plot results
+}
+\examples{
+\dontrun{
+  salmon_run(alpha = 1.5,
+             beta = c(0, 0.8, 0, 0),
+             p_prime=c(0, 1, 0),
+             T = 1000,
+             deterministic = TRUE)# no densitity dependence on alternate
+                                  #  years, so unconstrained increase in
+                                  #  population
+}
 }

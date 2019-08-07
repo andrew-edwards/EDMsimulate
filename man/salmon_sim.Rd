@@ -6,9 +6,9 @@
 \usage{
 salmon_sim(alpha = 0.8, beta = c(0.8, 0.2, 0.1, 0.1),
   p_prime = c(0.01, 0.98, 0.01), rho = 0.6, omega = 0.8,
-  sigma_nu = 0.75, sigma_epsilon = 1, phi_1 = 0.1, T = 100,
-  h_t = rep(0.2, T), R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1,
-  0.1))
+  sigma_nu = 0.75, phi_1 = 0.1, T = 100, h_t = NULL,
+  R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1),
+  deterministic = FALSE, extirp = 2e-06)
 }
 \arguments{
 \item{alpha}{Ratio of recruits to spawners at low spawner abundance in the
@@ -21,24 +21,34 @@ beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model.}
 
 \item{p_prime}{Vector of typical proportion of recruits spawned in a year that will
 come back to freshwater as age-3, age-4 and age-5 (each of three elements
-in the vector).}
+in the vector, which must sum to 1).}
 
-\item{rho}{Autocorrelation parameter for process noise.}
+\item{rho}{Autocorrelation parameter for process noise, >= 0.}
 
-\item{sigma_nu}{Standard deviation of process noise.}
+\item{omega}{Scales the annual normal deviates on the proportions returning
+at each age. If omega = 0 then no stochasticity for the proportions.}
 
-\item{sigma_epsilon}{Standard deviation of annual normal deviates on the
-proportions returning at each age.}
+\item{sigma_nu}{Standard deviation of process noise. If sigma_nu = 0 and
+rho = 0 then no process noise.}
 
 \item{phi_1}{Initial value of process noise.}
 
 \item{T}{Number of years to run the simulation, including the eight years
-needed for initialising the simulation.}
+needed for initialising the simulation, must be >=9.}
 
-\item{h_t}{Vector of harvest rate for each year 1, 2, 3, ..., T.}
+\item{h_t}{Vector of harvest rate for each year 1, 2, 3, ..., T. Or if a
+single value then this will be the constant rate for all years. If NULL
+then harvest rate will be set to 0.2 for all years.}
 
-\item{R_t_init}{Vector of eight years of recruit abundance (units of
-10,000 fish??) to initialize the model.}
+\item{R_t_init}{Vector of eight years of recruit abundance to initialize the
+model.}
+
+\item{deterministic}{If TRUE then include no stochasticity and any
+given values of rho, omega, sigma_nu and phi_1 are redundant and set to
+0.}
+
+\item{extirp}{Value below which we consider the population extirpated, in
+same units as recruits and spawners.}
 }
 \value{
 Matrix of years (rows) with named columns:
@@ -59,5 +69,6 @@ Simulates Larkin population dynamics model, based on Appendix F of Holt
   Notation matches that of our write up.
   The harvest rate has to be prescribed for all years, and to initialize the
   model the recruitment R_t has to be given for the first eight years. All
-  parameters should be >=0.
+  parameters must be >=0, some >0. Units of recruits and spawners are
+  millions of fish, and hence beta has units 1/(millions of fish).
 }

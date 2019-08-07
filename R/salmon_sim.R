@@ -6,7 +6,8 @@
 ##'   Notation matches that of our write up.
 ##'   The harvest rate has to be prescribed for all years, and to initialize the
 ##'   model the recruitment R_t has to be given for the first eight years. All
-##'   parameters must be >=0, some >0.
+##'   parameters must be >=0, some >0. Units of recruits and spawners are
+##'   millions of fish, and hence beta has units 1/(millions of fish).
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
@@ -27,11 +28,13 @@
 ##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T. Or if a
 ##'   single value then this will be the constant rate for all years. If NULL
 ##'   then harvest rate will be set to 0.2 for all years.
-##' @param R_t_init Vector of eight years of recruit abundance (units of
-##'   10,000 fish??) to initialize the model.
+##' @param R_t_init Vector of eight years of recruit abundance to initialize the
+##'   model.
 ##' @param deterministic If TRUE then include no stochasticity and any
 ##'   given values of rho, omega, sigma_nu and phi_1 are redundant and set to
 ##'   0.
+##' @param extirp Value below which we consider the population extirpated, in
+##'   same units as recruits and spawners.
 ##' @return Matrix of years (rows) with named columns:
 ##'   t: year;
 ##'   R_t: total recruits returning in year t;
@@ -53,7 +56,8 @@ salmon_sim <- function(alpha = 0.8,
                        T = 100,
                        h_t = NULL,
                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1),
-                       deterministic = FALSE
+                       deterministic = FALSE,
+                       extirp = 2e-6
                        ){
 
   if(!is.numeric(c(alpha,
@@ -64,7 +68,8 @@ salmon_sim <- function(alpha = 0.8,
                    sigma_nu,
                    phi_1,
                    T,
-                   R_t_init))){
+                   R_t_init,
+                   extirp))){
     stop("all arguments (except deterministic) must be numeric")
   }
 
@@ -96,7 +101,8 @@ salmon_sim <- function(alpha = 0.8,
            phi_1,
            T,
            h_t,
-           R_t_init)) < 0 ) {
+           R_t_init,
+           extirp)) < 0 ) {
     stop("all parameters and initialisation variables must be >=0")
   }
 
@@ -110,7 +116,8 @@ salmon_sim <- function(alpha = 0.8,
               omega,
               sigma_nu,
               phi_1,
-              T)) != 6){
+              T,
+              extirp)) != 7){
     stop("alpha, rho, omega, sigma_nu, phi_1 and T must all have length 1")
   }
   if(length(beta) != 4){
@@ -174,7 +181,12 @@ salmon_sim <- function(alpha = 0.8,
     R_t[i] <- p_tg[i-3,1] * R_prime_t[i-3] +
               p_tg[i-4,2] * R_prime_t[i-4] +
               p_tg[i-5,3] * R_prime_t[i-5]
+
     S_t[i] <- (1 - h_t[i]) * R_t[i]
+    if(S_t[i] < extirp){
+      S_t[i] <- 0
+    }
+
     R_prime_t[i] <- alpha * S_t[i] * exp(- beta[1] * S_t[i] -
                                          beta[2] * S_t[i-1] -
                                          beta[3] * S_t[i-2] -
