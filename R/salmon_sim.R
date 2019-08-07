@@ -332,6 +332,11 @@ plot_salmon_bif <- function(alpha_vec,
 ##'   abline(v=exp(2)/0.8)     # Should reduce to simple Ricker model with
 ##'   harvesting, with analytically calculation bifurcation point at
 ##'   the vertical line alpha = exp(2)/(1-h).
+##'
+##'   salmon_bif_run(p_prime = c(0.1, 0.8, 0.1), T = 10000)  # shows some
+##'     structure, bifurcation point has moved to the right
+##'   salmon_bif_run(alpha_vec = seq(25, 27, by = 0.001), p_prime = c(0.1, 0.8,
+##'     0.1), T = 10000)   # Blow up an interesting region
 ##' }
 ##' @export
 salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
