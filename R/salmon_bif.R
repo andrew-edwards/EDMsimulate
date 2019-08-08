@@ -5,7 +5,6 @@
 ##' @param alpha_vec Vector of alpha values to use.
 ##' @param last How many of the final time steps to save.
 ##' @param T Number of years to run the simulation.
-##' @param new_plot Start a new plot or not.
 ##' @param ... Further inputs for salmon_sim().
 ##' @return matrix of final R_t values as columns, with each column
 ##'   corresponding to a value of alpha
@@ -13,13 +12,17 @@
 salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
                        last = 50,
                        T = 10000,
-                       new_plot=TRUE,
                        ...){
   stopifnot(is.numeric(c(alpha_vec,
                          last,
                          T)))
-  stopifnot(is.logical(new_plot), length(new_plot) == 1)
   stopifnot(T > last)
+  stopifnot(min(alpha_vec) > 0,
+            last > 0,
+            T > 9)
+  stopifnot(T > last)
+  stopifnot(length(last) == 1,
+            length(T) == 1)
 
   R_last <- matrix(nrow = last,
                    ncol = length(alpha_vec))
@@ -39,27 +42,55 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
 ##' Plot the last values of recruitment against alpha.
 ##' @param x Output from salmon_bif()
 ##' @param alpha_vec Vector of alpha values to try
+##' @param new_plot Start a new plot or not.
 ##' @return Figure gets plotted
 ##' @export
 plot_salmon_bif <- function(alpha_vec,
                             x,
                             col = "black",
+                            new_plot=TRUE,
                             ...){
-  matplot(alpha_vec,
-          t(x),
-          pch = 20,
-          col=col,
-          cex=0.1,
-          xlab = "alpha",
-          ylab = "Final R_t values",
-          ...)
+
+  stopifnot(is.numeric(alpha_vec),
+            is.numeric(x))
+  stopifnot(is.matrix(x))
+  stopifnot(is.logical(new_plot),
+            length(new_plot) == 1)
+  stopifnot(length(alpha_vec) == ncol(x))
+  if(dev.cur() == 1 & new_plot == FALSE){
+    stop("Need a current plotting device for new_plot = FALSE.")
+  }
+
+
+  if(new_plot){
+    matplot(alpha_vec,
+            t(x),
+            pch = 20,
+            col=col,
+            cex=0.1,
+            xlab = "alpha",
+            ylab = "Final R_t values",
+            ...)
+  } else {
+    matplot(alpha_vec,
+            t(x),
+            pch = 20,
+            col=col,
+            cex=0.1,
+            xlab = "alpha",
+            ylab = "Final R_t values",
+            add = TRUE,
+            ...)
+  }
 }
+
 ##' Calculate and plot bifurcation diagram for Larkin model
 ##'
 ##' Defaults give great looking bifurcation diagram (need to work out what they
 ##'   reduce the model to). Bifurcation diagram calculated by simple simulation.
 ##' @param alpha_vec Vector of alpha values to use.
 ##' @param col Colour of plotted points (can be "red" etc., or 1:6).
+##' @param new_plot Start a new plot or not.
 ##' @param ... Further inputs for salmon_bif().
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5, for input into salmon_sim().
@@ -100,7 +131,12 @@ salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                            T = 1000,
                            col = "black",
                            # col = 1:6 shows up some rich structure
+                           new_plot = TRUE,
                            ...){
+
+  # Not checking inputs since errors will get caught in salmon_bif()
+  #  or plot_salmon_bif()
+
   x <- salmon_bif(alpha_vec = alpha_vec,
                   # beta = beta,
                   p_prime = p_prime,
@@ -108,6 +144,7 @@ salmon_bif_run <- function(alpha_vec = seq(0.01, 30, by=0.01),
                   ...)
   plot_salmon_bif(alpha_vec,
                   x,
-                  col = col)
+                  col = col,
+                  new_plot = new_plot)
   invisible(x)
 }
