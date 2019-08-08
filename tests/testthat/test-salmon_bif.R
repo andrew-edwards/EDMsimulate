@@ -16,7 +16,9 @@ test_that("salmon_bif() gives error if inputs are invalid", {
 })
 
 test_that("salmon_bif() returns a matrix of the correct size", {
-  x <- salmon_bif(alpha_vec, last = 10, T = 30)
+  x <- salmon_bif(alpha_vec = seq(1, 2, length = 21),
+                  last = 10,
+                  T = 30)
   expect_equal(dim(x), c(10, 21))
 })
 
