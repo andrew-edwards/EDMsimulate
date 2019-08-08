@@ -15,6 +15,12 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
                        T = 10000,
                        new_plot=TRUE,
                        ...){
+  stopifnot(is.numeric(c(alpha_vec,
+                         last,
+                         T)))
+  stopifnot(is.logical(new_plot), length(new_plot) == 1)
+  stopifnot(T > last)
+
   R_last <- matrix(nrow = last,
                    ncol = length(alpha_vec))
                                     # Each column is last R_t for a
