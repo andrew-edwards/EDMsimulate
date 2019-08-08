@@ -215,7 +215,7 @@ salmon_sim <- function(alpha = 0.8,
 ##'
 ##' @param x Output data frame from salmon_sim().
 ##' @param new_plot Start a new plot or not.
-##' @param ...
+##' @param ... Further inputs for plot() or points().
 ##' @return Plot of simulated spawners against time.
 ##' @export
 plot_sim <- function(x, new_plot=TRUE, ...){
@@ -269,7 +269,7 @@ salmon_run <- function(..., new_plot=TRUE){
 ##' @param last How many of the final time steps to save.
 ##' @param T Number of years to run the simulation.
 ##' @param new_plot Start a new plot or not.
-##' @param ...
+##' @param ... Further inputs for salmon_sim().
 ##' @return matrix of final R_t values as columns, with each column
 ##'   corresponding to a value of alpha
 ##' @export
@@ -293,8 +293,7 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
 }
 ##' Plot a bifurcation-type diagram
 ##'
-##' .. content for \details{} ..
-##' @title
+##' Plot the last values of recruitment against alpha.
 ##' @param x Output from salmon_bif()
 ##' @param alpha_vec Vector of alpha values to try
 ##' @return Figure gets plotted
@@ -317,10 +316,11 @@ plot_salmon_bif <- function(alpha_vec,
 ##' Defaults give great looking bifurcation diagram (need to work out what they
 ##'   reduce the model to). Bifurcation diagram calculated by simple simulation.
 ##' @param alpha_vec Vector of alpha values to use.
-##' @param beta Vector of beta values for input into salmon_sim().
-##' @param p_prime
-##' @param T Number of years to run the simulation. May need longer to see full structure.
+##' @param col Colour of plotted points (can be "red" etc., or 1:6).
 ##' @param ... Further inputs for salmon_bif().
+##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
+##'   come back to freshwater as age-3, age-4 and age-5, for input into salmon_sim().
+##' @param T Number of years to run the simulation. May need longer to see full structure.
 ##' @return (invisible) matrix of final R_t values as columns, with each column
 ##'   corresponding to a value of alpha.
 ##' @examples

@@ -15,6 +15,8 @@ salmon_bif(alpha_vec = seq(0.01, 10, by = 0.01), last = 50,
 \item{T}{Number of years to run the simulation.}
 
 \item{new_plot}{Start a new plot or not.}
+
+\item{...}{Further inputs for salmon_sim().}
 }
 \value{
 matrix of final R_t values as columns, with each column

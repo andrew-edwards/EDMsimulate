@@ -10,6 +10,8 @@ plot_sim(x, new_plot = TRUE, ...)
 \item{x}{Output data frame from salmon_sim().}
 
 \item{new_plot}{Start a new plot or not.}
+
+\item{...}{Further inputs for plot() or points().}
 }
 \value{
 Plot of simulated spawners against time.

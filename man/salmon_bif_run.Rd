@@ -10,11 +10,14 @@ salmon_bif_run(alpha_vec = seq(0.01, 30, by = 0.01), p_prime = c(0, 1,
 \arguments{
 \item{alpha_vec}{Vector of alpha values to use.}
 
+\item{p_prime}{Vector of typical proportion of recruits spawned in a year that will
+come back to freshwater as age-3, age-4 and age-5, for input into salmon_sim().}
+
 \item{T}{Number of years to run the simulation. May need longer to see full structure.}
 
-\item{...}{Further inputs for salmon_bif().}
+\item{col}{Colour of plotted points (can be "red" etc., or 1:6).}
 
-\item{beta}{Vector of beta values for input into salmon_sim().}
+\item{...}{Further inputs for salmon_bif().}
 }
 \value{
 (invisible) matrix of final R_t values as columns, with each column
