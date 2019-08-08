@@ -1,7 +1,7 @@
 ##' Create calculations for bifurcation-type plot for deterministic simulations
 ##'
-##' Calculates the last values for a deterministic run for different values of (for
-##'   now) alpha.
+##' Calculates the last values for a deterministic run for different values of
+##'   (for now) alpha.
 ##' @param alpha_vec Vector of alpha values to use.
 ##' @param last How many of the final time steps to save.
 ##' @param T Number of years to run the simulation.
