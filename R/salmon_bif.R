@@ -16,13 +16,12 @@ salmon_bif <- function(alpha_vec = seq(0.01, 10, by=0.01),
   stopifnot(is.numeric(c(alpha_vec,
                          last,
                          T)))
-  stopifnot(T > last)
-  stopifnot(min(alpha_vec) > 0,
-            last > 0,
-            T > 9)
-  stopifnot(T > last)
   stopifnot(length(last) == 1,
             length(T) == 1)
+  stopifnot(min(alpha_vec) > 0,
+            last > 0,
+            T > 9,
+            T > last)
 
   R_last <- matrix(nrow = last,
                    ncol = length(alpha_vec))
