@@ -46,12 +46,12 @@
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
 ##' @export
-salmon_sim <- function(alpha = 0.8,
-                       beta = c(0.8, 0.2, 0.1, 0.1),   # Andy made up
-                       p_prime = c(0.01, 0.98, 0.01),
-                       rho = 0.6,
-                       omega = 0.8,
-                       sigma_nu = 0.75,
+salmon_sim <- function(alpha = 7,
+                       beta = c(1, 1, 1, 1),
+                       p_prime = c(0.003, 0.917, 0.080),
+                       rho = 0.5,
+                       omega = 0.6,
+                       sigma_nu = 0.8,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = NULL,
