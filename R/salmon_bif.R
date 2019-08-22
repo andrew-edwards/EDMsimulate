@@ -98,7 +98,8 @@ plot_salmon_bif <- function(alpha_vec,
 ##'   corresponding to a value of alpha.
 ##' @examples
 ##' \dontrun{
-##'   # beautiful bifurcation diagram:
+##'   # beautiful bifurcation diagram (at least as of commit 346039fd8, things
+##'   #  may change if defaults change) :
 ##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
 ##'     0), T = 1000, col = 1:6)
 ##'   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,

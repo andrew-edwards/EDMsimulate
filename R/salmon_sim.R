@@ -55,7 +55,7 @@ salmon_sim <- function(alpha = 7,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = NULL,
-                       R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.01,
+                       R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.05,
                        deterministic = FALSE,
                        extirp = 2e-6
                        ){
