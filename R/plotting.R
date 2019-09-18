@@ -3,18 +3,18 @@
 ##' @description Create 2-d movie of x_t (on the y-axis) against x_{t-1}, with colours to
 ##' show the latest points as it grows.
 ##' @param x Vector of values
-##' @param pdf.filename Filename (including .pdf) to save the movie
+##' @param pdf_filename Filename (including .pdf) to save the movie
 ##' @param start First value to use when plotting
 ##' @param end Final value to use when plotting
-##' @param late.num How many points to have colour 'late.col'
-##' @param late.col Colour for the late points (the last 'late.num' points) for
+##' @param late_num How many points to have colour 'late_col'
+##' @param late_col Colour for the late points (the last 'late_num' points) for
 ##'   each frame
-##' @param early.col Colour for the early points
-##' @param early.col.lines Colour for the early lines
-##' @param pt.type Type of point (the usual plot(..., type= ) option, but do not
+##' @param early_col Colour for the early points
+##' @param early_col_lines Colour for the early lines
+##' @param pt_type Type of point (the usual plot(..., type= ) option, but do not
 ##'   use "o".
-##' @param x.lab Label for x axis
-##' @param y.lab Label for y axis
+##' @param x_lab Label for x axis
+##' @param y_lab Label for y axis
 ##' @param figheight Figure height
 ##' @param figwidth Figure width
 ##' @param ...
@@ -24,49 +24,49 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##'   plotLag2d(x = default_sim_seed_42$p_t3, pdf.filename = "hello.pdf")  # not
+##'   plotLag2d(x = default_sim_seed_42$p_t3, pdf_filename = "hello.pdf")  # not
 ##'   a time series
 ##' }
 plotLag2d = function(x,
-                     pdf.filename,
+                     pdf_filename,
                      start = 1,
                      end = length(x),
-                     late.col = "red",
-                     early.col = "black",
-                     early.col.lines = "lightgrey",
-                     late.num = 10,
-                     pt.type = "p",
-                     x.lab = expression("x"[t-1]),
-                     y.lab = expression("x"[t]),
+                     late_col = "red",
+                     early_col = "black",
+                     early_col_lines = "lightgrey",
+                     late_num = 10,
+                     pt_type = "p",
+                     x_lab = expression("x"[t-1]),
+                     y_lab = expression("x"[t]),
                      figheight = figheight,
                      figwidth = figwidth,
                      ...)
   {
-  pdf(pdf.filename, height = figheight, width = figwidth)
+  pdf(pdf_filename, height = figheight, width = figwidth)
 
-  x.tmin1 = x[start:(end-1)]                    # x_{t-1}
-  x.t = x[(start+1):end]                        # x_{t}
-  axes.range = range(c(x.tmin1, x[end]))
-  num.frames = length(x.t)
-  for(i in 1:num.frames)
+  x_tmin1 = x[start:(end-1)]                    # x_{t-1}
+  x_t = x[(start+1):end]                        # x_{t}
+  axes_range = range(c(x_tmin1, x[end]))
+  num_frames = length(x_t)
+  for(i in 1:num_frames)
     {
-      col.plot = c( rep(early.col, max(c(0, i-late.num))),
-                    rep(late.col, min(c(i, late.num))) )   # colours of points
-      #col.plot.lines = (col.plot == early.col) * early.col.lines +
-      #                   (col.plot == late.col) * late.col
-      col.plot.lines = col.plot                            # colours of lines
-      col.plot.lines[col.plot.lines == early.col] = early.col.lines
-      pch.plot = (col.plot == early.col) * 1 + (col.plot == late.col) * 16
+      col_plot = c( rep(early_col, max(c(0, i-late_num))),
+                    rep(late_col, min(c(i, late_num))) )   # colours of points
+      #col_plot_lines = (col_plot == early_col) * early_col_lines +
+      #                   (col_plot == late_col) * late_col
+      col_plot_lines = col_plot                            # colours of lines
+      col_plot_lines[col_plot_lines == early_col] = early_col_lines
+      pch_plot = (col_plot == early_col) * 1 + (col_plot == late_col) * 16
                                           # filled circles for latest
-      plot(x.tmin1[1:i], x.t[1:i],
-        xlab = x.lab, ylab = y.lab,
-        xlim = axes.range, ylim = axes.range,
-        type = pt.type, pch = pch.plot,
-        col = col.plot)
+      plot(x_tmin1[1:i], x_t[1:i],
+        xlab = x_lab, ylab = y_lab,
+        xlim = axes_range, ylim = axes_range,
+        type = pt_type, pch = pch_plot,
+        col = col_plot)
       if(i > 1.5)
-        {  segments(x.tmin1[1:(i-1)], x.t[1:(i-1)],
-               x.tmin1[2:i], x.t[2:i],
-               col = col.plot.lines)       # lines() will not use vector of col
+        {  segments(x_tmin1[1:(i-1)], x_t[1:(i-1)],
+               x_tmin1[2:i], x_t[2:i],
+               col = col_plot_lines)       # lines() will not use vector of col
         }
       legend("topleft", legend=paste("sample", i), border = NULL)
     }
