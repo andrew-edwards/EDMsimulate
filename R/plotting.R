@@ -22,6 +22,11 @@
 ##'   the animategraphics latex pacakge. [Update this regarding after testing knitr etc.]
 ##' @author Andrew Edwards
 ##' @export
+##' @examples
+##' \dontrun{
+##'   plotLag2d(x = default_sim_seed_42$p_t3, pdf.filename = "hello.pdf")  # not
+##'   a time series
+##' }
 plotLag2d = function(x,
                      pdf.filename,
                      start = 1,
