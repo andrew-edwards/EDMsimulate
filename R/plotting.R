@@ -52,17 +52,15 @@ plotLag2d = function(x,
     {
       col_plot = c( rep(early_col, max(c(0, i-late_num))),
                     rep(late_col, min(c(i, late_num))) )   # colours of points
-      #col_plot_lines = (col_plot == early_col) * early_col_lines +
-      #                   (col_plot == late_col) * late_col
       col_plot_lines = col_plot                            # colours of lines
       col_plot_lines[col_plot_lines == early_col] = early_col_lines
       pch_plot = (col_plot == early_col) * 1 + (col_plot == late_col) * 16
                                           # filled circles for latest
       plot(x_tmin1[1:i], x_t[1:i],
-        xlab = x_lab, ylab = y_lab,
-        xlim = axes_range, ylim = axes_range,
-        type = pt_type, pch = pch_plot,
-        col = col_plot)
+           xlab = x_lab, ylab = y_lab,
+           xlim = axes_range, ylim = axes_range,
+           type = pt_type, pch = pch_plot,
+           col = col_plot)
       if(i > 1.5)
         {  segments(x_tmin1[1:(i-1)], x_t[1:(i-1)],
                x_tmin1[2:i], x_t[2:i],

@@ -5,7 +5,7 @@
 \title{Create calculations for bifurcation-type plot for deterministic simulations}
 \usage{
 salmon_bif(alpha_vec = seq(0.01, 10, by = 0.01), last = 50,
-  T = 10000, new_plot = TRUE, ...)
+  T = 10000, ...)
 }
 \arguments{
 \item{alpha_vec}{Vector of alpha values to use.}
@@ -14,8 +14,6 @@ salmon_bif(alpha_vec = seq(0.01, 10, by = 0.01), last = 50,
 
 \item{T}{Number of years to run the simulation.}
 
-\item{new_plot}{Start a new plot or not.}
-
 \item{...}{Further inputs for salmon_sim().}
 }
 \value{
@@ -23,6 +21,6 @@ matrix of final R_t values as columns, with each column
   corresponding to a value of alpha
 }
 \description{
-Calculates the last values for a deterministic run for different values of (for
-  now) alpha.
+Calculates the last values for a deterministic run for different values of
+  (for now) alpha.
 }

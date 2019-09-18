@@ -4,10 +4,9 @@
 \alias{salmon_sim}
 \title{Simulation of Larkin population dynamics model}
 \usage{
-salmon_sim(alpha = 0.8, beta = c(0.8, 0.2, 0.1, 0.1),
-  p_prime = c(0.01, 0.98, 0.01), rho = 0.6, omega = 0.8,
-  sigma_nu = 0.75, phi_1 = 0.1, T = 100, h_t = NULL,
-  R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1),
+salmon_sim(alpha = 7, beta = c(1, 1, 1, 1), p_prime = c(0.003, 0.917,
+  0.08), rho = 0.5, omega = 0.6, sigma_nu = 0.8, phi_1 = 0.1,
+  T = 100, h_t = NULL, R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1) * 0.05,
   deterministic = FALSE, extirp = 2e-06)
 }
 \arguments{

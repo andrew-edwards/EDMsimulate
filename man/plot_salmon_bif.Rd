@@ -4,12 +4,14 @@
 \alias{plot_salmon_bif}
 \title{Plot a bifurcation-type diagram}
 \usage{
-plot_salmon_bif(alpha_vec, x, col = "black", ...)
+plot_salmon_bif(alpha_vec, x, col = "black", new_plot = TRUE, ...)
 }
 \arguments{
 \item{alpha_vec}{Vector of alpha values to try}
 
 \item{x}{Output from salmon_bif()}
+
+\item{new_plot}{Start a new plot or not.}
 }
 \value{
 Figure gets plotted

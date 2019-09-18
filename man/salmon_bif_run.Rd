@@ -5,7 +5,7 @@
 \title{Calculate and plot bifurcation diagram for Larkin model}
 \usage{
 salmon_bif_run(alpha_vec = seq(0.01, 30, by = 0.01), p_prime = c(0, 1,
-  0), T = 1000, col = "black", ...)
+  0), T = 1000, col = "black", new_plot = TRUE, ...)
 }
 \arguments{
 \item{alpha_vec}{Vector of alpha values to use.}
@@ -16,6 +16,8 @@ come back to freshwater as age-3, age-4 and age-5, for input into salmon_sim().}
 \item{T}{Number of years to run the simulation. May need longer to see full structure.}
 
 \item{col}{Colour of plotted points (can be "red" etc., or 1:6).}
+
+\item{new_plot}{Start a new plot or not.}
 
 \item{...}{Further inputs for salmon_bif().}
 }
@@ -29,7 +31,8 @@ Defaults give great looking bifurcation diagram (need to work out what they
 }
 \examples{
 \dontrun{
-  # beautiful bifurcation diagram:
+  # beautiful bifurcation diagram (at least as of commit 346039fd8, things
+  #  may change if defaults change) :
   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
     0), T = 1000, col = 1:6)
   salmon_bif_run(alpha_vec = seq(0.01, 40, by = 0.01), beta = c(0.8, 0, 0,
