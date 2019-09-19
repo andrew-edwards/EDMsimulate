@@ -12,7 +12,7 @@
 
 #' Results of simple spawner simulation that shows Issue #15 in rEDM
 #'
-#' @format A vector containing 99 first-differenced values of spawners from a simple
+#' @format A vector containing 100  values of spawners from a simple
 #' simulation. Using it here as it shows Issue #15 in rEDM.
 #' It is originally from sockeye-sim-edm.rnw that used Carrie's original
 #' function:
@@ -20,9 +20,5 @@
 #'  set.seed(42)
 #'  simulated = salmonTraj() # Simulated annual spawner abundances and recruitments
                              #  (as a list object)
-#'  N = simulated$S             # Just the simulated spawners
-#'  T = length(N)               # Corresponding years
-#'  tvec = 1:T
-#'  x = N[-1] - N[-length(N)]   # x = first-differences
-#'  simple_ts <- x
+#'  simple_ts = simulated$S
 "simple_ts"
