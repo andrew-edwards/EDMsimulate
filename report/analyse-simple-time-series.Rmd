@@ -31,10 +31,11 @@ urlcolor: "black"
 \end{center}
 
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = TRUE}
 library(knitr)
+library(dplyr)
 # library(here)
-opts_chunk$set(echo = FALSE, message = FALSE, warnings = FALSE)
+opts_chunk$set(echo = TRUE, message = TRUE, warnings = TRUE)
 load_all()
 ```
 
@@ -43,20 +44,69 @@ load_all()
 Converting `sockeye-sim-edm.rnw` to .Rmd, using newer (hopefully easier) way of
 doing animations. This can be a template for then analysing any time-series vector.
 
-# Motivation for us to do it
+# First-difference the data and plot in various ways
+
+```{r}
+N <- simple_ts
+T <- length(N)
+tvec <- 1:T     # corresponding time steps
+round(N, 3)
+```
+
+
+Now to first-difference the data:
+\begin{equation}
+x_t = N_{t+1} - N_t
+\end{equation}
+for $t=1, ..., T-1$; writing it this way means that `x[1]` is $x_1$ (so it
+doesn't start with $x_2$ which would get confusing).
+```{r}
+x = N[-1] - N[-length(N)]             # x = first-differences
+n = length(x)
+```
+
+I don't think you need to standardise the values for a
+univariate time series, but you do for multiple time series to get all variables
+on the same scale.
+
+Now create data fram with extra columns to represent the lagged variables.
+```{r, create.df}
+Nx.lags = data.frame("Nt" = N)
+Nx.lags = tbl_df(Nx.lags)
+Nx.lags = mutate(Nx.lags,
+                 "Ntmin1" = c(NA, Nt[-T]),
+                 "xt" = c(Nt[-1] - Nt[-T], NA),
+                 "xtmin1" = c(NA, xt[-T]),
+                 "xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
+                 )
+Nx.lags
+```
+
+[Move later] To plot a rotatable 3d plot in a windows then run the R code in chunk `rotatable`.
+
+
+```{r, rotatable, eval=FALSE, echo=FALSE}
+# Run this in console to get rotatable 3d plot of lagged data
+#  Note: different axes to plot3dmovie. Updated to use Nx.lags
+rgl::plot3d(x[-c(1, 2)], x[-c(1, n)], x[-c(n-1, n)],
+            xlab = "x(t)",
+            ylab = "x(t-1)",
+            zlab = "x(t-2)")
+```
+
+
+
+
 
 <!--
 
 This is sockeye-sim-edm.rnw, gradually moving what I need to the uncommented
  .Rmd above:
 
-% <<include=FALSE>>=     was inserted by Sweave2knitr()
-<<setupR, echo=FALSE, results='hide', warning=FALSE, comment=NA, message=FALSE>>=
-rm(list=ls())
 require(rEDM)
 require(rgl)                 # for plot3d
 require(scatterplot3d)       # for scatterplot3d()
-require(dplyr)
+
 # require(knitr)             # Need to run before using knit command
 source("../../functions.r")
 source("SockeyeSim.r")
@@ -117,44 +167,6 @@ To be added if/when necessary.
 
 \section{Simulate data}
 
-<<>>=
-set.seed(42)
-simulated = salmonTraj() # Simulated annual spawner abundances and recruitments
-                         #  (as a list object)
-N = simulated$S          # Just the simulated spawners
-T = length(N)            # Corresponding years
-tvec = 1:T
-round(N, 3)
-@
-
-\section{First-difference the data and plot in various ways}
-
-Now to first-difference the data:
-\eb
-x_t = N_{t+1} - N_t
-\ee
-for $t=1, ..., T-1$; writing it this way means that {\tt x[1]} is $x_1$ (so it
-doesn't start with $x_2$ which would get confusing).
-<<>>=
-x = N[-1] - N[-length(N)]             # x = first-differences
-n = length(x)
-@
-
-I don't think you need to standardise the values for a
-univariate time series, but you do for multiple time series to get all variables
-on the same scale.
-
-<<create.df>>=
-# Create Nx.lags with extra columns to represent lagged variables
-Nx.lags = data.frame("Nt" = N)            # Nt has length T, time is 1:T
-Nx.lags = tbl_df(Nx.lags)
-Nx.lags = mutate(Nx.lags,
-                   "Ntmin1" = c(NA, Nt[-T]),
-                   "xt" = c(Nt[-1] - Nt[-T], NA),
-                   "xtmin1" = c(NA, xt[-T]),
-                   "xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
-                   )
-@
 
 <<settings, eval=TRUE, echo=TRUE, results='hide'>>=
 late.num = 3
@@ -162,17 +174,7 @@ late.col = "red"
 plot.end.N = 100   # length(N)
 @
 
-<<rotatable, echo=FALSE, results='hide', eval=FALSE>>=
-# Plot lagged data in 3d space and can rotate it - useful to see structure
-#  Note: different axes to plot3dmovie
-plot3d(x[-c(1, 2)], x[-c(1, n)], x[-c(n-1, n)],
-       xlab = "x(t)",
-       ylab = "x(t-1)",
-       zlab = "x(t-2)")
-@
 
-If want to plot a rotatable
-3d plot then run the R code in chunk {\tt rotatable}.
 
 <<fig-setting, echo=FALSE, results='hide'>>=
 plot.end.x = plot.end.N - 1   # length(x)
