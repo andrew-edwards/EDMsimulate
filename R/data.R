@@ -20,5 +20,5 @@
 #'  set.seed(42)
 #'  simulated = salmonTraj() # Simulated annual spawner abundances and recruitments
                              #  (as a list object)
-#'  simple_ts = simulated$S
+#'  simple_ts = simulated$S  # Just the spawners
 "simple_ts"
