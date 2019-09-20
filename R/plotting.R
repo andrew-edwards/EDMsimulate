@@ -412,8 +412,17 @@ plotPanelMovie.X = function(Nx.lags,
   if(open.pdf) dev.off() # close pdf device
 }
 
-# Obtain axes ranges, from Uwe Ligges, adapted from
+##' Obtain axes ranges for scatterplot3d
+##'
+##' By Uwe Ligges, adapted from
 #  http://r.789695.n4.nabble.com/Axis-Limits-in-Scatterplot3d-td892026.html
+##' @param s3dobject Output from scatterplot3d::scatterplot3d()
+##' @return Vector (I think) of ranges of each axes
+##' @examples
+##' \dontrun
+##' s3d <- scatterplot3d::scatterplot3d(rnorm(5), rnorm(5), rnorm(5))
+##' gets3dusr(s3d)
+
 gets3dusr = function(s3dobject){
                                 es3d <-  environment(s3dobject$points3d)
                                 g3d  <-  function(name) get(name, envir=es3d)
@@ -421,7 +430,3 @@ gets3dusr = function(s3dobject){
                                   c(0, g3d("y.max")) * g3d("y.scal") + g3d("y.add"),
                                   c(g3d("z.min"), g3d("z.max")) * g3d("z.scal"))
 }
-#Example:
-#
-#s3d <- scatterplot3d(rnorm(5), rnorm(5), rnorm(5))
-#gets3dusr(s3d)
