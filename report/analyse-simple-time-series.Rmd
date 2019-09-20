@@ -13,6 +13,7 @@ fontfamily: libertine
 fontsize: 12pt
 header-includes:
     - \usepackage{setspace}
+    - \usepackage{animate}
     # - \usepackage[left]{lineno}\linenumbers\modulolinenumbers[1]
 geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
 # bibliography: "refs.bib"
