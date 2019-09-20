@@ -75,9 +75,9 @@ Nx.lags = data.frame("Nt" = N)
 Nx.lags = tbl_df(Nx.lags)
 Nx.lags = mutate(Nx.lags,
                  "Ntmin1" = c(NA, Nt[-T]),
-                 "xt" = c(Nt[-1] - Nt[-T], NA),
-                 "xtmin1" = c(NA, xt[-T]),
-                 "xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
+                 "Xt" = c(Nt[-1] - Nt[-T], NA),
+                 "Xtmin1" = c(NA, xt[-T]),
+                 "Xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
                  )
 Nx.lags
 ```
@@ -142,30 +142,6 @@ opts_chunk$set(dev = 'pdf', # 'cairo_ps',
                error = FALSE)
 @
 
-
-\rhead{Simulated Sockeye}
-\pagestyle{fancy}
-\thispagestyle{empty}
-
-\begin{center}
-{\LARGE Simulated Sockeye Salmon Spawners\\
-  ~\\
-  {\tt sockeye-sim-edm.rnw}}\\
-  ~\\
-\today{}
-\end{center}
-
-Going to simulate Sockeye Salmon spawner abundances from Carrie's
-{\tt salmonTraj()} function, plot in various ways, and use EDM to make
-predictions. \\
-
-\tableofcontents
-
-\section{Details of model}
-
-To be added if/when necessary.
-
-\section{Simulate data}
 
 
 <<settings, eval=TRUE, echo=TRUE, results='hide'>>=
