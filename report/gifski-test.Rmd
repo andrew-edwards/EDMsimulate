@@ -1,0 +1,52 @@
+---
+title: |
+   Test of animated graphics
+author: |
+  Andrew M. Edwards
+output:
+  bookdown::pdf_document2:
+    number_sections: no
+    toc: no
+    # template: "article.tex"
+    keep_tex: true
+fontfamily: libertine
+fontsize: 12pt
+header-includes:
+    - \usepackage{setspace}
+    - \usepackage{animate}
+    # - \usepackage[left]{lineno}\linenumbers\modulolinenumbers[1]
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+# bibliography: "refs.bib"
+# csl: "cfjas.csl"
+# link-citations: yes
+linkcolor: "black"
+urlcolor: "black"
+---
+
+<!-- To run:
+  rmarkdown::render("gifski-test.Rmd")
+   or (probably) the knit button in RStudio.
+   If it doesn't work for you try deleting line
+   16 above:
+       - \usepackage{animate}
+   If you installed tinytex (not MikTeX) for latex I think that line might not
+   be needed -->
+
+
+```{r, echo = FALSE, message = FALSE, warning = TRUE}
+library(knitr)
+if (packageVersion('knitr') < '1.20.14') {
+  remotes::install_github('yihui/knitr')
+}
+library(gifski)
+opts_chunk$set(echo = TRUE, message = TRUE, warnings = TRUE)
+# load_all()
+```
+
+Trying gifski knitr example from https://yihui.name/en/2018/08/gifski-knitr/ .
+
+```{r, animation.hook='gifski'}
+for (i in 1:2) {
+  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
+}
+```
