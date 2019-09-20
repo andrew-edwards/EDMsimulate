@@ -33,7 +33,11 @@ urlcolor: "black"
 
 ```{r, echo = FALSE, message = FALSE, warning = TRUE}
 library(knitr)
+if (packageVersion('knitr') < '1.20.14') {
+  remotes::install_github('yihui/knitr')
+}
 library(dplyr)
+library(gifski)
 # library(here)
 opts_chunk$set(echo = TRUE, message = TRUE, warnings = TRUE)
 load_all()
@@ -76,8 +80,8 @@ Nx.lags = tbl_df(Nx.lags)
 Nx.lags = mutate(Nx.lags,
                  "Ntmin1" = c(NA, Nt[-T]),
                  "Xt" = c(Nt[-1] - Nt[-T], NA),
-                 "Xtmin1" = c(NA, xt[-T]),
-                 "Xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
+                 "Xtmin1" = c(NA, Xt[-T]),
+                 "Xtmin2" = c(NA, NA, Xt[-c(T-1, T)]),
                  )
 Nx.lags
 ```
@@ -94,6 +98,13 @@ rgl::plot3d(x[-c(1, 2)], x[-c(1, n)], x[-c(n-1, n)],
             zlab = "x(t-2)")
 ```
 
+
+Testing animation hook with gifski:
+```{r, animation.hook='gifski'}
+for (i in 1:2) {
+  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
+}
+```
 
 
 
