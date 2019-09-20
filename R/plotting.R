@@ -150,13 +150,13 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
   if(start != 1) warning("Not properly implemented yet for start > 1;
                                 colours won't work.")
   Nx.lags = Nx.to.NX.format(Nx.lags)    # converts older format xt headings to Xt
-  Nx.lags.use = Nx.lags    # keep as Nx.lags.use for now - columns need to be correct
+  Nx.lags = Nx.lags    # keep as Nx.lags for now - columns need to be correct
 
   # Axes ranges:
-  Nt.max.abs = max( abs( range(Nx.lags.use[start:end, "Xt"], na.rm=TRUE) ) )
+  Nt.max.abs = max( abs( range(Nx.lags[start:end, "Xt"], na.rm=TRUE) ) )
   Nt.axes.range = c(0, Nt.max.abs*1.04)         # Expand else points can hit edge
 
-  Xt.max.abs = max( abs( range(Nx.lags.use[start:end, "Xt"], na.rm=TRUE) ) )
+  Xt.max.abs = max( abs( range(Nx.lags[start:end, "Xt"], na.rm=TRUE) ) )
   Xt.axes.range = c(-Xt.max.abs, Xt.max.abs)    # Make axes symmetric, though
                                                 #  axs="i" doesn't work for 3d
   if(open.pdf) pdf(pdf.filename, height = figheight, width = figwidth)
@@ -214,11 +214,11 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
                main = paste0("Time t=", iii))       # empty plot
           if(iii > 1.5)
             {
-               segments( start:(iii-1), pull(Nx.lags.use[start:(iii-1), "Nt"]),
-                       (start+1):iii, pull(Nx.lags.use[(start+1):iii, "Nt"]),
+               segments( start:(iii-1), pull(Nx.lags[start:(iii-1), "Nt"]),
+                       (start+1):iii, pull(Nx.lags[(start+1):iii, "Nt"]),
                         col = col.plot.lines) # lines() will not use vector col
             }
-           points(start:iii, pull(Nx.lags.use[start:iii, "Nt"]),
+           points(start:iii, pull(Nx.lags[start:iii, "Nt"]),
                   type = pt.type, pch = pch.plot,
                   col = col.plot)
            # X(t) vs t:
@@ -232,15 +232,15 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
           abline(v = 0.5*XtLoc, col="black")
           if(iii > 1.5)
             {
-               segments( start:(iii-1), pull(Nx.lags.use[start:(iii-1), "Xt"]),
-                       (start+1):iii, pull(Nx.lags.use[(start+1):iii, "Xt"]),
+               segments( start:(iii-1), pull(Nx.lags[start:(iii-1), "Xt"]),
+                       (start+1):iii, pull(Nx.lags[(start+1):iii, "Xt"]),
                         col = col.plot.lines) # lines() will not use vector col
             }
-           points(start:iii, pull(Nx.lags.use[start:iii, "Xt"]),
+           points(start:iii, pull(Nx.lags[start:iii, "Xt"]),
                   type = pt.type, pch = pch.plot,
                   col = col.plot)
                                                      # '1d phase plot':
-           points(rep(XtLoc, iii-start+1), pull(Nx.lags.use[start:iii, "Xt"]),
+           points(rep(XtLoc, iii-start+1), pull(Nx.lags[start:iii, "Xt"]),
                   type = pt.type, pch = pch.plot,
                   col = col.plot)
 
@@ -264,7 +264,7 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
           if(cobwebbing)
             {
               # Do lines for cobwebbin
-              Nvals = rep( pull(Nx.lags.use[start:iii, "Nt"]), each = 2)
+              Nvals = rep( pull(Nx.lags[start:iii, "Nt"]), each = 2)
               Nvals = Nvals[-1]
               Nvals = Nvals[-length(Nvals)]
               len = length(Nvals)
@@ -278,17 +278,17 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
             } else
             {
               # Join each point to the next
-              segments(pull(Nx.lags.use[start:(iii-1), "Ntmin1"]),
-                       pull(Nx.lags.use[start:(iii-1), "Nt"]),
-                       pull(Nx.lags.use[(start+1):iii, "Ntmin1"]),
-                       pull(Nx.lags.use[(start+1):iii, "Nt"]),
+              segments(pull(Nx.lags[start:(iii-1), "Ntmin1"]),
+                       pull(Nx.lags[start:(iii-1), "Nt"]),
+                       pull(Nx.lags[(start+1):iii, "Ntmin1"]),
+                       pull(Nx.lags[(start+1):iii, "Nt"]),
                        col = col.plot.lines) # lines() will not use vector of col
             }
         }
       if(iii > 1.5)
         {
-          points(pull(Nx.lags.use[start:iii, "Ntmin1"]),
-               pull(Nx.lags.use[start:iii, "Nt"]),
+          points(pull(Nx.lags[start:iii, "Ntmin1"]),
+               pull(Nx.lags[start:iii, "Nt"]),
                type = pt.type, pch = pch.plot,
                col = col.plot)          # start row has NA's, gets ignored
         }
@@ -308,7 +308,7 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
         {
           if(cobwebbing)
             {
-               xvals = rep( pull(Nx.lags.use[start:iii, "Xt"]), each = 2)
+               xvals = rep( pull(Nx.lags[start:iii, "Xt"]), each = 2)
                xvals = xvals[-1]
                xvals = xvals[-length(xvals)]
                lenx = length(xvals)
@@ -319,17 +319,17 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
                         col = col.cobweb.lines)
             } else
             {  # Just join consecutive points with lines
-               segments(pull(Nx.lags.use[start:(iii-1), "Xtmin1"]),
-                        pull(Nx.lags.use[start:(iii-1), "Xt"]),
-                        pull(Nx.lags.use[(start+1):iii, "Xtmin1"]),
-                        pull(Nx.lags.use[(start+1):iii, "Xt"]),
+               segments(pull(Nx.lags[start:(iii-1), "Xtmin1"]),
+                        pull(Nx.lags[start:(iii-1), "Xt"]),
+                        pull(Nx.lags[(start+1):iii, "Xtmin1"]),
+                        pull(Nx.lags[(start+1):iii, "Xt"]),
                         col = col.plot.lines)
             }
         }
       if(iii > 1.5)
         {
-          points(pull(Nx.lags.use[start:iii, "Xtmin1"]),
-                 pull(Nx.lags.use[start:iii, "Xt"]),
+          points(pull(Nx.lags[start:iii, "Xtmin1"]),
+                 pull(Nx.lags[start:iii, "Xt"]),
                  type = pt.type, pch = pch.plot,
                  col = col.plot)           # start row has NA's, get ignored
         }
@@ -357,9 +357,9 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
                     col = "lightgrey")
       # Obtain x-y co-ords of points for segments:
       proj.pts = scat$xyz.convert(
-                                  pull(Nx.lags.use[start:iii, "Xtmin2"]),
-                                  pull(Nx.lags.use[start:iii, "Xtmin1"]),
-                                  pull(Nx.lags.use[start:iii, "Xt"]) )
+                                  pull(Nx.lags[start:iii, "Xtmin2"]),
+                                  pull(Nx.lags[start:iii, "Xtmin1"]),
+                                  pull(Nx.lags[start:iii, "Xt"]) )
       if(iii > 3.5)
         {   # Think the indexing will now be 1:(iii-start), need start value also
             segments(proj.pts$x[1:(iii-start)], proj.pts$y[1:(iii-start)],
@@ -370,9 +370,9 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
       # The points
       if(iii > 2.5)
         {
-          scat$points3d(pull(Nx.lags.use[start:iii, "Xtmin2"]),
-                        pull(Nx.lags.use[start:iii, "Xtmin1"]),
-                        pull(Nx.lags.use[start:iii, "Xt"]),
+          scat$points3d(pull(Nx.lags[start:iii, "Xtmin2"]),
+                        pull(Nx.lags[start:iii, "Xtmin1"]),
+                        pull(Nx.lags[start:iii, "Xt"]),
                         type = pt.type, pch = pch.plot,
                         col = col.plot)
         }
@@ -384,7 +384,7 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
       # Predictions vs observations for E values in Evec
       if(!is.null(Evec))
         {
-          all.pred = select(Nx.lags.use, starts_with("XtPredEeq"))
+          all.pred = select(Nx.lags, starts_with("XtPredEeq"))
           pred.max.abs = max( abs( range(all.pred, na.rm=TRUE) ) )
           pred.max.abs = max(pred.max.abs, Xt.max.abs)  # Latter is observed
           predObs.axes.range = c(-pred.max.abs, pred.max.abs)
