@@ -76,7 +76,9 @@ plotLag2d = function(x,
 
 # Copying over, probably need some bits divided out into smaller functions, but
 # this does everything so start with it.
-plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
+plotPanelMovie.X = function(Nx.lags,
+                            pdf.filename = NULL,
+                            rhoForE = NULL,
                      Evec = NULL, Ecols = NA,
                      includeTimeSeries = TRUE,
                      start = 1,
@@ -91,7 +93,7 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
                      y.lab = expression("X(t-1)"),
                      z.lab = expression("X(t)"),
                      figheight = figheight, figwidth = figwidth,
-                     open.pdf = TRUE,
+                     open.pdf = FALSE,
                      ...)
   {
   # Create figure with six panels as a movie, using newer X(t) notation.
@@ -149,8 +151,6 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
   #  time = 1:max.time
   if(start != 1) warning("Not properly implemented yet for start > 1;
                                 colours won't work.")
-  Nx.lags = Nx.to.NX.format(Nx.lags)    # converts older format xt headings to Xt
-  Nx.lags = Nx.lags    # keep as Nx.lags for now - columns need to be correct
 
   # Axes ranges:
   Nt.max.abs = max( abs( range(Nx.lags[start:end, "Xt"], na.rm=TRUE) ) )
@@ -339,7 +339,7 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
       # Empty plot to get started
       par(mgp = par.mgp.3d)
       par(mai = c(0.1, 0.1, 0.1, 0.1)) # scat..3d resets mar, think mai still has an effect
-      scat = scatterplot3d(0, 0, 0,
+      scat = scatterplot3d::scatterplot3d(0, 0, 0,
                 xlab = x.lab, ylab = y.lab, zlab = z.lab,
                 xlim = Xt.axes.range, ylim = Xt.axes.range, zlim = Xt.axes.range,
                 type = "n", box = FALSE,
@@ -411,3 +411,17 @@ plotPanelMovie.X = function(Nx.lags, pdf.filename, rhoForE = NULL,
   }                                # for(iii in start:end)
   if(open.pdf) dev.off() # close pdf device
 }
+
+# Obtain axes ranges, from Uwe Ligges, adapted from
+#  http://r.789695.n4.nabble.com/Axis-Limits-in-Scatterplot3d-td892026.html
+gets3dusr = function(s3dobject){
+                                es3d <-  environment(s3dobject$points3d)
+                                g3d  <-  function(name) get(name, envir=es3d)
+                                c(c(g3d("x.min"), g3d("x.max")) * g3d("x.scal"),
+                                  c(0, g3d("y.max")) * g3d("y.scal") + g3d("y.add"),
+                                  c(g3d("z.min"), g3d("z.max")) * g3d("z.scal"))
+}
+#Example:
+#
+#s3d <- scatterplot3d(rnorm(5), rnorm(5), rnorm(5))
+#gets3dusr(s3d)
