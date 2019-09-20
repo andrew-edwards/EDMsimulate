@@ -1,0 +1,979 @@
+% sockeye-sim-edm.rnw - converting sockeye-sim-edm.Snw to use knitr.
+%  19th Oct 2017.
+% sockeye-sim-edm.Snw. runs salmonTraj() to simulate data and then does EDM
+%  analysis. Using ricker-sim.Snw as a template. 27th September 2017.
+
+% Need to run using  pdflatex  since it needs .pdf figures for the animations.
+
+\documentclass[11pt]{article}
+\input{../../preamble}
+
+\begin{document}
+
+% These were Sweave options, think most can still get used.
+% Most useful options (with defaults):
+% echo        = TRUE     - includes R code in output file
+% keep.source = FALSE    - when echoing, if TRUE then original source is copied to the file, otherwise deparsed source is echoed.
+% eval        = TRUE     - if FALSE then chunk is not evaluated
+% results     = VERBATIM - R output included verbatim, if TEX output is already proper latex and included as is,
+%                          if HIDE then all output is completely suppressed (but the code executed - good for admb) results options should all be lower case (else get warnings)
+% pdf         = TRUE     - whether .pdf figures shall be generated
+% eps         = TRUE     - whether .eps figures shall be generated
+% strip.white = FALSE    - if true then blank lines at beginning and end of output are removed. If all, then all blank lines are removed.
+% width       = 6        - width of figures in inches
+% height      = 6        - height of figures in inches
+% fig         = FALSE    - whether the code chunk produces graphical output (only one per chunk)
+
+% \setkeys{Gin}{width=6in}     % from googling sweave figure bigger.
+%  It will set this for the rest of document [doesn't width do that in the above?]
+
+% <<include=FALSE>>=     was inserted by Sweave2knitr()
+<<setupR, echo=FALSE, results='hide', warning=FALSE, comment=NA, message=FALSE>>=
+rm(list=ls())
+require(rEDM)
+require(rgl)                 # for plot3d
+require(scatterplot3d)       # for scatterplot3d()
+require(dplyr)
+# require(knitr)             # Need to run before using knit command
+source("../../functions.r")
+source("SockeyeSim.r")
+figwidth = 5.7 #*1.5
+figheight = 7 # 6
+png.res = 300         # png resolution
+# sigma = 0                   # standard deviation of process noise -- needed
+                            #  here for headings etc.
+
+# Options for knitr
+# cache=TRUE tells knitr to build all the plots into a cache directory
+# which is defined here as knitr-cache/
+# When the latex part is run, these plots will be inserted automatically.
+# If you WANT TO REMAKE THE PLOTS, YOU MUST DELETE THIS DIRECTORY.
+# If you don't, the cached plots from last time will be used.
+opts_chunk$set(dev = 'pdf', # 'cairo_ps',
+               # dev.args=list(type="cairo"),
+               fig.path = 'knitr-cache/',
+               # fig.dpi = png.res,  # think not to use for .pdf
+               # fig.dpi = 96,
+               fig.width = figwidth,
+               fig.height = figheight,
+               fig.align = 'center',
+               echo = TRUE,         # same as .Snw was
+               results = 'markup',
+               comment = NA,
+               prompt = TRUE,
+               message = FALSE,
+               warning = FALSE,
+               cache = TRUE,
+               cache.path = 'knitr-cache/',
+               autodep = TRUE,
+               error = FALSE)
+@
+
+
+\rhead{Simulated Sockeye}
+\pagestyle{fancy}
+\thispagestyle{empty}
+
+\begin{center}
+{\LARGE Simulated Sockeye Salmon Spawners\\
+  ~\\
+  {\tt sockeye-sim-edm.rnw}}\\
+  ~\\
+\today{}
+\end{center}
+
+Going to simulate Sockeye Salmon spawner abundances from Carrie's
+{\tt salmonTraj()} function, plot in various ways, and use EDM to make
+predictions. \\
+
+\tableofcontents
+
+\section{Details of model}
+
+To be added if/when necessary.
+
+\section{Simulate data}
+
+<<>>=
+set.seed(42)
+simulated = salmonTraj() # Simulated annual spawner abundances and recruitments
+                         #  (as a list object)
+N = simulated$S          # Just the simulated spawners
+T = length(N)            # Corresponding years
+tvec = 1:T
+round(N, 3)
+@
+
+\section{First-difference the data and plot in various ways}
+
+Now to first-difference the data:
+\eb
+x_t = N_{t+1} - N_t
+\ee
+for $t=1, ..., T-1$; writing it this way means that {\tt x[1]} is $x_1$ (so it
+doesn't start with $x_2$ which would get confusing).
+<<>>=
+x = N[-1] - N[-length(N)]             # x = first-differences
+n = length(x)
+@
+
+I don't think you need to standardise the values for a
+univariate time series, but you do for multiple time series to get all variables
+on the same scale.
+
+<<create.df>>=
+# Create Nx.lags with extra columns to represent lagged variables
+Nx.lags = data.frame("Nt" = N)            # Nt has length T, time is 1:T
+Nx.lags = tbl_df(Nx.lags)
+Nx.lags = mutate(Nx.lags,
+                   "Ntmin1" = c(NA, Nt[-T]),
+                   "xt" = c(Nt[-1] - Nt[-T], NA),
+                   "xtmin1" = c(NA, xt[-T]),
+                   "xtmin2" = c(NA, NA, xt[-c(T-1, T)]),
+                   )
+@
+
+<<settings, eval=TRUE, echo=TRUE, results='hide'>>=
+late.num = 3
+late.col = "red"
+plot.end.N = 100   # length(N)
+@
+
+<<rotatable, echo=FALSE, results='hide', eval=FALSE>>=
+# Plot lagged data in 3d space and can rotate it - useful to see structure
+#  Note: different axes to plot3dmovie
+plot3d(x[-c(1, 2)], x[-c(1, n)], x[-c(n-1, n)],
+       xlab = "x(t)",
+       ylab = "x(t-1)",
+       zlab = "x(t-2)")
+@
+
+If want to plot a rotatable
+3d plot then run the R code in chunk {\tt rotatable}.
+
+<<fig-setting, echo=FALSE, results='hide'>>=
+plot.end.x = plot.end.N - 1   # length(x)
+@
+
+\begin{figure}[tp]
+<<just-data, echo=FALSE, out.width='110%'>>=
+# Use plotPanelMovie.df2() to just plot a modified final panel of the
+#  movie (no EDM calcs, no cobwebbing). Keep late.col since useful.
+plotPanelMovie.df2(Nx.lags = Nx.lags, "knitr-cache/justData.pdf",
+          start = 1,
+          end = plot.end.x,
+          only.final.plot = TRUE,
+          cobwebbing = FALSE,
+          late.num = late.num,
+          late.col = late.col,
+          open.pdf = FALSE
+          )
+@
+\caption{Before doing EDM, this shows the data in various ways:
+   time series of $N_t$ and $x_t$,
+   plus phase plots of $N_t$ vs $N_{t-1}$, $x_t$ vs $x_{t-1}$ (as used for $E=2$)
+   and $x_t$ vs $x_{t-1}$ vs $x_{t-2}$ (as used for $E=3$).
+   The last \Sexpr{late.num} points are in \Sexpr{late.col}, with the final
+   one as a star.
+   In the $x_t$ time series, the values of $x_t$ are also plotted in
+   a vertical line (with $t<0$) which is the one-dimensional equivalent of
+   a phase plot for $E=1$. Animated version (with EDM results) is in
+   Figure~\ref{fig:panelMovie}.}
+\end{figure}
+
+\section{EDM: $\rho$ versus $E$ for two libraries and leave-one-out}
+
+First library is half of the points, second is leave-one-out,
+third is longer library of three-quarters of the points.
+
+<<>>=
+# Set range of E values (can extend based on the results if necessary) and tau
+Erange = 1:10
+tau=1
+@
+
+Half the points for the library:
+
+<<echo=TRUE>>=
+# Set up library and prediction. Try half the points for library:
+half = round(n/2)
+lib = c(1, half)
+pred = c(half+1, n)
+
+simplex.out = simplex(x, lib, pred, E = Erange, tau=tau)
+simplex.out
+@
+
+Leave-one-out:
+<<>>=
+simplex.out2 = simplex(x, E = Erange, tau=tau)
+simplex.out2
+@
+
+Larger library using three-quarters of the data:
+<<>>=
+larger = 1.5 * half
+lib3 = c(1, larger)
+pred3 = c(larger + 1, n)
+
+simplex.out3 = simplex(x, lib3, pred3, E = Erange, tau=tau)
+simplex.out3
+@
+
+<<rho-vs-E-settings, echo=FALSE, results='hide'>>=
+cols = c("red", "blue", "green")
+type1 = "o"
+@
+
+
+\begin{figure}[tp]
+<<rho-vs-E, echo=FALSE, fig.height=figheight/1.5, fig.width=figwidth/1.5>>=
+plot(simplex.out$E, simplex.out$rho,
+     ylim = c(0,1),
+     col = cols[1],
+     type = type1,
+     xlab = "Embedding Dimension (E)",
+     ylab = "Forecast Skill (rho)"
+     )
+points(simplex.out2$E, simplex.out2$rho,
+     col = cols[2],
+     type = type1)
+points(simplex.out3$E, simplex.out3$rho,
+     col = cols[3],
+     type = type1)
+legend("bottomright", pch=1, c("library 1/2", "leave-one-out", "library 3/4"),
+       col=cols, cex = 0.7)
+@
+\caption{Forecasting skill $\rho$ as a function of embedding
+  dimension $E$ using library of \Sexpr{lib[1]}:\Sexpr{lib[2]} and prediction of
+  \Sexpr{pred[1]}:\Sexpr{pred[2]}, or using leave-one-out, or using longer
+  library of \Sexpr{lib3[1]}:\Sexpr{lib3[2]} (with prediction of
+  \Sexpr{pred3[1]}:\Sexpr{pred3[2]}). Leave-one-out seems to give the
+  `smoothest' kind of results -- others look a bit erratic but may be due
+  to small numbers of predictions (predicting less values for the longer
+  library, which may affect $\rho$).}
+\label{fig:rho-vs-E}
+\end{figure}
+
+\subsection{Conclusion -- which library to go forward with}
+
+So leave-one-out [check manually for new data sets since not automated]
+gives the highest overall $\rho$, namely
+$\rho=$\Sexpr{round(simplex.out2[which.max(simplex.out2[,"rho"]), "rho"], 3)}
+with $E=$\Sexpr{simplex.out2[which.max(simplex.out2[,"rho"]), "E"]}.
+So from now on just use that for the library setting.
+
+\section{Extended results for the library that we're going forward with}
+
+
+So the lagged sequence of data points (from Sugihara and May, 1990) is
+$\{x_t, x_{t-\tau}, x_{t-2\tau}, ..., x_{t-(E-1)\tau} \}$ which for $E=1$
+(and $\tau=1$) is just
+$\{x_t\}$, and the idea is that you predict $x_{t+1}$.
+% So you can't predict time step [not row] \Sexpr{pred[1]} (as you need the
+% previous value and that is not available due to the value of {\tt pred}),
+% i.e. $x_{\Sexpr{pred[1]}}$, but you can predict $x_{\Sexpr{pred[1]+1}}$.
+
+More generally, you need $E$ values to make a point in $E$-dimensional space,
+you form the
+simplex of $E+1$ nearest neighbours from the library, and then project ahead
+once to estimate where $x_{t+1}$ will likely end up.
+
+% \subsection{Observations and predictions}
+
+% <<echo=false, results=hide, eval=false>>=
+% png("simp.png", height = figheight, width = 1.5*figwidth,
+%    units = "in", res = png.res)
+%plot(simp.E1$model_output$time, simp.E1$model_output$obs,
+%     xlim = c(-10, n+10),
+%     xlab = "Time",
+%     ylab = "Value") # original data (minus first point)
+%points(simp.E1$model_output$pred, pch=20, col=cols[1])
+%points(simp.E3$model_output$pred, pch=20, col=cols[2])
+%legend("bottomleft", pch=c(1, 20, 20),
+%       c("data", "E=1 fit", "E=3 fit"),
+%       col=c("black", cols))
+%dev.off()
+% @
+
+% \onefigpng{simp}{Original observations (except first point and final ones)
+% and the predicted ones
+% (red). For $E=1$ there are Sexpr{sum(!is.na(simp.E1$model_output$pred))}
+% predicted values;
+% for the $E=3$ case there are
+% Sexpr{sum(!is.na(simp.E3$model_output$pred))}. This is because {\tt pred is}
+% c(\Sexpr{pred[1]}, \Sexpr{pred[2]}) and so there are \Sexpr{diff(pred)+1}
+% values available to use for prediction but you need $E$ values before a
+% predicted value; see text.}{6}
+
+<<echo=FALSE, eval=FALSE>>=
+#% rho.maybe =
+#    cor(simp.E1$model_output$obs, simp.E1$model_output$pred, use="complete.obs")
+#                                        # So this should be rho for E=1, and
+#                                        #  presumably shows up in the stats
+#                                        #  data.frame?
+#rho.maybe
+#simp.E1$stats$rho              # Good. This is also:
+#
+#simplex.out[1,"rho"]
+#simplex.out[3,"rho"]
+
+# So what does simplex() actually do???
+# simplex  # not running
+# I don't get what things like
+#    model$set_time(time)
+#    model$run()
+#  do (though first presumably assigns model$set_time to be time?).
+# Thinking that
+#    model = new(LNLP)
+#  is the key - LNLP seems to be a C++ compiled object by Hao Ye:
+#   https://www.rdocumentation.org/packages/rEDM/versions/0.4.4/topics/LNLP
+#
+# So being already compiled means that we can't really delve into the details.
+@
+
+Figure~\ref{fig:rho-vs-E} already had some results for leave-one-out,
+but doing from scratch here since need the extensive results with
+all the predictions and observations
+in order to make Figure~\ref{fig:panelMovie}.
+
+<<leaveone>>=
+leave.one = simplex(x, stats_only = FALSE)
+summary(leave.one)
+# results now (2019) in a data frame, where "model\_output" column is a data
+# frame of the full results (used to be a list)
+leave.one[1,]
+# summary(leave.one[[1]]$model_output)
+summary(leave.one[,"model_output"][[1]])  # New format
+head(leave.one[,"model_output"][[1]])
+tail(leave.one[,"model_output"][[1]])
+
+# Note that first value of time is 2 in that, and in:
+summary(leave.one[,"model_output"][[3]])  # New format
+# (they should probably have kept time as each row), but that with E=3
+# this one has 3 NaN's in the prediction column. Namely:
+head(leave.one[,"model_output"][[3]])
+# and
+tail(leave.one[,"model_output"][[3]])
+@
+
+Okay, that makes sense. Now add extra columns to {\tt Nx.lags}, one for
+each value of $E$ that we want to look at.
+
+<<>>=
+Evec = 1:5               # Values of E to look at; assumes these correspond
+                         #  to elements of leave.one[[]]
+# Also assuming that the results dataframe starts at time = 2 in first row.
+#  If want to change that then have to edit the indexing in the following.
+dim(Nx.lags)
+head(Nx.lags)
+tail(Nx.lags)
+# Verify that the xt and obs agree, having worked out the shift
+check1 = Nx.lags$"xt"
+check2 = leave.one[,"model_output"][[3]]$obs
+         # leave.one[[3]]$model_output$obs    # Just pick a value of E
+length(check2)                                # One less because rEDM
+                                              #  removes the first obs, maybe
+                                              #  because you know that it can
+                                              #  never be predicted.
+check2 = c(NA, check2)
+range(check2 - check1, na.rm=TRUE)
+if(max(abs(range(check2 - check1, na.rm=TRUE))) > 0) stop("Check check2.")
+
+rhoForE = vector()                    # rho corresponding to each E
+for(j in 1:length(Evec))
+  {
+    new.col.name = paste0("xtPredEeq", Evec[j])
+    Nx.lags = mutate(Nx.lags,
+                     new = c(NA, leave.one[,"model_output"][[j]]$pred))
+    names(Nx.lags)[names(Nx.lags) == "new"] = new.col.name
+    rhoForE[j] =  leave.one[j, "rho"]  # leave.one[[j]]$stats[,"rho"]
+  }
+
+head(Nx.lags)
+@
+
+% **Edit code to plot $E$ vs $rho$. Not sure why I said that, as already done
+%  in earlier calculations. I meant to do from Nx.lags. This is fine for now,
+%  just not very general.
+
+<<echo=FALSE, results='hide'>>=
+## ----rho vs. E
+##cols = c("red", "blue", "green")
+# png("rho-vs-E-leaveone.png", height = figheight/1.5, width = figwidth/1.5,
+#    units = "in", res = png.res)
+# par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+#plot(simplex.out$E, simplex.out$rho,
+#     ylim = c(0,1),
+#     col = cols[1],
+#     xlab = "Embedding Dimension (E)",
+#     ylab = "Forecast Skill (rho)"
+#     )
+#points(simplex.out2$E, simplex.out2$rho,
+#     col = cols[2])
+#points(simplex.out3$E, simplex.out3$rho,
+#     col = cols[3])
+#legend("bottomright", pch=1, c("library", "leave-one-out", "longer library"),
+#       col=cols, cex = 0.7)
+# dev.off()
+@
+
+% \onefigpng{rho-vs-E-leaveone}{Forecasting skill $\rho$ as a function of embedding
+%  dimension $E$ using library of \Sexpr{lib[1]}:\Sexpr{lib[2]} and prediction of
+%  \Sexpr{pred[1]}:\Sexpr{pred[2]}, or using leave-one-out, or using longer
+%  library of \Sexpr{lib3[1]}:\Sexpr{lib3[2]} (with prediction of
+%  \Sexpr{pred3[1]}:\Sexpr{pred3[2]}). Leave-one-out seems to give the
+%  `smoothest' kind of results -- others look a bit erratic but may be due
+%  to small numbers of predictions (predicting less values for the longer
+%  library, which may affect $\rho$).}{4}
+
+
+% Do animation this original way, else knitr creates one .pdf for each frame
+<<eval=TRUE, echo=FALSE, results='hide'>>=
+plotPanelMovie.df2(Nx.lags = Nx.lags, "knitr-cache/panelMovie.pdf",
+          Evec = Evec, Ecols = c("orange", "blue", "green", "red", "black"),
+          rhoForE = rhoForE, height = 1.4*figheight, width = 1.2*figwidth,
+          end = plot.end.x,
+          late.num = late.num,
+          late.col = late.col
+          )             #end = plot.end.x,
+@
+\begin{figure}
+\begin{center}
+\animategraphics[controls, width=1.2\linewidth]{2}{knitr-cache/panelMovie}{}{}
+\end{center}
+\caption{Animation of figures, showing time series of $N_t$ and $x_t$,
+  phase plots of $N_t$ vs $N_{t-1}$, $x_t$ vs $x_{t-1}$ (as used for $E=2$)
+  and $x_t$ vs $x_{t-1}$ vs $x_{t-2}$ (as used for $E=3$),
+  and prediction of $x_t$ vs its observed value. The prediction
+  uses the previous points $x_{t-E}$, $x_{t-E+1}$, ..., $x_{t-1}$, which is
+  slightly different formulation to earlier explanation (for which we were
+  predicting
+  $x_{t+1}$). In the $x_t$ time series, the values of $x_t$ are also plotted in a
+  vertical line (with $t<0$) which is the one-dimensional equivalent of
+  a phase plot for $E=1$.
+  \label{fig:panelMovie}}
+\end{figure}
+
+
+
+\clearpage
+
+
+\section{Varying tp, the prediction horizon (how far ahead to forecast)}
+
+Default for {\tt tp} is 1, but can make it a vector.
+Using leave-one-out (code up to now had this with {\tt lib} and {\tt pred}).
+
+<<>>=
+tp.vec = 1:10
+simp.tpE1 = simplex(x, E = 1, tp = tp.vec)
+simp.tpE2 = simplex(x, E = 2, tp = tp.vec)
+simp.tpE3 = simplex(x, E = 3, tp = tp.vec)
+simp.tpE4 = simplex(x, E = 4, tp = tp.vec)
+head(simp.tpE3)
+@
+
+Still not really quite sure what the {\tt const\_*} values are -- they are for
+the `constant predictor', which I think is just a simple model (see Sugihara
+and May 1990 -- it could be the autoregressive linear model mentioned in their
+Fig.~4b).
+
+\begin{figure}[tp]
+<<vary-tp, echo=FALSE, fig.height=figheight/1.5, fig.width=figwidth/1.5>>=
+plot(simp.tpE1$tp, simp.tpE1$rho,
+     ylim = c(0,1),
+     col = cols[1],
+     pch = 20,
+     type = "o",
+     xlab = "Time to Prediction (tp)",
+     ylab = "Forecast Skill (rho)")
+points(simp.tpE2$tp, simp.tpE2$rho, type = "o")
+points(simp.tpE3$tp, simp.tpE3$rho, type = "o",
+     col = cols[2], pch=20)
+points(simp.tpE4$tp, simp.tpE4$rho, type = "o",
+     col = cols[3], pch=20)
+legend("topright", pch=c(20, 1, 20), c("E=1", "E=2", "E=3", "E=4"),
+       col=c(cols[1], "black", cols[2], cols[3]))
+@
+\caption{Forecast skill as a function of how far ahead we are
+predicting. Best is clearly for $t_p = 1$, so sticking with that from now on.
+Saved equivalent figure that used {\tt lib} and {\tt pred} as
+{\tt vary-tp-lib-pred.png} -- that shows a general decline and then a
+second peak (not as high) at roughtly $t_p = 7$ or $8$.
+For $E=1$ and $2$ it also clearly has another peak at $t_p = 4$.}
+\label{fig:vary-tp}
+\end{figure}
+
+\section{{\tt s\_map} function to test for nonlinearity}
+
+\subsection{From Chang et al.~(2007)}
+
+Based on understanding this better from Chang et al.~(2017)
+`EDM for Beginners' paper (though I'm not sure their {\bf d} vectors are
+actually vectors):
+
+S-map technique uses a weighting function
+$w({\bf d}) = \exp(- \theta {\bf d} /d_m)$
+where ${\bf d}$ is a vector of the distance between the predictee and each
+library point, $d_m$ is the mean distance of `all paired library points'
+(presumably just the mean of d?) and $\theta$ is a parameter representing
+the degree of nonlinearity.
+
+So if $\theta = 0$, all library points have the same weight regardless of the
+local state of the predictee, as $w({\bf d})=1$ so all point are equally
+weighted, no matter how close they are to the predictee. This just reduces to a
+linear autoregressive model of order $E$, because the model uses $E$-dimensions
+and all data to predict the next point, which is what an autoregressive model
+does.
+
+If $\theta >0$ then the weights $w({\bf d})$ depend on the local state of
+the predictee, i.e.~where you are in the state space. Thus you get different
+predictions depending where you are, which is a `characteristic' of nonlinear
+systems, hence they call the system `nonlinear'.
+
+So $\theta = 0$ is not the same as simplex, which uses the $E+1$ nearest
+neighbours (weighted equally); though see below where still haven't fully
+figured this out.
+
+So the process is meant to be:
+\begin{itemize}
+  \item use {\tt simplex()} to find the optimal $E$ (and here we've also compared
+    leave-one-out to a couple of choices of library);
+  \item use {\tt s\_{map}()} for that $E$ to find if $\theta > 0$ or not.
+\end{itemize}
+
+I think there's a built-in significance test to determine that last point.
+So if $\theta = 0$ is best you would stick with simplex. Presumably
+$\rho_{\tt simplex} > \rho_{{\tt smap~with~}\theta=0}$ (using obvious notation), as
+{\tt simplex} uses $E+1$ nearest neighbours but {\tt s\_map} with $\theta=0$ uses
+all neighbours (all points).
+See below for some numbers.
+
+\subsection{From Deyle et al.~(2013) Supp.~Info}
+
+This seems to describe it better, with decent notation (except their {\bf B}
+and {\bf C} are vectors not matrices, so would be better as {\bf b} and {\bf c}).
+
+Now using theirs for another example.
+
+
+\subsection{Determining the optimum $\theta$}
+
+<<>>=
+smap.E1 = s_map(x, E = 1)
+smap.E2 = s_map(x, E = 2)
+smap.E3 = s_map(x, E = 3)
+smap.E4 = s_map(x, E = 4)
+@
+
+So for $E=3$, Figure~\ref{fig:rho-vs-theta} shows that $\rho$ has a peak though
+need to look at the numbers to see exactly where:
+<<echo=FALSE>>=
+smap.E3$rho
+# From ?s_map:
+theta.vec.default = c(0, 1e-04, 3e-04, 0.001, 0.003, 0.01,
+                      0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2,
+                      3, 4, 6, 8)
+smap.E3.rho.max.ind = which.max(smap.E3$rho)
+smap.E3.rho.max = smap.E3$rho[smap.E3.rho.max.ind]
+smap.E3.rho.max.theta = theta.vec.default[smap.E3.rho.max.ind]
+@
+So $\rho$ has a maximum of \Sexpr{round(smap.E3.rho.max, 4)} which occurs at
+$\theta =$\Sexpr{smap.E3.rho.max.theta}.
+
+Could do a finer range of $\theta$ to hone in on the true peak (for any
+publishable results), but this is good enough for now.
+
+\begin{figure}[tp]
+<<rho-vs-theta, echo=FALSE, fig.height=figheight/1.5, fig.width=figwidth/1.5>>=
+plot(smap.E1$theta, smap.E1$rho,
+     ylim = c(0,1),
+     col = cols[1],
+     pch = 20,
+     type = "o",
+     xlab = "Extent of nonlinearity (theta)",
+     ylab = "Forecast Skill (rho)"
+     )
+points(smap.E2$theta, smap.E2$rho, type = "o")
+points(smap.E3$theta, smap.E3$rho, type = "o",
+     col = cols[2], pch=20)
+points(smap.E4$theta, smap.E4$rho, type = "o",
+     col = cols[3], pch=20)
+legend("bottomright", pch=c(20, 1, 20, 20), c("E=1", "E=2", "E=3", "E=4"),
+       col=c(cols[1], "black", cols[2], cols[3]))
+@
+\caption{Forecast skill as a function of
+  nonlinearity ($\theta$). So $E=3$ is consistently the highest (like it was for
+  {\tt simplex()}), which confirms that we'll use it going forwards.
+  So $\rho$ has a maximum of \Sexpr{round(smap.E3.rho.max, 4)} which occurs at
+  $\theta =$\Sexpr{smap.E3.rho.max.theta}.
+  Kept the {\tt lib} and
+  {\tt pred} version as {\tt rho-vs-theata-lib-pred.png}.}
+\label{fig:rho-vs-theta}
+\end{figure}
+
+
+% See \href{https://github.com/andrew-edwards/edm-work/issues/1}{Issue \#1} for details concerning understanding. [now copied into text]
+
+\subsection{Is the optimum $\theta$ signficantly better than $\theta=0$?}
+Chang et al.~(2017) say `if the $\Delta\rho$ [maximum difference between $\rho$
+  and $\rho_{\theta=0}$] is significantly different from the expectation of the
+null model [$\rho_{\theta=0}$], the system is deemed nonlinear (see details in
+Hsieh et al.~2005; Deyle et al.~2013).'. Deyle doesn't seem to give the actual
+test (even in supp info), though does explain ideas in more detail. Hsieh et
+al.~(2005) have $\Delta\rho$ being signficantly different to zero when
+$p<0.05$ (their Table~2), though don't seem to explain exactly what the
+statistical test was.
+
+{\tt ?s\_map} says that in the output:
+
+{\tt p\_val --  p-value that rho is significantly greater than 0 using Fisher's
+                    z-transformation}
+
+{\tt const\_p\_val -- the same but for the constant predictor}
+
+But what we want is the $p$-value for $\Delta>0$.
+
+We have the following (for optimal $\theta$):
+<<>>=
+smap.E3[smap.E3.rho.max.ind,]
+@
+and the {\tt const\_p\_val}'s (and the other {\tt const\_*} values) are the same for all $E$, which makes sense as
+they're for the constant predictor:
+<<>>=
+smap.E3[,"const_p_val"]
+@
+
+So it's not exactly clear what test to do, so for now just assume the optimal
+$\theta$ here is better.
+
+Also, Deyle's Supp Info says
+``With short time series, correlation is more sensitive
+to outliers than MAE. Thus, we rely on MAE.'' which I don't think I've seen
+elsehwere.
+
+Have emailed Hao.
+
+\subsection{Checking values of $\rho$ are consistent between methods}
+
+In earlier iterations of this work we could not get the $\rho$ values to agree,
+but realised that weren't exactly doing it correctly.
+
+Expect that these should agree, since all for $E=1$:
+
+<<>>=
+# Original calculations, first component is E=1
+simplex.out2$rho[1]
+# tp=1, first component is tp=1
+simp.tpE1$rho[1]
+# Or just
+simplex(x, E=1)$rho
+# Use smap but define the num_neighbours to use and set E=1 and theta=0
+smap.E1.neigh = s_map(x, num_neighbors = "E+1", E = 1, theta=0)
+smap.E1.neigh$rho
+@
+But that does not agree with the others. Have reopened Issue \#1!
+Also, {\tt num\_neighbours} does have an effect because leaving it out gives
+a different answer (as expected):
+<<>>=
+smap.E1$rho[1]    #  = s_map(x, E = 1)
+@
+This is $>$ the {\tt simplex} $\rho$ values above, as expected and discussed
+earlier.
+
+***Keep trying to understand this***. It's related to Issue \# 1.
+
+Look at the helpfile again -- see if can actually print out the intermediate
+calculations of nearest neighbours etc. Would be helpful.
+
+Have emailed Hao.
+
+Haven't been updating the {\tt rEDM} package, but
+\href{https://github.com/ha0ye/rEDM/commit/414ffd45181db52da506aa77ca91d03d546b276c}{this commit}
+on their GitHub site updates `the variance calculations for s-map to use the
+same procedure as simplex'. Though the extra details of the commit then say
+`updated default {\tt num\_neighbors} for {\tt block\_lnlp} to depend on
+selected method' which isn't quite the same thing (but seems to agree with
+the actual change in the code).
+
+
+\section{Testing some {\tt s\_map} options}
+
+Had earlier done (for the optimal $E$)
+<<smap.earlier>>=
+# smap.E3 = s_map(x, E = e)
+@
+but haven't tried {\tt stats\_only = FALSE} and {\tt save\_smap\_coefficients
+  = TRUE} yet.
+
+\subsection{{\tt stats\_only = FALSE}}
+
+<<smap.options1>>=
+smap.E3.stats = s_map(x, E = 3, stats_only = FALSE)
+@
+now creates a data frame that contains data frames, one row for each value of $\theta$ that was tested (default theta vector
+has length 18). Taking the one with the optimal $\theta$ (calculated above)
+<<>>=
+smap.E3.stats[smap.E3.rho.max.ind,]
+@
+% Note that {\tt Length} is the number of columns of each {\tt data.frame}, so
+% don't want to print all of {\tt model\_output}:
+<<>>=
+head(smap.E3.stats[smap.E3.rho.max.ind, ]$model_output[[1]])
+tail(smap.E3.stats[smap.E3.rho.max.ind, ]$model_output[[1]])
+@
+
+So, as expected, we can save the observed and predicted values. And $\rho$
+agrees with that in the caption for Figure~\ref{fig:rho-vs-theta}.
+
+\subsection{{\tt save\_smap\_coefficients = TRUE}}
+
+<<smap.save1>>=
+smap.E3.save = s_map(x, E = 3, stats_only = FALSE,
+                     save_smap_coefficients = TRUE)
+@
+creates a list for each value of $\theta$ that was tested (default theta vector
+has length 18). Taking the one with the optimal $\theta$ (calculated above)
+<<>>=
+smap.E3.save[smap.E3.rho.max.ind, ]
+@
+Presumably the only one different to {\tt smap.E3.stats} is the new one:
+
+<<>>=
+head(smap.E3.save[smap.E3.rho.max.ind, ]$smap_coefficients[[1]])
+tail(smap.E3.save[smap.E3.rho.max.ind, ]$smap_coefficients[[1]])
+@
+plus now (2019) there are also lists of covariance matrices:
+<<>>=
+smap.E3.save[smap.E3.rho.max.ind, ]$smap_coefficient_covariances[[1]][[5]]
+    # [[5]] just to show an example
+@
+
+Helpfile says that {\tt smap\_coefficients} is a `matrix of S-map coefficients'. Not sure why there
+are four columns, presumably rows correspond to observations
+
+Using $E=4$ should produce five $=E+1$ columns:
+<<E4.save>>=
+smap.E4.save = s_map(x, E = 4, stats_only = FALSE,
+                     save_smap_coefficients = TRUE)
+# head(smap.E4.save[smap.E3.rho.max.ind, ]$smap_coefficients) # shows all again
+# head(smap.E4.save[smap.E3.rho.max.ind, "smap_coefficients"])# same, shows all again
+head(smap.E4.save[smap.E3.rho.max.ind, "smap_coefficients"][[1]])   # List only
+                                        # has one element, but need it
+# head(smap.E4.save[[15]]$smap_coefficients)   # just pick same theta as above
+@
+So the first {\it three} rows are now {\tt NaN}, whereas for $E=3$ it was
+only the first two. Think it's left off the first observation (as you can never
+predict that), as earlier, for consistency. So for $E=1$ there should be no
+{\tt NaN} rows at the start, and only two columns:
+<<E1.save>>=
+smap.E1.save = s_map(x, E = 1, stats_only = FALSE,
+                     save_smap_coefficients = TRUE)
+head(smap.E1.save[15, "smap_coefficients"][[1]])   # just pick same theta as above
+@
+
+I was somewhat expecting a square matrix, as each observation will appear
+(with some weighting, depending on it's distance) in the prediction calculation
+for each other observation. Though it's slightly more complicated, as each
+observation in lagged space is an $E$-dimenstional vector. Using the $E=3$
+again to
+look for any repeated values (which will happen if these numbers are just the
+original $X_t$):
+
+<<>>=
+coeffs = smap.E3.save[smap.E3.rho.max.ind, "smap_coefficients"][[1]]
+length(coeffs)
+dim(coeffs)
+dim(unique(coeffs))  # Removes two repeated ones, which are just rows of
+                     # NaN's. So no non-NaN ones.
+@
+So not just the original $X_t$ values, since using smap.
+
+<<coeffs-summ>>=
+summary(coeffs)
+@
+Hmmm.... so first and third columns are all negative, second almost is,
+and fourth is almost all positive (but smaller in max magnitude than the others).
+
+Tried printing them all to look for zeros, ones or patterns, but could not
+see any.
+<<coeffs-all, results='hide', echo=FALSE>>=
+coeffs
+@
+
+I think that maybe this is all for just one predictee. We haven't specified it,
+so maybe it's the final one?
+
+\subsection{This may explain it}
+
+Stick with $E=2$ for simplicity. Assume we're trying to predict the next point,
+so start with the final observation. See if can replicate the results manually.
+
+So use $E=2$. First need the $\theta$ that maximise $\rho$:
+<<smap.E2a>>=
+smap.E2.rho.max.ind = which.max(smap.E2$rho)
+smap.E2.rho.max = smap.E2$rho[smap.E2.rho.max.ind]
+smap.E2.rho.max.theta = theta.vec.default[smap.E2.rho.max.ind]
+
+smap.E2.save = s_map(x, E = 2, stats_only = FALSE,
+                     save_smap_coefficients = TRUE)
+E2.opt = smap.E2.save[smap.E2.rho.max.ind,]     # optimal E=2 results
+E2.opt$params
+
+head(E2.opt[, "model_output"][[1]])
+         # Does not include first x since never predictable:
+head(x)
+tail(E2.opt[, "model_output"][[1]])   # Has predicted the final x.
+tail(x)
+length(x)
+@
+
+Makes sense so far. So expect that the coefficients correspond to trying to
+predict the {\tt next} value, for which we have no observation to compare to
+(though maybe not -- see Deyle example).
+
+<<smap.E2b>>=
+E2.opt.coeff = E2.opt[,"smap_coefficients"][[1]]
+head(E2.opt.coeff)
+tail(E2.opt.coeff)
+# E2.opt$stats
+@
+From earlier text (though Deyle notation is better):
+S-map technique uses a weighting function
+$w({\bf d}) = \exp(- \theta {\bf d} /d_m)$
+where ${\bf d}$ is a vector of the distance between the predictee and each
+library point, $d_m$ is the mean distance of `all paired library points'
+(presumably just the mean of d?) and $\theta$ is a parameter representing
+the degree of nonlinearity.
+
+[This subject area needs better notation as it's fiddly and really just a lot of
+book-keeping.]
+
+So we first need the $\{x_t, x_{t-1}\}$ pairs.
+<<x.lags>>=
+x.lags = select(Nx.lags, xt, xtmin1)
+x.lags
+@
+Each row corresponds to $t$, row 100 has no $x_t$ since no $N_{t+1}$:
+<<x.lags2>>=
+tail(x.lags)
+@
+
+So going to make a prediction based on the final $\{x_t, x_{t-1}\}$ pair, which
+is
+<<final.pair>>=
+final.pair = as.numeric(x.lags[nrow(x.lags)-1,])
+@
+So {\bf d} is a distance \emph{vector}, not a Euclidean (or similar) scalar
+distance -- can be close by in one direction but not the other?
+
+From 2017 (think this is what led to my simpler example that helped find the bug
+in the package - so better off just looking at that again):
+**Should redo just sticking with Deyle notation. So not checking this onwards,
+but will do a manual {\tt simplex()} example based on Deyle notation, and then a
+similar manual {\tt s\_map()} example, which can use some of this code.
+
+Confused now as to whether $d$ is a vector (as in Chang et al.) or a scalar
+(as in Sugihara 1994 where the methods are originally developed). So do both.
+
+
+Need to calculate a $d_1$ and a $d_2$, and also a {\tt dscalar} as I think maybe
+it should be scalar, I think just as (also making time explicit)
+<<dcalc>>=
+x.lags = mutate(x.lags,
+                d1 = abs(final.pair[1] - xt),
+                d2 = abs(final.pair[2] - xtmin1),
+                time = 1:nrow(x.lags),
+                dscalar = sqrt(d1^2 + d2^2))
+x.lags = select(x.lags, time, xt, xtmin1, d1, d2, dscalar)
+x.lags
+tail(x.lags)
+@
+
+Now remove the two rows with NA's:
+<<x.lags3>>=
+x.lags.d = filter(x.lags, !is.na(xt), !is.na(xtmin1))
+x.lags.d
+tail(x.lags.d)
+@
+
+Assume that we {\bf won't} want the final row of that, but leave in for now.
+Take it out if results seem close to the {\tt s\_map} output but not quite exact.
+
+<<dm>>=
+dm = mean(x.lags.d$dscalar)
+d1m = mean(x.lags.d$d1)
+d2m = mean(x.lags.d$d2)
+dm
+d1m
+d2m
+x.lags.d = mutate(x.lags.d,
+                  w1 = exp(- smap.E2.rho.max.theta * d1 /d1m),
+                  w2 = exp(- smap.E2.rho.max.theta * d2 /d2m),
+                  wscalar = exp(- smap.E2.rho.max.theta * dscalar /dm),
+                  w1xt = w1 * xt,
+                  w2xtmin1 = w2 * xtmin1,
+                  wsc.xt = wscalar * xt,
+                  wsc.xtmin1 = wscalar * xtmin1
+                 )
+select(x.lags.d, d1, d2, w1, w2, w1xt, w2xtmin1)    # Using w1, w2
+select(x.lags.d, dscalar, wscalar,  wsc.xt, wsc.xtmin1)  # Using wscalar
+@
+So, do any of those data frames look similar to:
+<<smap.coeff.again>>=
+head(E2.opt.coeff)
+mean(E2.opt.coeff[,1], na.rm=TRUE)
+mean(E2.opt.coeff[,2], na.rm=TRUE)
+sum(E2.opt.coeff[,1], na.rm=TRUE)
+sum(E2.opt.coeff[,2], na.rm=TRUE)
+@
+
+Check that, and then go through Supp Info of Chang et al. Maybe move onto
+multivariate series as that may help explain some of this.
+
+Page 16 of Chang et al. Supp Info uses {\tt smap\_coefficients}, and says that
+the first columns are partial derivatives and the final is the intercept (that is
+for multivariate embedding of a four-species model (ignoring fifth species).
+Means of coefficents (above) are not quite zero.
+
+\subsection{Does {\tt s\_map()} make a simple prediction?}
+
+Still not clear if {\tt s\_map()} actually gives you the prediction for the next
+value, or you have to work it out by redoing an {\tt s\_map()} call with the
+optimal $E$ and $\theta$ that have just been worked out, and then {\tt lib} of
+all the data, and {\tt pred} of just the final value?
+
+Think this is the same for {\tt simplex()} though I never actually went back and
+did that.
+
+\clearpage
+
+\subsection{C code from {\tt rEDM} GitHub site}
+
+Not sure if this will be helpful, but maybe.
+On {\tt rEDM} GitHub site, {\tt rEDM/src/forecast\_machine.cpp} has {\tt C++}
+code:
+
+{\tt
+  if(SAVE\_SMAP\_COEFFICIENTS)
+
+    \{
+
+      smap\_coefficients.assign(num\_vectors, vec(data\_vectors[0].size()+1, qnan));
+
+    \}
+
+    smap\_prediction(0, which\_pred.size());
+
+    const\_prediction(0, which\_pred.size());
+
+    return;
+  }
+
+
+\section{Save results}
+<<>>=
+save(list=ls(), file="sockeye-sim-edm.Rdata")
+@
+\end{document}
