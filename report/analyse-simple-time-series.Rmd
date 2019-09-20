@@ -108,11 +108,12 @@ for (i in 1:2) {
 ```
 
 Now trying full simulation of plotting lagged data
-```{r, animate.lagged, animation.hook='gifski'}
-for (i in 1:20) {
-  plotPanelMovie.X(Nx.lags, end = i)
+```{r, animate.lagged, animation.hook='gifski', fig.dim = c(5.7, 7)}
+   # These offset the panels, may have to tweak
+# for (i in 1:20) {
+plotPanelMovie.X(Nx.lags, end = 20)
   # pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
-}
+#}
 ```
 
 
