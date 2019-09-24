@@ -87,7 +87,41 @@ Nx.lags = mutate(Nx.lags,
 Nx.lags
 ```
 
-[Move later] To plot a rotatable 3d plot in a windows then run the R code in chunk `rotatable`.
+<!-- Testing animation hook with gifski:
+```{r, animation.hook='gifski'}
+for (i in 1:2) {
+  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
+}
+```
+-->
+
+
+
+
+
+
+Now plot the data in various lagged ways using animation.
+
+```{r, echo=FALSE}
+late.col <- "red"  # The default
+late.num <- 10     # The default
+fig.cap.1 =
+  paste("Before doing EDM, this shows the data in various ways: time series of $N_t$ and $x_t$, plus phase plots of $N_t$ vs $N_{t-1}$, $x_t$ vs $x_{t-1}$ (as used for $E=2$) and $x_t$ vs $x_{t-1}$ vs $x_{t-2}$ (as used for $E=3$). The last ", late.num, " points are in ", late.col, ", with the final one as a star. In the $x_t$ time series, the values of $x_t$ are also plotted in a vertical line (with $t<0$) which is the one-dimensional equivalent of a phase plot for $E=1$.")
+```
+
+<!-- If this doesn't run then uncomment the above chunk and try that, comment -->
+<!-- this one -->
+```{r, animate.lagged.data, animation.hook='gifski', fig.dim = c(7, 8), interval = 0.5, fig.cap = fig.cap.1}
+plotPanelMovie.X(Nx.lags)
+```
+<!-- \caption{Animated version (with EDM results) is in
+   Figure~\ref{fig:panelMovie}.}
+
+-->
+
+Figure @ref(fig:animate.lagged.data)......
+
+To plot a rotatable 3d plot in a graphics window then run the R code in chunk `rotatable`.
 
 ```{r, rotatable, eval=FALSE, echo=FALSE}
 # Run this in console to get rotatable 3d plot of lagged data
@@ -98,22 +132,8 @@ rgl::plot3d(x[-c(1, 2)], x[-c(1, n)], x[-c(n-1, n)],
             zlab = "x(t-2)")
 ```
 
-<!-- Testing animation hook with gifski:
-```{r, animation.hook='gifski'}
-for (i in 1:2) {
-  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
-}
-```
--->
 
 
-Now trying full simulation of plotting lagged data
-<!-- If this doesn't run then uncomment the above chunk and try that, comment -->
-<!-- this one -->
-```{r, animate.lagged, animation.hook='gifski', fig.dim = c(7, 9), interval = 0.5}
-   # Tweak fig.dim to line up panels better
-plotPanelMovie.X(Nx.lags) #, end = 20)
-```
 
 
 <!--
