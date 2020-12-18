@@ -40,3 +40,7 @@ salmon_run()
 
 See `?salmon_sim` for settings to change the default parameters and initial
 conditions for the simulations.
+
+## To do bifurcation diagrams
+
+See code in `salmon_bif.R`, not needed here yet.
