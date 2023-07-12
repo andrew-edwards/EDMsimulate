@@ -4,8 +4,7 @@
 \alias{salmon_bif}
 \title{Create calculations for bifurcation-type plot for deterministic simulations}
 \usage{
-salmon_bif(alpha_vec = seq(0.01, 10, by = 0.01), last = 50,
-  T = 10000, ...)
+salmon_bif(alpha_vec = seq(0.01, 10, by = 0.01), last = 50, T = 10000, ...)
 }
 \arguments{
 \item{alpha_vec}{Vector of alpha values to use.}

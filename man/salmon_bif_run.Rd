@@ -4,8 +4,14 @@
 \alias{salmon_bif_run}
 \title{Calculate and plot bifurcation diagram for Larkin model}
 \usage{
-salmon_bif_run(alpha_vec = seq(0.01, 30, by = 0.01), p_prime = c(0, 1,
-  0), T = 1000, col = "black", new_plot = TRUE, ...)
+salmon_bif_run(
+  alpha_vec = seq(0.01, 30, by = 0.01),
+  p_prime = c(0, 1, 0),
+  T = 1000,
+  col = "black",
+  new_plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{alpha_vec}{Vector of alpha values to use.}
