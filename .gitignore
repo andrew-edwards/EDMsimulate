@@ -11,5 +11,7 @@ Meta
 lib/*
 *.tex
 *.pdf
+*.log
+
 report/egDeyle.rnw
 report/sockeye-sim-edm.rnw

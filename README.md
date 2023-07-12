@@ -1,8 +1,8 @@
 # EDMsimulate - an R package for simulating fish populations in the context of Empirical Dynamic Modelling
 
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.com/andrew-edwards/EDMsimulate.svg?branch=master)](https://travis-ci.com/andrew-edwards/EDMsimulate)
-[![Coverage status](https://codecov.io/gh/andrew-edwards/EDMsimulate/branch/master/graph/badge.svg)](https://codecov.io/github/andrew-edwards/EDMsimulate?branch=master)
+[![R-CMD-check](https://github.com/andrew-edwards/EDMsimulate/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/andrew-edwards/EDMsimulate/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/andrew-edwards/EDMsimulate/branch/main/graph/badge.svg)](https://app.codecov.io/gh/andrew-edwards/EDMsimulate?branch=main)
 <!-- badges: end -->
 
 Under development.
