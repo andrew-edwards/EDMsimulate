@@ -5,7 +5,7 @@
 [![Codecov test coverage](https://codecov.io/gh/andrew-edwards/EDMsimulate/branch/main/graph/badge.svg)](https://app.codecov.io/gh/andrew-edwards/EDMsimulate?branch=main)
 <!-- badges: end -->
 
-Under development. Simulating popoulations for some EDM analyses.
+Simulating populations for some EDM analyses. Under development, and not really designed to be used by others. 
 
 ### Vignette
 
