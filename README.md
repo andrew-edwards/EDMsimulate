@@ -7,6 +7,8 @@
 
 Simulating populations for some EDM analyses. Under development, and not really designed to be used by others. 
 
+report/ contains earlier analyses that have now been included in first manuscript, and code likely better as vignettes in pbsEDM. 
+
 ### Vignette
 
 The vignette showing examples of the functions is available [here](http://htmlpreview.github.io/?https://github.com/andrew-edwards/EDMsimulate/blob/master/doc/salmon_sim.html), and directly in the package (see below).
