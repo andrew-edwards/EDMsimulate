@@ -7,13 +7,16 @@
 ##'   The harvest rate has to be prescribed for all years, and to initialize the
 ##'   model the recruitment R_t has to be given for the first eight years. All
 ##'   parameters must be >=0, some >0. Units of recruits and spawners are
-##'   millions of fish, and hence beta has units 1/(millions of fish).
+##'   nominally millions of fish, and is the only absolute scale because the
+##'   beta_i sum to 1.
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
-##'   the magnitude of density dependence based on the current spawning stock
-##'   (beta_0) and the previous three years (beta_1, beta_2 and beta_3).
-##'   beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model.
+##'   the relative magnitude of density dependence based on the current spawning stock
+##'   (beta_0) and the previous three years (beta_1, beta_2 and beta_3), with
+##'   beta_0 + beta_1 + beta_2 + beta_3 = 1. Setting
+##'   beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model. Be aware
+##'   that `beta[1]` in code is $beta_0$ from the write up.
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
 ##'   in the vector, which must sum to 1).
@@ -47,7 +50,7 @@
 ##'     4 and 5.
 ##' @export
 salmon_sim <- function(alpha = 7,
-                       beta = c(1, 1, 1, 1),
+                       beta = c(0.25, 0.25, 0.25, 0.25),
                        p_prime = c(0.003, 0.917, 0.080),
                        rho = 0.5,
                        omega = 0.6,
@@ -79,6 +82,8 @@ salmon_sim <- function(alpha = 7,
   if(is.na(deterministic)) stop("deterministic must be TRUE or FALSE, not NA")
 
   if(T < 9) stop("T must be >=9")
+
+  if(sum(beta) != 1) stop("beta values must sum to 1")
 
   if(is.null(h_t)){
     h_t <- rep(0.2, T)

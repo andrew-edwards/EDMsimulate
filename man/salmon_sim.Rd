@@ -6,7 +6,7 @@
 \usage{
 salmon_sim(
   alpha = 7,
-  beta = c(1, 1, 1, 1),
+  beta = c(0.25, 0.25, 0.25, 0.25),
   p_prime = c(0.003, 0.917, 0.08),
   rho = 0.5,
   omega = 0.6,
@@ -24,9 +24,11 @@ salmon_sim(
 absence of noise.}
 
 \item{beta}{Vector [beta_0, beta_1, beta_2, beta_3] that scales
-the magnitude of density dependence based on the current spawning stock
-(beta_0) and the previous three years (beta_1, beta_2 and beta_3).
-beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model.}
+the relative magnitude of density dependence based on the current spawning stock
+(beta_0) and the previous three years (beta_1, beta_2 and beta_3), with
+beta_0 + beta_1 + beta_2 + beta_3 = 1. Setting
+beta_1 = beta_2 = beta_3 = 0 reduces the model to a Ricker model. Be aware
+that `beta[1]` in code is $beta_0$ from the write up.}
 
 \item{p_prime}{Vector of typical proportion of recruits spawned in a year that will
 come back to freshwater as age-3, age-4 and age-5 (each of three elements
@@ -79,5 +81,6 @@ Simulates Larkin population dynamics model, based on Appendix F of Holt
   The harvest rate has to be prescribed for all years, and to initialize the
   model the recruitment R_t has to be given for the first eight years. All
   parameters must be >=0, some >0. Units of recruits and spawners are
-  millions of fish, and hence beta has units 1/(millions of fish).
+  nominally millions of fish, and is the only absolute scale because the
+  beta_i sum to 1.
 }
