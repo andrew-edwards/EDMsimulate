@@ -35,7 +35,7 @@
 ##'   0.
 ##' @param extirp Value below which we consider the population extirpated, in
 ##'   same units as recruits and spawners.
-##' @return Matrix of years (rows) with named columns:
+##' @return Tibble of years (rows) with named columns:
 ##'   t: year;
 ##'   R_t: total recruits returning in year t;
 ##'   R_prime_t: number of adult recruits generated from spawners in year t that
@@ -195,19 +195,18 @@ salmon_sim <- function(alpha = 7,
   }
 
   # Returns data frame of results
-  as.data.frame(
-                cbind("t" = 1:T,
-                      "R_t" = R_t,
-                      "R_prime_t" = R_prime_t,
-                      "S_t" = S_t,
-                      "h_t" = h_t,
-                      "p_t3" = p_tg[, 1],
-                      "p_t4" = p_tg[, 2],
-                      "p_t5" = p_tg[, 3],
-                      "epsilon_t3" = epsilon_tg[, 1],
-                      "epsilon_t4" = epsilon_tg[, 2],
-                      "epsilon_t5" = epsilon_tg[, 3],
-                      "phi_t" = phi_t))
+  dplyr::tibble("t" = 1:T,
+                "R_t" = R_t,
+                "R_prime_t" = R_prime_t,
+                "S_t" = S_t,
+                "h_t" = h_t,
+                "p_t3" = p_tg[, 1],
+                "p_t4" = p_tg[, 2],
+                "p_t5" = p_tg[, 3],
+                "epsilon_t3" = epsilon_tg[, 1],
+                "epsilon_t4" = epsilon_tg[, 2],
+                "epsilon_t5" = epsilon_tg[, 3],
+                "phi_t" = phi_t)
 }
 
 

@@ -60,7 +60,7 @@ given values of rho, omega, sigma_nu and phi_1 are redundant and set to
 same units as recruits and spawners.}
 }
 \value{
-Matrix of years (rows) with named columns:
+Tibble of years (rows) with named columns:
   t: year;
   R_t: total recruits returning in year t;
   R_prime_t: number of adult recruits generated from spawners in year t that
