@@ -12,7 +12,7 @@ test_that("salmon_sim() gives correct answer with original default inputs", {
                                   T = 100,
                                   # h_t = rep(0.2, T), # in case T is globally defined
                                   R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1, 0.1, 0.1)),
-                       default_sim_seed_42)
+                       dplyr::as_tibble(default_sim_seed_42))
 })
 
 test_that("salmon_sim() gives error if any non-numeric inputs", {
