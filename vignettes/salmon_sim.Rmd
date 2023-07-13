@@ -16,21 +16,22 @@ knitr::opts_chunk$set(
 )
 ```
 
-The notation in the code matches that in the write up (in the `edm-work` repository).
+The notation in the code matches that in the write up of the second manuscript (in the `edm-work` repository).
 
 ```{r setup}
-library(EDMsimulate)
+library(EDMsimulate) # load_all() if local
+library(pbsEDM)      # https://github.com/pbs-assess/pbsEDM
 ```
 
 ## To run a simulation
 ```{r}
-x <- salmon_sim()
-head(x)
+sim_data <- salmon_sim()
+sim_data
 ```
 
 ##  Simple plot of resulting time series of spawners
 ```{r}
-plot_sim(x)
+plot_sim(sim_data)
 ```
 
 ## To run and plot in one go
@@ -44,3 +45,24 @@ conditions for the simulations.
 ## To do bifurcation diagrams
 
 See code in `salmon_bif.R`, not needed here yet.
+
+## To fit using pbsEDM
+
+Basing on example analysis in pbsEDM vignette `analyse_simple_time_series.Rmd`.
+
+```{r fit1}
+sim_fit <- pbsEDM::pbsEDM(sim_data,
+                          lags = list(R_prime_t = 0,     # can test
+                                        # others. Biologically defendible assumptions
+                                      S_t = 0:3),
+                          first_difference = TRUE)    # can try both
+
+sim_data_determ <- salmon_sim(deterministic = TRUE)
+
+sim_fit_determ <- pbsEDM::pbsEDM(sim_data_determ,
+                          lags = list(R_prime_t = 0,     # can test
+                                        # others. Biologically defendible assumptions
+                                      S_t = 0:3),
+                          first_difference = TRUE)    # can try both
+
+```
