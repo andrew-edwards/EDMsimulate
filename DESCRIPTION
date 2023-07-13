@@ -15,10 +15,12 @@ LazyData: true
 URL: https://github.com/andrew-edwards/EDMsimulate
 BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
 Imports:
-    dplyr
+    dplyr,
+    pbsEDM
 Suggests:
     testthat,
     knitr,
     rmarkdown
+Remotes: pbs-assess/pbsEDM
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
