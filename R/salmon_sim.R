@@ -84,6 +84,10 @@ salmon_sim <- function(alpha = 7,
 
   if(T < 9) stop("T must be >=9")
 
+  if(length(beta) != 4){
+    stop("beta must have length 4")
+  }
+
   if(sum(beta) != 1) stop("beta values must sum to 1")
 
   if(is.null(h_t)){
@@ -125,9 +129,6 @@ salmon_sim <- function(alpha = 7,
               T,
               extirp)) != 7){
     stop("alpha, rho, omega, sigma_nu, phi_1 and T must all have length 1")
-  }
-  if(length(beta) != 4){
-    stop("beta must have length 4")
   }
 
   if(length(p_prime) != 3 | sum(p_prime) != 1){

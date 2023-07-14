@@ -67,8 +67,9 @@ test_that("salmon_sim() gives error if scalar inputs are vectors instead", {
           expect_error(salmon_sim(alpha = c(0.2, 0.5)))
 })
 
-test_that("salmon_sim() gives error if beta wrong length", {
-          expect_error(salmon_sim(beta = c(1, 2, 3)))
+test_that("salmon_sim() gives error if beta wrong length or does not sum to 1", {
+  expect_error(salmon_sim(beta = c(1, 2, 3)))
+  expect_error(salmon_sim(beta = c(0.25, 0.25, 0.25, 5)))
 })
 
 test_that("salmon_sim() gives correct steady state for deterministic run", {
