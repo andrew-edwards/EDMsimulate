@@ -61,7 +61,11 @@ test_that("salmon_sim() gives error if dimesions of epsilon_tg != c(T, length(p_
                                               length(p_prime) -1 )))
 })
 
-test_that("salmon_sim() gives error if all parameters not >= 0", {
+test_that("salmon_sim() gives error if length(nu_t) != T", {
+  expect_error(salmon_sim(nu_t = 1:(T - 1)))
+})
+
+test_that("salmon_sim() gives error if all parameters (excluding nu_t) not >= 0", {
           expect_error(salmon_sim(alpha = -1))
 })
 

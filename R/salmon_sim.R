@@ -22,9 +22,14 @@
 ##'   in the vector, which must sum to 1).
 ##' @param rho Autocorrelation parameter for process noise, >= 0.
 ##' @param omega Scales the annual normal deviates on the proportions returning
-##'   at each age. If omega = 0 then no stochasticity for the proportions.
+##'   at each age. If omega = 0 then there is no stochasticity for the
+##'   proportions (and if `deterministic = 0` then `omega` is set to 0.
 ##' @param sigma_nu Standard deviation of process noise. If sigma_nu = 0 and
-##'   rho = 0 then no process noise.
+##'   rho = 0 then no process noise. Ignored if `nu_t` specified.
+##' @param nu_t Explicit specification of the process noise term to allow
+##'   reproducible simulations when testing different methods (see
+##'   `epsilon_tg` also). Must be a numeric vector of length `T`, can have
+##'   negative values. If not specified then a default is created.
 ##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
 ##'   needed for initialising the simulation, must be >=9.
@@ -39,15 +44,15 @@
 ##'   corresponds to the respective element of `p_prime`, so column 1 refers to age-3,
 ##'   etc (see equations in write up). For running multiple simulations, this
 ##'   overall setup will allow seeds
-##'   to be specified and thus  specific values of stochasticity to be
+##'   to be specified and thus specific values of stochasticity to be
 ##'   explicitly input as the matrix `epsilon_tg` (so they can be
 ##'   the same when testing different models). Experience tells us this should
 ##'   be clearer than creating the stochasticity within this function. If
 ##'   `epsilon_tg` is not specified then a default is created (which obviously
-##'   depends on the seed). This is ignored if
+##'   depends on the seed). This is ignored if `deterministic` is TRUE.
 ##' @param deterministic If TRUE then include no stochasticity and any
-##'   given values of rho, omega, sigma_nu, phi_1, and epsilon_tg are redundant
-##'   and set to 0.
+##'   given values of rho, omega, sigma_nu, phi_1, nu_t, and epsilon_tg are redundant
+##'   and set to 0 (nu_t is just ignored).
 ##' @param extirp Value below which we consider the population extirpated, in
 ##'   same units as recruits and spawners (so if those are assumed to change,
 ##'   this value should be changed also).
@@ -68,6 +73,7 @@ salmon_sim <- function(alpha = 7,
                        rho = 0.5,
                        omega = 0.6,
                        sigma_nu = 0.8,
+                       nu_t = NULL,
                        phi_1 = 0.1,
                        T = 100,
                        h_t = NULL,
@@ -190,8 +196,18 @@ salmon_sim <- function(alpha = 7,
     # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
 
     # Generate autocorrelated process noise phi_t
-    phi_t <-  c(phi_1, rep(NA, T-1))
-    nu_t <- rnorm(T, -sigma_nu^2 / 2, sigma_nu)
+    if(is.null(nu_t)){
+      nu_t <- rnorm(T,
+                    -sigma_nu^2 / 2,
+                    sigma_nu)
+    } else {
+      stopifnot("Vector of specified nu_t must have length T" =
+                  length(nu_t) == T)
+    }
+
+    phi_t <-  c(phi_1,
+                rep(NA, T-1))
+
     for(i in 2:T){
       phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
     }
