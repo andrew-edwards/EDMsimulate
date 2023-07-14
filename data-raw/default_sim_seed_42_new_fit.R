@@ -1,9 +1,7 @@
 set.seed(42)
 # Old default inputs (as used for earlier default_sim_seed_42), with new betas
-#  proportionately scaled, and R_t_init and extirp scaled also.
-
-# Also fitting it manually here to then test sim_and_fit()
-
+#  proportionately scaled, and R_t_init and extirp scaled also. The checks below
+#  were used to get this right, and so the code below will go into the tests.
 default_sim_seed_42_new <- salmon_sim(alpha = 0.8,
                                       beta = c(0.8, 0.2, 0.1, 0.1)/1.2,
                                       p_prime = c(0.01, 0.98, 0.01),
@@ -19,13 +17,5 @@ default_sim_seed_42_new <- salmon_sim(alpha = 0.8,
 
 # If change this again then see the tests in test-salmon_sim.R for things to check
 
-default_sim_seed_42_new_fit <- pbsEDM::pbsEDM(default_sim_seed_42_new,
-                          lags = list(R_prime_t = 0,
-                                      S_t = 0:3),
-                          first_difference = TRUE)
-
 usethis::use_data(default_sim_seed_42_new,
-                  overwrite = TRUE)
-
-usethis::use_data(default_sim_seed_42_new_fit,
                   overwrite = TRUE)

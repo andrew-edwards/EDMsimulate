@@ -19,7 +19,8 @@ knitr::opts_chunk$set(
 The notation in the code matches that in the write up of the second manuscript (in the `edm-work` repository).
 
 ```{r setup}
-library(EDMsimulate) # load_all() if local
+load_all()    # library(EDMsimulate) when sharing, this is easier for local
+              # up-to-date testing
 library(pbsEDM)      # https://github.com/pbs-assess/pbsEDM
 ```
 
@@ -57,6 +58,7 @@ sim_fit <- pbsEDM::pbsEDM(sim_data,
                                       S_t = 0:3),
                           first_difference = TRUE)    # can try both
 
+# test on a deterministic simulation
 sim_data_determ <- salmon_sim(deterministic = TRUE)
 
 sim_fit_determ <- pbsEDM::pbsEDM(sim_data_determ,
@@ -64,5 +66,11 @@ sim_fit_determ <- pbsEDM::pbsEDM(sim_data_determ,
                                         # others. Biologically defendible assumptions
                                       S_t = 0:3),
                           first_difference = TRUE)    # can try both
+
+```
+
+Function ideas testing
+```{r function}
+HERE - see sim_and_fit() and test for it. Needs documenting, as does new data object.
 
 ```
