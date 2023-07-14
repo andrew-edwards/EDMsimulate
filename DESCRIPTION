@@ -8,7 +8,8 @@ Authors@R:
            email = "andrew.edwards@dfo-mpo.gc.ca",
            comment = c(ORCID = "0000-0003-2749-8198"))
 Description: Simulates fish stocks to then test using Empirical Dynamic Modelling methods. Primarily for use within PBS for now.
-Depends: R (>= 2.1.0)
+Depends: 
+    R (>= 2.10)
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true

@@ -37,7 +37,8 @@
 ##'   given values of rho, omega, sigma_nu and phi_1 are redundant and set to
 ##'   0.
 ##' @param extirp Value below which we consider the population extirpated, in
-##'   same units as recruits and spawners.
+##'   same units as recruits and spawners (so if those are assumed to change,
+##'   this value should be changed also).
 ##' @return Tibble of years (rows) with named columns:
 ##'   t: year;
 ##'   R_t: total recruits returning in year t;
