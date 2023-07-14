@@ -55,6 +55,12 @@ test_that("salmon_sim() gives error if sum(p_prime) != 1", {
           expect_error(salmon_sim(p_prime = c(0.1, 0.1, 0.1)))
 })
 
+test_that("salmon_sim() gives error if dimesions of epsilon_tg != c(T, length(p_prime)", {
+  expect_error(salmon_sim(epsilon_tg = matrix(777,
+                                              T,
+                                              length(p_prime) -1 )))
+})
+
 test_that("salmon_sim() gives error if all parameters not >= 0", {
           expect_error(salmon_sim(alpha = -1))
 })

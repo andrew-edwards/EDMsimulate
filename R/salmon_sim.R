@@ -20,11 +20,11 @@
 ##' @param p_prime Vector of typical proportion of recruits spawned in a year that will
 ##'   come back to freshwater as age-3, age-4 and age-5 (each of three elements
 ##'   in the vector, which must sum to 1).
+##' @param rho Autocorrelation parameter for process noise, >= 0.
 ##' @param omega Scales the annual normal deviates on the proportions returning
 ##'   at each age. If omega = 0 then no stochasticity for the proportions.
 ##' @param sigma_nu Standard deviation of process noise. If sigma_nu = 0 and
 ##'   rho = 0 then no process noise.
-##' @param rho Autocorrelation parameter for process noise, >= 0.
 ##' @param phi_1 Initial value of process noise.
 ##' @param T Number of years to run the simulation, including the eight years
 ##'   needed for initialising the simulation, must be >=9.
@@ -33,9 +33,21 @@
 ##'   then harvest rate will be set to 0.2 for all years.
 ##' @param R_t_init Vector of eight years of recruit abundance to initialize the
 ##'   model.
+##' @param epsilon_tg Specified matrix of random variation in the `p_tg`. Must
+##'   be of dimension `T * length(p_prime)` (returns error if not), where
+##'   `length(p_prime) = 3` for the default. Each column of `epsilon_tg`
+##'   corresponds to the respective element of `p_prime`, so column 1 refers to age-3,
+##'   etc (see equations in write up). For running multiple simulations, this
+##'   overall setup will allow seeds
+##'   to be specified and thus  specific values of stochasticity to be
+##'   explicitly input as the matrix `epsilon_tg` (so they can be
+##'   the same when testing different models). Experience tells us this should
+##'   be clearer than creating the stochasticity within this function. If
+##'   `epsilon_tg` is not specified then a default is created (which obviously
+##'   depends on the seed). This is ignored if
 ##' @param deterministic If TRUE then include no stochasticity and any
-##'   given values of rho, omega, sigma_nu and phi_1 are redundant and set to
-##'   0.
+##'   given values of rho, omega, sigma_nu, phi_1, and epsilon_tg are redundant
+##'   and set to 0.
 ##' @param extirp Value below which we consider the population extirpated, in
 ##'   same units as recruits and spawners (so if those are assumed to change,
 ##'   this value should be changed also).
@@ -60,6 +72,7 @@ salmon_sim <- function(alpha = 7,
                        T = 100,
                        h_t = NULL,
                        R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.05,
+                       epsilon_tg = NULL,
                        deterministic = FALSE,
                        extirp = 2e-6
                        ){
@@ -159,9 +172,20 @@ salmon_sim <- function(alpha = 7,
   } else {
 
     # Generate stochastic variation in p_{t,g}
-    epsilon_tg <- matrix(rnorm(T * length(p_prime), 0, 1),
-                         T, length(p_prime) )
+    if(is.null(epsilon_tg)){
+      # If not specified then use the previous defaul
+      epsilon_tg <- matrix(rnorm(T * length(p_prime),
+                                 0,
+                                 1),
+                           T,
+                           length(p_prime))
+    } else {
+      stopifnot("Matrix of specified epsilon_tg must have dimension T * length(p_prime)" =
+                  dim(epsilon_tg) == c(T, length(p_prime)))
+    }
+
     p_tg_unnormalized <- t( t(exp(omega * epsilon_tg)) * p_prime)
+
     p_tg <- p_tg_unnormalized / rowSums(p_tg_unnormalized)  # repeats columnwise
     # names(p_tg) <- c("p_t3", "p_t4", "p_t5")
 

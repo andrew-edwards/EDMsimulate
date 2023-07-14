@@ -34,7 +34,9 @@ test_that("plot_salmon_bif() gives error if inputs are invalid", {
   x_test <- matrix(1:100, ncol = 10)
   expect_error(plot_salmon_bif(alpha_vec = alpha_vec_test,
                                x = x_test,
-                               new_plot = FALSE))   # Need here with no plots
+                               new_plot = FALSE))   # Need here with no plots,
+                                        # will sometimes fail locally but not on
+                                        # a clean build on GitHub.
   expect_error(plot_salmon_bif(alpha_vec = alpha_vec_test,
                                x = 1:10))
   expect_error(plot_salmon_bif(alpha_vec = alpha_vec_test,
