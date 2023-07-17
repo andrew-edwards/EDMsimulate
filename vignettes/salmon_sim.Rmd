@@ -16,6 +16,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+Different ways to simulate data, and to fit it, and to do multiple simulations
+with different stochasticity or assumptions/scenarios. Haven't yet decided on
+exact terminology.
 The notation in the code matches that in the write up of the second manuscript (in the `edm-work` repository).
 
 ```{r setup}
@@ -57,20 +60,30 @@ sim_fit <- pbsEDM::pbsEDM(sim_data,
                                         # others. Biologically defendible assumptions
                                       S_t = 0:3),
                           first_difference = TRUE)    # can try both
+sim_fit$results
+```
 
-# test on a deterministic simulation
+Try a deterministic simulation, and then again using the new `sim_and_fit()`
+wrapper:
+```{r function}
 sim_data_determ <- salmon_sim(deterministic = TRUE)
 
-sim_fit_determ <- pbsEDM::pbsEDM(sim_data_determ,
+sim_fit_determ_fit <- pbsEDM::pbsEDM(sim_data_determ,
                           lags = list(R_prime_t = 0,     # can test
                                         # others. Biologically defendible assumptions
                                       S_t = 0:3),
                           first_difference = TRUE)    # can try both
 
-```
+# Then in one function
+sim_fit_determ_fit_2 <- sim_and_fit(salmon_sim_args = list(deterministic =
+                                                             TRUE),
+                                    pbsEDM_args = list(lags = list(R_prime_t = 0,
+                                                                   S_t = 0:3),
+                                                       first_difference = TRUE))
 
-Function ideas testing
-```{r function}
-HERE - see sim_and_fit() and test for it. Needs documenting, as does new data object.
-
+# These should match:
+sim_fit_determ_fit$results
+sim_fit_determ_fit_2$fit$results
+expect_equal(sim_fit_determ_fit$results,
+             sim_fit_determ_fit_2$fit$results)
 ```
