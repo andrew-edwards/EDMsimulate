@@ -90,22 +90,21 @@ expect_equal(sim_fit_determ_fit$results,
 
 ## To run multiple realisations using the same parameter values but differing in stochasticity
 
-Does this work? Thinking of using the term `realisations` specifically for multiple runs that
+Using the term `realisations` specifically for multiple runs that
 have the same parameters but only differ in the resulting process noise
-(i.e. just different due to stochasticity).
-
-We said `scenarios` for the specific assumptions on
-the proportions that we talked about last week (there'd just be three
-scenarios). So changing other parameters could fall under the broader `simulations`.
-
-
-
-
-Could call these `realisations`, and save `simulations` for different
-assumptions (parameter values), and `scenarios` for the specific assumptions on
-the proportions.
+(i.e. just different due to stochasticity). Then `scenarios` for
+different assumptions of parameter values. Maybe scenarios A, B, and C for the
+three sets of assumptions on
+the proportions that we talked about last week, since they're the main things we
+want to change, and then numbered scenarios for changing other things (and A1,
+A2, ..., for combining them).
 
 
-It kind of helps be consistent when giving names to functions, though I realise
-I've already used `sim` quite a lot. Maybe the `realisation` one is the useful
-distinction.
+TODO centre and scale for all fits, go back and do functions and tests.
+
+Then vary over E, but not simple as need to vary over multivariate lags. So need
+to pick the best combination of lags, not the best E.
+
+Then do s-map as well using the best lags? May as well, to get the best
+results. Then do the uncertainty ideas on just the optimal ones (getting a
+confidence interval for each realisation).

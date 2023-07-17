@@ -179,7 +179,7 @@ salmon_sim <- function(alpha = 7,
 
     # Generate stochastic variation in p_{t,g}
     if(is.null(epsilon_tg)){
-      # If not specified then use the previous defaul
+      # If not specified then use the previous default
       epsilon_tg <- matrix(rnorm(T * length(p_prime),
                                  0,
                                  1),
