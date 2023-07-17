@@ -88,18 +88,23 @@ expect_equal(sim_fit_determ_fit$results,
              sim_fit_determ_fit_2$fit$results)
 ```
 
-## To run multiple simulations using the same parameter values but differing in stochasticity
+## To run multiple realisations using the same parameter values but differing in stochasticity
+
+Does this work? Thinking of using the term `realisations` specifically for multiple runs that
+have the same parameters but only differ in the resulting process noise
+(i.e. just different due to stochasticity).
+
+We said `scenarios` for the specific assumptions on
+the proportions that we talked about last week (there'd just be three
+scenarios). So changing other parameters could fall under the broader `simulations`.
+
+
+
 
 Could call these `realisations`, and save `simulations` for different
 assumptions (parameter values), and `scenarios` for the specific assumptions on
 the proportions.
 
-Does this work? Thinking of using the term `realisations` for multiple runs that
-have the same parameters but only differ in the resulting process noise
-(i.e. just different due to stochasticity). Then say `simulations` for when changing different
-assumptions (parameter values), and keep `scenarios` for the specific assumptions on
-the proportions that we talked about last week (there'd just be three
-scenarios).
 
 It kind of helps be consistent when giving names to functions, though I realise
 I've already used `sim` quite a lot. Maybe the `realisation` one is the useful

@@ -8,4 +8,4 @@
 ^data-raw$
 ^\.github$
 
-^vignettes$
+vignettes/
