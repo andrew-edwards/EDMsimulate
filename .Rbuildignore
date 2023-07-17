@@ -7,3 +7,5 @@
 ^report$
 ^data-raw$
 ^\.github$
+
+^vignettes$

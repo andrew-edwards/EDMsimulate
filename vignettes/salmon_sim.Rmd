@@ -87,3 +87,9 @@ sim_fit_determ_fit_2$fit$results
 expect_equal(sim_fit_determ_fit$results,
              sim_fit_determ_fit_2$fit$results)
 ```
+
+## To run multiple simulations using the same parameter values but differing in stochasticity
+
+Could call these `realisations`, and save `simulations` for different
+assumptions (parameter values), and `scenarios` for the specific assumptions on
+the proportions.
