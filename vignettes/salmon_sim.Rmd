@@ -22,8 +22,8 @@ exact terminology.
 The notation in the code matches that in the write up of the second manuscript (in the `edm-work` repository).
 
 ```{r setup}
-load_all()    # library(EDMsimulate) when sharing, this is easier for local
-              # up-to-date testing
+# load_all()          # use this for local up-to-date testing
+library(EDMsimulate)
 library(pbsEDM)      # https://github.com/pbs-assess/pbsEDM
 ```
 
@@ -93,3 +93,14 @@ expect_equal(sim_fit_determ_fit$results,
 Could call these `realisations`, and save `simulations` for different
 assumptions (parameter values), and `scenarios` for the specific assumptions on
 the proportions.
+
+Does this work? Thinking of using the term `realisations` for multiple runs that
+have the same parameters but only differ in the resulting process noise
+(i.e. just different due to stochasticity). Then say `simulations` for when changing different
+assumptions (parameter values), and keep `scenarios` for the specific assumptions on
+the proportions that we talked about last week (there'd just be three
+scenarios).
+
+It kind of helps be consistent when giving names to functions, though I realise
+I've already used `sim` quite a lot. Maybe the `realisation` one is the useful
+distinction.
