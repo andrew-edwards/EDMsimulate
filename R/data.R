@@ -17,3 +17,11 @@
 ##'
 ##' @source Generated from running `data-raw/default_sim_seed_42_new.R`.
 "default_sim_seed_42_new"
+
+##' Example simulation and fit from running `salmon_sim()` with some specified (not
+##' default) values and then `pbsEDM::pbsEDM()`, to test with use of `sim_and_fit()`.
+##'
+##' @format List of fitting results - see `?pbsEDM::pbsEDM()`.
+##'
+##' @source Generated from running `data-raw/default_sim_seed_42_new.R`.
+"default_sim_seed_42_new_fit"

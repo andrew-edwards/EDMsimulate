@@ -1,16 +1,17 @@
-##' Simulate a population and fit it using pbsEDM::pbsEDM()
+##' Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
+##'  full results for any specific simulation.
 ##'
-##'
-##'
-##' @return List object with first component the simulated tibble, and the
-##'   remaining components the output from pbsEDM::pbsEDM(). TODO create an
-##'   option to return less output since probably not needed for simulations,
-##'   but need now.
+##' @return List object with components:
+##'  - `simulated:` the simulated tibble
+##'  - `fit:` the full output from pbsEDM::pbsEDM().
 ##' @export
 ##' @author Andrew Edwards
 ##' @examples
 ##' \dontrun{
-##'
+##' res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
+##'                                                   S_t = 0:3),
+##'                                       first_difference = TRUE))
+##' res$fit$results$X_rho
 ##' }
 ##' @param salmon_sim_args List of arguments to pass onto `salmon_sim()`.
 ##' @param pbsEDM_args  List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
@@ -32,21 +33,3 @@ sim_and_fit <- function(salmon_sim_args = list(),
   return(to_return) # for now, probably want to scale down or have option to
                     # just return basic results for when doing many simulations
 }
-
-
-
-## foo <- function(x, y, sum = list(), grep = list()) {
-##  list(sum = do.call("sum", c(x, sum)), grep = do.call("grep", c("abc", y, grep)))
-## }
-
-## # test
-
-## X <- c(1:5, NA, 6:10)
-## Y <- "xyzabcxyz"
-## foo(X, Y, sum = list(na.rm = TRUE), grep = list(value = TRUE))
-
-## ## $sum
-## ## [1] 55
-## ##
-## $grep
-## [1] "xyzabcxyz"

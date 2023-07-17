@@ -11,10 +11,12 @@ salmon_sim(
   rho = 0.5,
   omega = 0.6,
   sigma_nu = 0.8,
+  nu_t = NULL,
   phi_1 = 0.1,
   T = 100,
   h_t = NULL,
   R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1) * 0.05,
+  epsilon_tg = NULL,
   deterministic = FALSE,
   extirp = 2e-06
 )
@@ -37,10 +39,16 @@ in the vector, which must sum to 1).}
 \item{rho}{Autocorrelation parameter for process noise, >= 0.}
 
 \item{omega}{Scales the annual normal deviates on the proportions returning
-at each age. If omega = 0 then no stochasticity for the proportions.}
+at each age. If omega = 0 then there is no stochasticity for the
+proportions (and if `deterministic = 0` then `omega` is set to 0.}
 
 \item{sigma_nu}{Standard deviation of process noise. If sigma_nu = 0 and
-rho = 0 then no process noise.}
+rho = 0 then no process noise. Ignored if `nu_t` specified.}
+
+\item{nu_t}{Explicit specification of the process noise term to allow
+reproducible simulations when testing different methods (see
+`epsilon_tg` also). Must be a numeric vector of length `T`, can have
+negative values. If not specified then a default is created.}
 
 \item{phi_1}{Initial value of process noise.}
 
@@ -54,9 +62,22 @@ then harvest rate will be set to 0.2 for all years.}
 \item{R_t_init}{Vector of eight years of recruit abundance to initialize the
 model.}
 
+\item{epsilon_tg}{Specified matrix of random variation in the `p_tg`. Must
+be of dimension `T * length(p_prime)` (returns error if not), where
+`length(p_prime) = 3` for the default. Each column of `epsilon_tg`
+corresponds to the respective element of `p_prime`, so column 1 refers to age-3,
+etc (see equations in write up). For running multiple simulations, this
+overall setup will allow seeds
+to be specified and thus specific values of stochasticity to be
+explicitly input as the matrix `epsilon_tg` (so they can be
+the same when testing different models). Experience tells us this should
+be clearer than creating the stochasticity within this function. If
+`epsilon_tg` is not specified then a default is created (which obviously
+depends on the seed). This is ignored if `deterministic` is TRUE.}
+
 \item{deterministic}{If TRUE then include no stochasticity and any
-given values of rho, omega, sigma_nu and phi_1 are redundant and set to
-0.}
+given values of rho, omega, sigma_nu, phi_1, nu_t, and epsilon_tg are redundant
+and set to 0 (nu_t is just ignored).}
 
 \item{extirp}{Value below which we consider the population extirpated, in
 same units as recruits and spawners (so if those are assumed to change,
