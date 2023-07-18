@@ -18,9 +18,8 @@ default_sim_seed_42_new <- salmon_sim(alpha = 0.8,
                                       extirp = 2e-6 * 1.2)
 
 # If change this again then see the tests in test-salmon_sim.R for things to check
-
 default_sim_seed_42_new_fit <- pbsEDM::pbsEDM(default_sim_seed_42_new,
-                          lags = list(R_prime_t = 0,
+                          lags = list(R_t = 0,
                                       S_t = 0:3),
                           first_difference = TRUE)
 

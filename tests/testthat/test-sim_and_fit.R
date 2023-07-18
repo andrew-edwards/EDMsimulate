@@ -15,8 +15,7 @@ test_that("sim_and_fit() runs and gives correct answer for simulation with some 
                        R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1,
                                     0.1, 0.1) * 1.2,
                        extirp = 2e-6 * 1.2),
-                pbsEDM_args = list(lags = list(R_prime_t = 0,   # TODO change
-                                        # and in data-raw
+                pbsEDM_args = list(lags = list(R_t = 0,
                                                S_t = 0:3),
                                    first_difference = TRUE))
 
