@@ -18,7 +18,8 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
                             pbsEDM_args = list(lags = list(R_t = 0,
                                                            S_t = 0:3),
                                                first_difference = TRUE,
-                                               centre_and_scale = TRUE),
+                                               centre_and_scale = FALSE), # want
+                                                 # to make TRUE, see data-raw/default...
                             M = 42)     # to correspond with usual seed = 42
 
 
