@@ -26,7 +26,7 @@ test_that("sim_and_fit() runs and gives correct answer for simulation with some 
                default_sim_seed_42_new_fit)
 
   expect_error(sim_and_fit(salmon_sim_args = 0.8,   # not a list but should be
-                           pbsEDM_args = list(lags = list(R_prime_t = 0,
+                           pbsEDM_args = list(lags = list(R_t = 0,
                                                           S_t = 0:3))))
 
   expect_error(sim_and_fit(pbsEDM_args = 7))  # lags is not a list (nor is pbsEDM_args)
