@@ -75,11 +75,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(
                    c(list(N = simulated),
                      pbsEDM_args))
 
+    stopifnot("First lags argument in pbsEDM_args must relate to R_t with no lag" =
+                  names(as.data.frame(fit$N))[1] == "R_t")
+
     testthat::expect_equal(simulated$R_t,
-                           fit$N_observed[-(T+1)])  # This will fail if R_t = 0 not
-                                        # first component of lags, leave in for
-                                        # now but can take out to speed things
-                                        # up TODO maybe
+                           fit$N_observed[-(T+1)])  # Extra check, above one
+                                        # should catch lagging misnaming.
 
     res_realisations[m, ] <- c(m,
                                R_T_sim,
