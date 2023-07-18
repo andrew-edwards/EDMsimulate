@@ -12,7 +12,10 @@
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here, and that `R_t`
 ##'   has to be the first one (with a lag of zero, so `R_t = 0` or `R_t = 0:1`
-##'   etc.) to be the response variable.
+##'   etc.) to be the response variable. Note that the default list here is just
+##'   to run examples, and if the list is different then `first_difference` and
+##'   `centre_and_scale` need to be explicictly specified in the new list (since
+##'   their defaults in `pbsEDM()` are FALSE, not TRUE like here.
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
@@ -36,8 +39,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(
                                      pbsEDM_args = list(
                                        lags = list(R_t = 0,
                                                    S_t = 0:3),
-                                       first_difference = TRUE),
-                                     M = 2){
+                                       first_difference = TRUE,
+                                       centre_and_scale = TRUE),
+                                     M = 5){
 
   T <- salmon_sim_args$T
   p_prime <- salmon_sim_args$p_prime

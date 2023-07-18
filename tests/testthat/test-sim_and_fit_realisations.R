@@ -17,7 +17,8 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
                                    extirp = 2e-6 * 1.2),
                             pbsEDM_args = list(lags = list(R_t = 0,
                                                            S_t = 0:3),
-                                               first_difference = TRUE),
+                                               first_difference = TRUE,
+                                               centre_and_scale = TRUE),
                             M = 42)     # to correspond with usual seed = 42
 
 
@@ -31,12 +32,6 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
 
   expect_error(sim_and_fit_realisations(pbsEDM_args = list(
                                           lags = list(R_prime_t = 0,
-                                                      S_t = 0:3))))  # Should
-                                                        # error since not R_t
-
-#  expect_error(sim_and_fit_realisations(salmon_sim_args = 0.8,   # not a list but should be
-#                           pbsEDM_args = list(lags = list(R_t = 0,
-#                                                         S_t = 0:3))))
-
-#  expect_error(sim_and_fit(pbsEDM_args = 7))  # lags is not a list (nor is pbsEDM_args)
+                                                      S_t = 0:3))))
+                                                      # Should error since not R_t
 })

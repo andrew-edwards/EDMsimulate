@@ -90,10 +90,6 @@ expect_equal(sim_fit_determ_fit$results,
 
 ## To run multiple realisations using the same parameter values but differing in stochasticity
 
-TODO `test_sim_and_fit()` (maybe just tests, and examples?) should use `R_t` not `R_prime_t`, change data-raw also
-and tests.
-
-
 Using the term `realisations` specifically for multiple runs that
 have the same parameters but only differ in the resulting process noise
 (i.e. just different due to stochasticity). Then `scenarios` for

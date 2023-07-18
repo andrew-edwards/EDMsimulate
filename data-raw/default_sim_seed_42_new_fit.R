@@ -1,7 +1,9 @@
-set.seed(42)
 # Old default inputs (as used for earlier default_sim_seed_42), with new betas
 #  proportionately scaled, and R_t_init and extirp scaled also. The checks below
 #  were used to get this right, and so the code below will go into the tests.
+
+set.seed(42)
+
 default_sim_seed_42_new <- salmon_sim(alpha = 0.8,
                                       beta = c(0.8, 0.2, 0.1, 0.1)/1.2,
                                       p_prime = c(0.01, 0.98, 0.01),

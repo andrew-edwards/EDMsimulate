@@ -17,7 +17,8 @@ test_that("sim_and_fit() runs and gives correct answer for simulation with some 
                        extirp = 2e-6 * 1.2),
                 pbsEDM_args = list(lags = list(R_t = 0,
                                                S_t = 0:3),
-                                   first_difference = TRUE))
+                                   first_difference = TRUE,
+                                   centre_and_scale = TRUE))
 
   expect_equal(default_sim_seed_42_new_create_in_test$simulated,
                default_sim_seed_42_new)
