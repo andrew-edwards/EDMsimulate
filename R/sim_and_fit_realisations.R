@@ -10,7 +10,9 @@
 ##' @param salmon_sim_args List of arguments to pass onto `salmon_sim()`,
 ##'   including `T` for the final time step.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
-##'   that `lags` has no default, so needs to be specified here.
+##'   that `lags` has no default, so needs to be specified here, and that `R_t`
+##'   has to be the first one (with a lag of zero, so `R_t = 0` or `R_t = 0:1`
+##'   etc.) to be the response variable.
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
@@ -23,16 +25,16 @@
 ##' @author Andrew Edwards
 ##' @examples
 ##' \dontrun{
-##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
+##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_t = 0,
 ##'                                                   S_t = 0:3),
 ##'                                       first_difference = TRUE))
 ##' res$fit$results$X_rho
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(
                                        p_prime = c(0.003, 0.917, 0.080),
-                                       T = 10),
+                                       T = 80),
                                      pbsEDM_args = list(
-                                       lags = list(R_prime_t = 0,
+                                       lags = list(R_t = 0,
                                                    S_t = 0:3),
                                        first_difference = TRUE),
                                      M = 2){
@@ -51,7 +53,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(
                                     X_rmse = numeric())
   for(m in 1:M){
     set.seed(m)
-browser()
+
     epsilon_tg <- matrix(rnorm(T * length(p_prime),
                                0,
                                1),
@@ -63,15 +65,21 @@ browser()
                            list(epsilon_tg = epsilon_tg)))   # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
-    R_T_sim <- simulated$R_t[T] # To not return a tibble, like: simulated[T, "R_t"]
-    simulated[T, "R_t"] = NA    # want no knowledge of it for pbsEDM().
+
+    R_T_sim <- simulated$R_t[T] # Value we are testing the forecast of. Does not
+                                # return a tibble like simulated[T, "R_t"] does.
+    simulated[T, "R_t"] = NA    # Ensure no knowledge of it for pbsEDM() (as
+                                # neighbour etc., though our code ensure that anyway).
 
     fit <- do.call(pbsEDM::pbsEDM,
-                 c(list(N = simulated),
-                   pbsEDM_args))
+                   c(list(N = simulated),
+                     pbsEDM_args))
 
-    testthat::expect_equal(R_T_sim,
-                           fit$N_observed[T])  # FAILS TODO
+    testthat::expect_equal(simulated$R_t,
+                           fit$N_observed[-(T+1)])  # This will fail if R_t = 0 not
+                                        # first component of lags, leave in for
+                                        # now but can take out to speed things
+                                        # up TODO maybe
 
     res_realisations[m, ] <- c(m,
                                R_T_sim,
