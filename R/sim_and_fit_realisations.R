@@ -37,9 +37,7 @@
 ##'                                       first_difference = TRUE))
 ##' res$fit$results$X_rho
 ##' }
-sim_and_fit_realisations <- function(salmon_sim_args = list(
-                                       p_prime = c(0.003, 0.917, 0.080),
-                                       T = 80),
+sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      pbsEDM_args = list(
                                        lags = list(R_t = 0,
                                                    S_t = 0:3),

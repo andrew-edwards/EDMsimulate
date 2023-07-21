@@ -67,21 +67,21 @@
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
 ##'     4 and 5.
 ##' @export
-salmon_sim <- function(alpha = 7,
+salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                        beta = c(0.25, 0.25, 0.25, 0.25),
                        p_prime = c(0.003, 0.917, 0.080),
-                       rho = 0.5,
-                       omega = 0.6,
-                       sigma_nu = 0.8,
+                       rho = 0,
+                       omega = 0.4,
+                       sigma_nu = 1,
                        nu_t = NULL,
-                       phi_1 = 0.1,
+                       phi_1 = 0,
                        T = 100,
                        h_t = NULL,
-                       R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.05,
-                       epsilon_tg = NULL,
+                       R_t_init = c(25, 5, 1, 1, 25.01, 5.02, 1.01, 1.02)*0.05,
+                                   # not exactly repeated to avoid locking for
+                                   #  deterministic runs
                        deterministic = FALSE,
-                       extirp = 2e-6
-                       ){
+                       extirp = 2e-6){
 
   if(!is.numeric(c(alpha,
                    beta,
