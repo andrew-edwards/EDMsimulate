@@ -38,9 +38,6 @@
 ##' res$fit$results$X_rho
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
-                                       p_prime = c(0.003, 0.917, 0.080),
-                                       T = 80,  # need same defaults as
-                                         # salmon_sim - TODO automate
                                      pbsEDM_args = list(
                                        lags = list(R_t = 0,
                                                    S_t = 0:3),
@@ -48,8 +45,26 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        centre_and_scale = TRUE),
                                      M = 5){
 
-  T <- salmon_sim_args$T
-  p_prime <- salmon_sim_args$p_prime
+  # Need explicit values for these three here
+  if(is.null(salmon_sim_args$p_prime)){
+    p_prime <- eval(formals(salmon_sim)$p_prime)
+  } else {
+    p_prime <- salmon_sim_args$p_prime
+  }
+
+  if(is.null(salmon_sim_args$T)){
+    T <- eval(formals(salmon_sim)$T)
+  } else {
+    T <- salmon_sim_args$T
+  }
+
+  if(is.null(salmon_sim_args$T_transient)){
+    T_transient <- eval(formals(salmon_sim)$T_transient)
+  } else {
+    T_transient <- salmon_sim_args$T_transient
+  }
+
+  T_total <- T_transient + T
 
   res_realisations <- dplyr::tibble(m = numeric(),
                                     R_T_sim = numeric(),
@@ -63,10 +78,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   for(m in 1:M){
     set.seed(m)
 
-    epsilon_tg <- matrix(rnorm(T * length(p_prime),
+    epsilon_tg <- matrix(rnorm(T_total * length(p_prime),
                                0,
                                1),
-                         T,
+                         T_total,
                          length(p_prime))
 
     simulated <- do.call(salmon_sim,
@@ -74,7 +89,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                            list(epsilon_tg = epsilon_tg)))   # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
-
+                                        # Returns values for years 1:T (so we
+                                        #  are done with T_transient from here on)
     R_T_sim <- simulated$R_t[T] # Value we are testing the forecast of. Does not
                                 # return a tibble like simulated[T, "R_t"] does.
     simulated[T, "R_t"] = NA    # Ensure no knowledge of it for pbsEDM() (as
