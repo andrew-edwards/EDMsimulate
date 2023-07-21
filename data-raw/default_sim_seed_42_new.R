@@ -60,6 +60,26 @@ passed okay).
                              dplyr::filter(default_sim_seed_42_new_fit_realisations,
                                            m == 42))
 
+
+Error: dplyr::as_tibble(...) not equal to dplyr::filter(...).
+Component "N_rho": Mean relative difference: 1.905788e-05
+Component "N_rmse": Mean relative difference: 6.076536e-05
+Component "X_rho": Mean relative difference: 7.591083e-05
+Component "X_rmse": Mean relative difference: 0.005152032
+
+  but not when
+FALSE (so arguments are getting passed okay). Had thought it does not fail when
+change to S_t = 0:4 , but it actually does seems to fail (but mostly not as badly) with S_t=0:4:
+
+Error: dplyr::as_tibble(...) not equal to dplyr::filter(...).
+Component "N_rho": Mean relative difference: 2.070968e-06
+Component "N_rmse": Mean relative difference: 3.792039e-06
+Component "X_rho": Mean relative difference: 0.0004112734
+Component "X_rmse": Mean relative difference: 0.005095349
+
+Could be to do with the simulation going to 0, and exactly how that gets dealt
+with. Probably worth changing that anyway.
+
 stop("don't go further until figure out above problem")
 usethis::use_data(default_sim_seed_42_new,
                   overwrite = TRUE)

@@ -8,7 +8,9 @@
 ##' `set.seed(m)` where `m` is the simulation number, going from 1 to `M`.
 ##'
 ##' @param salmon_sim_args List of arguments to pass onto `salmon_sim()`,
-##'   including `T` for the final time step.
+##'   including `T` for the final time step. TODO make p_prime standalone
+##' @param T Explicit `T` because we need a default; this gets overwritten by
+##'   any `T` in `salmon_sim_args`.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here, and that `R_t`
 ##'   has to be the first one (with a lag of zero, so `R_t = 0` or `R_t = 0:1`
@@ -16,6 +18,8 @@
 ##'   to run examples, and if the list is different then `first_difference` and
 ##'   `centre_and_scale` need to be explicictly specified in the new list (since
 ##'   their defaults in `pbsEDM()` are FALSE, not TRUE like here.
+##' @param first_difference
+##' @param centre_and_scale
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
