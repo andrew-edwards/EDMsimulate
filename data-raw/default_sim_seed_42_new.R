@@ -47,16 +47,23 @@ default_sim_seed_42_new_fit_realisations <- sim_and_fit_realisations(
                      centre_and_scale = FALSE),
   M = 42)   # so the last row results should match default_sim_seed_42_new_fit results
 
+ISSUE was that salmon_sim has default of T = 100 (which I
+                                                  didn't want to change as would mess up tests), but ...realisation() has default of T = 80. Doesn't matter for c_and_s = FALSE, but does for TRUE because the extra 20 0's influence the values.
+
+So, this is kind of documented here. Going to redo defaults anyway with Carrie's
+updated values, so make them the same, and put in a transient that gets
+ignored.
+
 HERE - next test is failing with centre_and_scale = TRUE above, but not when
-FALSE. Does not fail when change to S_t = 0:4 or first_difference = FALSE, so the arguments are getting
-passed okay).
+FALSE. Does not fail when first_difference = FALSE, so the arguments are getting
+passed okay.
 
 
   testthat::expect_equal(
             dplyr::as_tibble(cbind(m = 42,
                                    R_T_sim = default_sim_seed_42_new_fit$N_observed[100],
                                    R_T_edm_fit = default_sim_seed_42_new_fit$N_forecast[100],
-                                   default_sim_seed_42_new_fit$results)),
+                                   default_sim_seed_42_new_fit$results)),  # not _fit$fit_results??
                              dplyr::filter(default_sim_seed_42_new_fit_realisations,
                                            m == 42))
 
@@ -78,7 +85,25 @@ Component "X_rho": Mean relative difference: 0.0004112734
 Component "X_rmse": Mean relative difference: 0.005095349
 
 Could be to do with the simulation going to 0, and exactly how that gets dealt
-with. Probably worth changing that anyway.
+with. Probably worth changing that anyway. Going to use
+Carrie's as defaults, but even using current defaults gives differerent results:
+
+fit_and_sim_default_realisation <- sim_and_fit_realisations(pbsEDM_args = list(lags = list(R_t = 0, S_t = 0:3)), M = 42)
+
+Think it's passing the simulated values wrong. Check the epsilon_tg agree with
+each approach, putting a browser in when m=42:
+
+fit_and_sim_default_realisation <- sim_and_fit_realisations(pbsEDM_args = list(lags = list(R_t = 0, S_t = 0:3)), M = 42)
+when browser appears then save simulated values (then epsilon_tg if needed)
+
+realisation_R_t_42 <- simulated$R_t
+
+Then do this:
+set.seed(42)
+fit_and_sim_defaults <- sim_and_fit(salmon_sim_args = list(T = 80),
+                                    pbsEDM_args = list(lags = list(R_t = 0, S_t = 0:3)))
+
+
 
 stop("don't go further until figure out above problem")
 usethis::use_data(default_sim_seed_42_new,
