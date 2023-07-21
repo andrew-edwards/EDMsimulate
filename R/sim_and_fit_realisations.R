@@ -39,7 +39,8 @@
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        p_prime = c(0.003, 0.917, 0.080),
-                                       T = 80),  # need same defaults as salmon_sim
+                                       T = 80,  # need same defaults as
+                                         # salmon_sim - TODO automate
                                      pbsEDM_args = list(
                                        lags = list(R_t = 0,
                                                    S_t = 0:3),

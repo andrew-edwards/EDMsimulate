@@ -8,7 +8,8 @@
 ##'   model the recruitment R_t has to be given for the first eight years. All
 ##'   parameters must be >=0, some >0. Units of recruits and spawners are
 ##'   nominally millions of fish, and is the only absolute scale because the
-##'   beta_i sum to 1.
+##'   beta_i sum to 1. Simulation runs for a transient time of `T_transient`
+##'   years and then saves ouputs values for the next `T` years.
 ##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
 ##'   absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
@@ -28,18 +29,21 @@
 ##'   rho = 0 then no process noise. Ignored if `nu_t` specified.
 ##' @param nu_t Explicit specification of the process noise term to allow
 ##'   reproducible simulations when testing different methods (see
-##'   `epsilon_tg` also). Must be a numeric vector of length `T`, can have
+##'   `epsilon_tg` also). Must be a numeric vector of length `T + T_transient`, can have
 ##'   negative values. If not specified then a default is created.
 ##' @param phi_1 Initial value of process noise.
-##' @param T Number of years to run the simulation, including the eight years
-##'   needed for initialising the simulation, must be >=9.
-##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., T. Or if a
+##' @param T Number of years of the simulation to return.
+##' @param T_transient Number of years to first run the model for a transient
+##'   time; for later fitting using the `T` years from
+##'   `(T_transient + 1):(T_transient + T)`. Total time includes the eight years
+##'   needed for initialising the simulation, so `T_transient + T` must be >=9.
+##' @param h_t Vector of harvest rate for each year 1, 2, 3, ..., `T_transient`. Or if a
 ##'   single value then this will be the constant rate for all years. If NULL
 ##'   then harvest rate will be set to 0.2 for all years.
 ##' @param R_t_init Vector of eight years of recruit abundance to initialize the
 ##'   model.
 ##' @param epsilon_tg Specified matrix of random variation in the `p_tg`. Must
-##'   be of dimension `T * length(p_prime)` (returns error if not), where
+##'   be of dimension `T_transient * length(p_prime)` (returns error if not), where
 ##'   `length(p_prime) = 3` for the default. Each column of `epsilon_tg`
 ##'   corresponds to the respective element of `p_prime`, so column 1 refers to age-3,
 ##'   etc (see equations in write up). For running multiple simulations, this
@@ -75,11 +79,13 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                        sigma_nu = 1,
                        nu_t = NULL,
                        phi_1 = 0,
-                       T = 100,
+                       T = 80,
+                       T_transient = 100,
                        h_t = NULL,
                        R_t_init = c(25, 5, 1, 1, 25.01, 5.02, 1.01, 1.02)*0.05,
                                    # not exactly repeated to avoid locking for
                                    #  deterministic runs
+                       epsilon_tg = NULL,
                        deterministic = FALSE,
                        extirp = 2e-6){
 
@@ -91,17 +97,20 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                    sigma_nu,
                    phi_1,
                    T,
+                   T_transient,
                    R_t_init,
                    extirp))){
     stop("all arguments (except deterministic) must be numeric")
   }
+
+  T_total <- T + T_transient        # total time to run the simulation for
 
   if(!is.logical(deterministic) | length(deterministic) != 1){
     stop("deterministic must be TRUE or FALSE")
   }
   if(is.na(deterministic)) stop("deterministic must be TRUE or FALSE, not NA")
 
-  if(T < 9) stop("T must be >=9")
+  if(T_total < 9) stop("T + T_transient must be >=9")
 
   if(length(beta) != 4){
     stop("beta must have length 4")
@@ -110,7 +119,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
   if(sum(beta) != 1) stop("beta values must sum to 1")
 
   if(is.null(h_t)){
-    h_t <- rep(0.2, T)
+    h_t <- rep(0.2, T_total)
   } else {
     if(!is.numeric(h_t)){
       stop("h_t must be numeric")
@@ -118,7 +127,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
   }
 
   if(length(h_t) == 1){    # Repeat a single given value
-    h_t <- rep(h_t, T)
+    h_t <- rep(h_t, T_total)
   }
 
   if(min(c(alpha,
@@ -129,6 +138,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
            sigma_nu,
            phi_1,
            T,
+           T_transient,
            h_t,
            R_t_init,
            extirp)) < 0 ) {
@@ -146,15 +156,16 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
               sigma_nu,
               phi_1,
               T,
-              extirp)) != 7){
-    stop("alpha, rho, omega, sigma_nu, phi_1 and T must all have length 1")
+              T_transient,
+              extirp)) != 8){
+    stop("alpha, rho, omega, sigma_nu, phi_1, T, and T_transient must all have length 1")
   }
 
   if(length(p_prime) != 3 | sum(p_prime) != 1){
     stop("p_prime must have length 3 and sum to 1")
   }
 
-  if(length(h_t) != T) stop("h_t must have length T.")
+  if(length(h_t) != T_total) stop("h_t must have length T + T_transient.")
   if(max(h_t) >= 1) stop("h_t values must be <1.")
 
   T_init <- length(R_t_init)
@@ -168,26 +179,28 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
     phi_1 <- 0
     # Generate no stochastic variation in p_{t,g}
     epsilon_tg <- matrix(0,
-                         T,
+                         T_total,
                          length(p_prime) )  # Not used but is returned
-    p_tg <- matrix(p_prime, nrow=T, ncol=length(p_prime), byrow=TRUE)
+    p_tg <- matrix(p_prime,
+                   nrow = T_total,
+                   ncol=length(p_prime), byrow=TRUE)
 
     # Generate no process noise phi_t
-    phi_t <- rep(0, T)
+    phi_t <- rep(0, T_total)
 
   } else {
 
     # Generate stochastic variation in p_{t,g}
     if(is.null(epsilon_tg)){
       # If not specified then use the previous default
-      epsilon_tg <- matrix(rnorm(T * length(p_prime),
+      epsilon_tg <- matrix(rnorm(T_total * length(p_prime),
                                  0,
                                  1),
-                           T,
+                           T_total,
                            length(p_prime))
     } else {
-      stopifnot("Matrix of specified epsilon_tg must have dimension T * length(p_prime)" =
-                  dim(epsilon_tg) == c(T, length(p_prime)))
+      stopifnot("Matrix of specified epsilon_tg must have dimension (T + T_transient) * length(p_prime)" =
+                  dim(epsilon_tg) == c(T_total, length(p_prime)))
     }
 
     p_tg_unnormalized <- t( t(exp(omega * epsilon_tg)) * p_prime)
@@ -197,24 +210,24 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
 
     # Generate autocorrelated process noise phi_t
     if(is.null(nu_t)){
-      nu_t <- rnorm(T,
+      nu_t <- rnorm(T_total,
                     -sigma_nu^2 / 2,
                     sigma_nu)
     } else {
-      stopifnot("Vector of specified nu_t must have length T" =
-                  length(nu_t) == T)
+      stopifnot("Vector of specified nu_t must have length T + T_transient" =
+                  length(nu_t) == T_total)
     }
 
     phi_t <-  c(phi_1,
-                rep(NA, T-1))
+                rep(NA, T_total - 1))
 
-    for(i in 2:T){
+    for(i in 2:T_total){
       phi_t[i] <- rho * phi_t[i-1] + nu_t[i]
     }
   }
 
   # Initialize - depends directly on initial conditions
-  R_t <- c(R_t_init, rep(NA, T - length(R_t_init)))
+  R_t <- c(R_t_init, rep(NA, T_total - length(R_t_init)))
   S_t <- (1 - h_t) * R_t
 
   R_prime_t <- alpha * S_t * exp(- beta[1] * S_t -
@@ -224,7 +237,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                                  phi_t)        # beta[1] is beta_0
 
   # Loop of full run
-  for(i in (T_init+1):T){
+  for(i in (T_init + 1):T_total){
     R_t[i] <- p_tg[i-3,1] * R_prime_t[i-3] +
               p_tg[i-4,2] * R_prime_t[i-4] +
               p_tg[i-5,3] * R_prime_t[i-5]
@@ -241,19 +254,20 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                                          phi_t[i])         # beta[1] is beta_0
   }
 
+  non_transient <- (T_transient + 1):T_total    # indices to return T years
   # Returns data frame of results
   dplyr::tibble("t" = 1:T,
-                "R_t" = R_t,
-                "R_prime_t" = R_prime_t,
-                "S_t" = S_t,
-                "h_t" = h_t,
-                "p_t3" = p_tg[, 1],
-                "p_t4" = p_tg[, 2],
-                "p_t5" = p_tg[, 3],
-                "epsilon_t3" = epsilon_tg[, 1],
-                "epsilon_t4" = epsilon_tg[, 2],
-                "epsilon_t5" = epsilon_tg[, 3],
-                "phi_t" = phi_t)
+                "R_t" = R_t[non_transient],
+                "R_prime_t" = R_prime_t[non_transient],
+                "S_t" = S_t[non_transient],
+                "h_t" = h_t[non_transient],
+                "p_t3" = p_tg[non_transient, 1],
+                "p_t4" = p_tg[non_transient, 2],
+                "p_t5" = p_tg[non_transient, 3],
+                "epsilon_t3" = epsilon_tg[non_transient, 1],
+                "epsilon_t4" = epsilon_tg[non_transient, 2],
+                "epsilon_t5" = epsilon_tg[non_transient, 3],
+                "phi_t" = phi_t[non_transient])
 }
 
 
