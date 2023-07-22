@@ -20,10 +20,10 @@ test_that("salmon_sim() gives error if deterministic not TRUE or FALSE", {
 })
 
 
-test_that("salmon_sim() gives error if length(h_t) != T (if h_t not scalar), T too small, h_t too big ", {
+test_that("salmon_sim() gives error if length(h_t) != T (if h_t not scalar), T_transient + T too small, h_t too big ", {
           expect_error(salmon_sim(T = 50,
                                   h_t = rep(0.2, 49)))
-          expect_error(salmon_sim(T = 7))
+          expect_error(salmon_sim(T_transient = 1, T = 1))
           expect_error(salmon_sim(h_t = 1))
           expect_silent(salmon_run(h_t = 0.5))
 })
@@ -96,8 +96,6 @@ test_that("salmon_sim() results in R^* = 0 steady state if alpha < 1/(1-h_star)"
   expect_equal(min(R_numeric_tail), 0)
   expect_equal(max(R_numeric_tail), 0)
 })
-
-
 
 test_that("plot_sim() can create a plot for default run (no seed set)", {
           expect_silent(salmon_run())
