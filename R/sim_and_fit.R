@@ -1,5 +1,6 @@
 ##' Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
-##'  full results for any specific simulation.
+##'  full results for any specific simulation. Removes knowledge of the final
+##'  `R_prime_T` since knowing that affects the rho calculations.
 ##'
 ##' @return List object with components:
 ##'  - `simulated:` the simulated tibble
@@ -25,8 +26,14 @@ sim_and_fit <- function(salmon_sim_args = list(),
   simulated <- do.call(salmon_sim,
                        salmon_sim_args)   #
 
+
+  simulated_use <- simulated
+  simulated_use[nrow(simulated_use), "R_prime_t"] = NA    # Ensure no
+                                        # knowledge of it for pbsEDM(), so it
+                                        # doesn't affect the rho values (else it does)
+
   fit <- do.call(pbsEDM::pbsEDM,
-                 c(list(N = simulated),
+                 c(list(N = simulated_use),
                    pbsEDM_args))
 
   to_return <- list(simulated = simulated,

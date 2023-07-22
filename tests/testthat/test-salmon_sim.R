@@ -1,28 +1,11 @@
 context("salmon_sim.R")
 
-test_that("salmon_sim() gives correct answer with some old original default inputs and beta now as proportional", {
+test_that("salmon_sim() gives correct answer with defaults", {
   set.seed(42)
-  default_sim_seed_42_new_create_in_test <-
-    salmon_sim(alpha = 0.8,
-               beta = c(0.8, 0.2, 0.1, 0.1)/1.2,
-               p_prime = c(0.01, 0.98, 0.01),
-               rho = 0.6,
-               omega = 0.8,
-               sigma_nu = 0.75,
-               phi_1 = 0.1,
-               T = 100,
-               R_t_init = c(0.6, 0.1, 0.1, 0.1, 0.6, 0.1,
-                            0.1, 0.1) * 1.2,
-               extirp = 2e-6 * 1.2)
-  expect_equal(default_sim_seed_42_new_create_in_test,
-               default_sim_seed_42_new)
-  # check with the one before redefining betas
-  expect_equal(default_sim_seed_42_new_create_in_test$S_t / 1.2,
-               default_sim_seed_42$S_t)
-  expect_equal(default_sim_seed_42_new_create_in_test$R_t / 1.2,
-               default_sim_seed_42$R_t)
-  expect_equal(default_sim_seed_42_new_create_in_test$R_prime_t / 1.2,
-               default_sim_seed_42$R_prime_t)
+  default_sim_create_in_test <- salmon_sim()
+
+  expect_equal(default_sim_create_in_test,
+               default_sim)
 })
 
 test_that("salmon_sim() gives error if any non-numeric inputs", {
