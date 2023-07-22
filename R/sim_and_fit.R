@@ -17,7 +17,9 @@
 ##' @param pbsEDM_args  List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here.
 sim_and_fit <- function(salmon_sim_args = list(),
-                        pbsEDM_args = list()){
+                        pbsEDM_args = list(
+                          lags = list(R_prime_t = 0,
+                                      S_t = 0:3))){
   # want to set seed in a wrapper function to this one, and then include the
   # epsilton_tg in salmon_sim_args
   simulated <- do.call(salmon_sim,

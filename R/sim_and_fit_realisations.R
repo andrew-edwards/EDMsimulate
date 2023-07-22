@@ -1,7 +1,7 @@
 ##' Simulate a population and fit it using pbsEDM::pbsEDM(), doing multiple realisations for a given set of parameters (so the only difference is the stochasticity)
 ##'
-##' This only returns the simulated recruitment `R_T_sim` for the final time step, the
-##' forecasted `R_T_edm_fit` calculated using EDM (obviously taking `R_T_sim`
+##' This only returns the simulated recruitment `R_prime_T_sim` for the final time step, the
+##' forecasted `R_prime_T_edm_fit` calculated using EDM (obviously taking `R_prime_T_sim`
 ##' out of the input to `pbsEDM::pbsEDM()`, and the EDM summary results. Use
 ##' `sim_and_fit()` with a particular seed to get full results for any
 ##' specific realisation. The seed for each simulated data set is given by
@@ -12,8 +12,8 @@
 ##' @param T Explicit `T` because we need a default; this gets overwritten by
 ##'   any `T` in `salmon_sim_args`.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
-##'   that `lags` has no default, so needs to be specified here, and that `R_t`
-##'   has to be the first one (with a lag of zero, so `R_t = 0` or `R_t = 0:1`
+##'   that `lags` has no default, so needs to be specified here, and that `R_prime_t`
+##'   has to be the first one (with a lag of zero, so `R_prime_t = 0` or `R_prime_t = 0:1`
 ##'   etc.) to be the response variable. Note that the default list here is just
 ##'   to run examples, and if the list is different then `first_difference` and
 ##'   `centre_and_scale` need to be explicictly specified in the new list (since
@@ -23,7 +23,7 @@
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
-##' the simulated recruitment `R_T_sim` and fitted recruitment `R_T_edm_fit` for
+##' the simulated recruitment from year-T spawners, `R_prime_T_sim`, and fitted recruitment `R_prime_T_edm_fit` for
 ##'   year `T`, followed by the values reported in the `results`
 ##'   object in output from `pbsEDM:pbsEDM()`, namely `E N_rho N_rmse X_rho
 ##'   X_rmse` (exact columns may change in future). Probably won't need all
@@ -32,14 +32,15 @@
 ##' @author Andrew Edwards
 ##' @examples
 ##' \dontrun{
-##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_t = 0,
+##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
 ##'                                                   S_t = 0:3),
 ##'                                       first_difference = TRUE))
 ##' res$fit$results$X_rho
+##' # Think of year 80 as being 2019ish, not 2023.
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      pbsEDM_args = list(
-                                       lags = list(R_t = 0,
+                                       lags = list(R_prime_t = 0,
                                                    S_t = 0:3),
                                        first_difference = TRUE,
                                        centre_and_scale = TRUE),
@@ -67,8 +68,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   T_total <- T_transient + T
 
   res_realisations <- dplyr::tibble(m = numeric(),
-                                    R_T_sim = numeric(),
-                                    R_T_edm_fit = numeric(),
+                                    R_prime_T_sim = numeric(),
+                                    R_prime_T_edm_fit = numeric(),
                                     E = numeric(),   # Though will need specific
                                         # lags also kept track of or specified
                                     N_rho = numeric(),
@@ -91,24 +92,24 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         # as test
                                         # Returns values for years 1:T (so we
                                         #  are done with T_transient from here on)
-    R_T_sim <- simulated$R_t[T] # Value we are testing the forecast of. Does not
+    R_prime_T_sim <- simulated$R_prime_t[T] # Value we are testing the forecast of. Does not
                                 # return a tibble like simulated[T, "R_t"] does.
-    simulated[T, "R_t"] = NA    # Ensure no knowledge of it for pbsEDM() (as
+    simulated[T, "R_prime_t"] = NA    # Ensure no knowledge of it for pbsEDM() (as
                                 # neighbour etc., though our code ensure that anyway).
 
     fit <- do.call(pbsEDM::pbsEDM,
                    c(list(N = simulated),
                      pbsEDM_args))
 
-    stopifnot("First lags argument in pbsEDM_args must relate to R_t with no lag" =
-                  names(as.data.frame(fit$N))[1] == "R_t")
+    stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
+                  names(as.data.frame(fit$N))[1] == "R_prime_t")
 
-    testthat::expect_equal(simulated$R_t,
+    testthat::expect_equal(simulated$R_prime_t,
                            fit$N_observed[-(T+1)])  # Extra check, above one
                                         # should catch lagging misnaming.
 
     res_realisations[m, ] <- c(m,
-                               R_T_sim,
+                               R_prime_T_sim,
                                fit$N_forecast[T],
                                fit$results)
   }
