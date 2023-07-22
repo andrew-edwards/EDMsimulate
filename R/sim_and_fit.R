@@ -9,6 +9,10 @@
 ##' @author Andrew Edwards
 ##' @examples
 ##' \dontrun{
+##' res <- sim_and_fit(salmon_sim_args = list(deterministic = TRUE))
+##' plot(res$fit$N_observed, res$fit$N_forecast)
+##' abline(a = 0, b = 1)   # looks good for deterministic run, which is good
+##'
 ##' res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
 ##'                                                   S_t = 0:3),
 ##'                                       first_difference = TRUE))
