@@ -1,11 +1,12 @@
 # Old default inputs (as used for earlier default_sim_seed_42), with new betas
 #  proportionately scaled, and R_t_init and extirp scaled also.
 
-# TODO - see ...fit.R which also saves default_sim_seed_42_new, should get rid
-# of that I think.
-
 # Also fitting it manually here to then test sim_and_fit() and sim_and_fit_realisations()
 
+# These ended up not working due to different defaults, but now we've updated
+# default parameters so creating new data objects for testing just based on
+# defaults. Keeping this around for reference, though population dies out here
+# so not the best test to do.
 set.seed(42)
 
 default_sim_seed_42_new <- salmon_sim(alpha = 0.8,
