@@ -5,6 +5,7 @@ set.seed(42)
 default_sim <- salmon_sim()
 
 default_sim_to_fit <- default_sim
+R_prime_T <- default_sim_to_fit$"R_prime_t"[nrow(default_sim_to_fit)]
 default_sim_to_fit[nrow(default_sim_to_fit), "R_prime_t"] = NA    # Ensure no
                                         # knowledge of it for pbsEDM(), so it
                                         # doesn't affect the rho values (else it does)
@@ -16,12 +17,19 @@ default_sim_fit <- pbsEDM::pbsEDM(default_sim_to_fit,
                                   first_difference = TRUE,
                                   centre_and_scale = TRUE)
 
-default_sim_fit_realisations <- sim_and_fit_realisations(
-  pbsEDM_args = list(lags = list(R_prime_t = 0,
-                                 S_t = 0:3),
-                     first_difference = TRUE,
-                     centre_and_scale = TRUE),
-  M = 42)   # so the last row results should match default_sim_fit results
+testthat::expect_equal(default_sim_to_fit$R_prime_t,
+                       default_sim_fit$N_observed[-length(default_sim_fit$N_observed)])
+
+# So remove the final value and put back in the observed T value, which we want
+# to compare to the simulated
+default_sim_fit$N_observed <-
+  default_sim_fit$N_observed[-length(default_sim_fit$N_observed)]
+default_sim_fit$N_observed[length(default_sim_fit$N_observed)] <- R_prime_T
+
+
+
+default_sim_fit_realisations <- sim_and_fit_realisations(M = 42)
+     # so the last row results should match default_sim_fit results
 
 testthat::expect_equal(
             dplyr::as_tibble(cbind(m = 42,
