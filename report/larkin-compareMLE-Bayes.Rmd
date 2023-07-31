@@ -1,0 +1,125 @@
+---
+title: "larkin-comparisonMLE-Bayes"
+author: "Carrie Holt"
+date: "2023-07-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Comparison MLE vs Bayes for Larkin model
+
+This code runs 100 simulations of salmon_sim() and compares MLE and Bayes forecasts from the Larkin model
+
+```{r comparison}
+# Libraries
+library(larkin)
+library(dplyr)
+library(ggplot2)
+
+nsim <- 100
+out <- matrix(nrow=nsim, ncol=2)
+colnames(out) <- c("MLE", "Bayes")
+
+for (i in 1:100){
+	df <- salmon_sim(omega=0.4, rho = 0, sigma_nu=1) %>% dplyr::filter(t>4)
+	
+	# if (FALSE) {
+	# Declare arguments for manual testing
+	data <- df
+	# index <- length(df$t)
+	recruits <- "R_prime_t"
+	spawners <- "S_t"
+	environs <- character(0)# c("flow", "pdo", "npgo_annual") # character(0)
+	#run_stan <- FALSE#TRUE
+	prior_mean_alpha <- 2
+	prior_mean_beta <- rep(0.25,4)#c(-8, -6, -4, -2) # c(-4) # to estimate Ricker, put only 1 value here
+	prior_mean_gamma <- numeric(0)#rep(0, 3) # numeric(0)
+	prior_mean_sigma <- 0.5
+	prior_mean_omega <- 0#0.1 # 0
+	prior_sd_alpha <- 0.25 * abs(prior_mean_alpha)
+	prior_sd_beta <- 0.25 * abs(prior_mean_beta)
+	prior_sd_gamma <- numeric(0)# rep(0.25, 3)
+	prior_sd_sigma <- 0.25 * abs(prior_mean_sigma)
+	prior_sd_omega <- 0#0.01 # 0
+	id_cols <- c("t") #c("stock_id", "stock_name", "brood_year") # NULL
+	id_vals <- list(method = "model")
+	cores <- ceiling(parallel::detectCores() / 2) # 4 # 1 # 4 # 1
+	chains <- 3
+	step_size <- 0.01
+	adapt_delta <- 0.9
+	iter_warmup <- 250
+	iter_sampling <- 750 # 2000 # 750
+	# }
+	
+	
+	outputMLE <- larkin::forecast(
+		data = data,
+		# index = index,
+		recruits = recruits,
+		spawners = spawners,
+		environs = environs,
+		run_stan = FALSE,
+		prior_mean_alpha = prior_mean_alpha,
+		prior_mean_beta = prior_mean_beta,
+		prior_mean_gamma = prior_mean_gamma,
+		prior_mean_sigma = prior_mean_sigma,
+		prior_mean_omega = prior_mean_omega,
+		prior_sd_alpha = prior_sd_alpha,
+		prior_sd_beta = prior_sd_beta,
+		prior_sd_gamma = prior_sd_gamma,
+		prior_sd_sigma = prior_sd_sigma,
+		prior_sd_omega = prior_sd_omega,
+		id_cols = id_cols,
+		id_vals = id_vals,
+		cores = cores,
+		chains = chains,
+		step_size = step_size,
+		adapt_delta = adapt_delta,
+		iter_warmup = iter_warmup,
+		iter_sampling = iter_sampling
+	)
+	outputBayes <- larkin::forecast(
+		data = data,
+		# index = index,
+		recruits = recruits,
+		spawners = spawners,
+		environs = environs,
+		run_stan = TRUE,
+		prior_mean_alpha = prior_mean_alpha,
+		prior_mean_beta = prior_mean_beta,
+		prior_mean_gamma = prior_mean_gamma,
+		prior_mean_sigma = prior_mean_sigma,
+		prior_mean_omega = prior_mean_omega,
+		prior_sd_alpha = prior_sd_alpha,
+		prior_sd_beta = prior_sd_beta,
+		prior_sd_gamma = prior_sd_gamma,
+		prior_sd_sigma = prior_sd_sigma,
+		prior_sd_omega = prior_sd_omega,
+		id_cols = id_cols,
+		id_vals = id_vals,
+		cores = cores,
+		chains = chains,
+		step_size = step_size,
+		adapt_delta = adapt_delta,
+		iter_warmup = iter_warmup,
+		iter_sampling = iter_sampling
+	)
+	
+
+	out[i,"MLE"] <- outputMLE$forecasts$optim
+	out[i,"Bayes"] <- outputBayes$forecasts$mean
+}
+
+out <- as.data.frame(out)
+p1 <- out %>% 
+	ggplot(aes(x=MLE, y=Bayes)) + 
+	geom_point() + 
+	geom_smooth(method = "lm", alpha = .15) + 
+	geom_abline(slope=1, intercept = 0)
+
+ggsave(filename = "MLEvsBayesLarkin.png", plot = p1, path = here::here("report"))
+```
+

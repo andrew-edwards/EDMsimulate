@@ -1,0 +1,143 @@
+---
+title: "Demonstrate Larkin Estimation"
+author: "Carrie Holt"
+date: "2023-07-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Larkin model estimation on simulated data
+
+This code demonstrates Larkin model estimation on simulated data
+
+```{r model run}
+# Libraries
+library(larkin)
+library(dplyr)
+library(ggplot2)
+
+## Base Case parameters for simluation
+# alpha = 7,
+# beta = c(1, 1, 1, 1),
+# p_prime = c(0.003, 0.917, 0.080),
+# rho = 0.5,
+# omega = 0.6,
+# sigma_nu = 0.8,
+# phi_1 = 0.1,
+# T = 100,
+# h_t = NULL,
+# R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.05,
+# deterministic = FALSE,
+# extirp = 2e-6
+
+# Run simulation
+df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=0.01) %>% dplyr::filter(t>4)
+
+	# Declare arguments for estimation function
+	data <- df
+	# index <- length(df$t)
+	recruits <- "R_prime_t"
+	spawners <- "S_t"
+	p_prime <- c(0.003, 0.917, 0.080)
+	environs <- character(0)# c("flow", "pdo", "npgo_annual") # character(0)
+	run_stan <- TRUE
+	prior_mean_alpha <- 2
+	prior_mean_beta <- rep(0.25,4)#c(-8, -6, -4, -2) # c(-4) # to estimate Ricker, put only 1 value here
+	prior_mean_gamma <- numeric(0)#rep(0, 3) # numeric(0)
+	prior_mean_sigma <- 0.5
+	prior_mean_omega <- 0#0.1 # 0
+	prior_sd_alpha <- 0.25 * abs(prior_mean_alpha)
+	prior_sd_beta <- 0.25 * abs(prior_mean_beta)
+	prior_sd_gamma <- numeric(0)# rep(0.25, 3)
+	prior_sd_sigma <- 0.25 * abs(prior_mean_sigma)
+	prior_sd_omega <- 0#0.01 # 0
+	id_cols <- c("t") #c("stock_id", "stock_name", "brood_year") # NULL
+	id_vals <- list(method = "model")
+	cores <- ceiling(parallel::detectCores() / 2) # 4 # 1 # 4 # 1
+	chains <- 3
+	step_size <- 0.01
+	adapt_delta <- 0.9
+	iter_warmup <- 250
+	iter_sampling <- 750 # 2000 # 750
+
+
+# Estimate Larkin parameters
+output <- larkin::forecast(
+	data = data,
+	recruits = recruits,
+	spawners = spawners,
+	p_prime = p_prime,
+	environs = environs,
+	run_stan = run_stan,
+	prior_mean_alpha = prior_mean_alpha,
+	prior_mean_beta = prior_mean_beta,
+	prior_mean_gamma = prior_mean_gamma,
+	prior_mean_sigma = prior_mean_sigma,
+	prior_mean_omega = prior_mean_omega,
+	prior_sd_alpha = prior_sd_alpha,
+	prior_sd_beta = prior_sd_beta,
+	prior_sd_gamma = prior_sd_gamma,
+	prior_sd_sigma = prior_sd_sigma,
+	prior_sd_omega = prior_sd_omega,
+	id_cols = id_cols,
+	id_vals = id_vals,
+	cores = cores,
+	chains = chains,
+	step_size = step_size,
+	adapt_delta = adapt_delta,
+	iter_warmup = iter_warmup,
+	iter_sampling = iter_sampling
+)
+
+# Pull out parameter values
+
+alpha <- pull(output$alpha["median"][1,])
+beta <- pull(output$beta["median"])
+n <- length(df$t)
+nlags <- 3 # Number of lags in Larkin model (for predR)
+init <- 4 # Number of years to skip at the beginning because of initialization
+lagS <- data.frame(S0 = df$S_t[(nlags + init + 1): n],
+									 S1 = df$S_t[(nlags + init): (n-1)],
+									 S2 = df$S_t[(nlags + init - 1): (n-2)],
+									 s3 = df$S_t[(nlags + init - 2): (n-3)])
+
+
+```
+
+## Plots
+
+Plot observed vs predicted recruits (R_prime_t) and observed vs predicted returns (R_t)
+
+```{r plot, echo=FALSE}
+
+
+if(length(beta)>1){
+	predR_prime_t <- exp(alpha) * lagS$S0 * exp (  as.matrix(lagS)[,1:length(beta)]  %*% beta )
+	df.plot <- data.frame(predR_prime_t = predR_prime_t[,1], 
+												obsR_prime_t = df$R_prime_t[(nlags + init + 1):n])
+} else {
+	predR_prime_t <- exp(alpha) * lagS$S0 * exp ( lagS$S0  * beta )
+	df.plot <- data.frame(predR_prime_t = predR_prime_t, 
+												obsR_prime_t = df$R_prime_t[(nlags + init + 1):n])
+}
+
+predR_t <- NA
+for (j in 6:length(predR_prime_t)){
+	predR_t[j] <- p_prime[1] * predR_prime_t[j-3] + 
+		p_prime[2] * predR_prime_t[j-4] +
+		p_prime[3] * predR_prime_t[j-5]  
+}
+
+df.plot2 <- data.frame(predR_t = predR_t, 
+											 obsR_t = df$R_t[(nlags + init + 1):n])
+
+ggplot(df.plot, aes(x=obsR_prime_t, y=predR_prime_t)) + geom_point()
+ggplot(df.plot2, aes(x=obsR_t, y=predR_t)) + geom_point()
+
+
+
+```
+

@@ -26,6 +26,7 @@
 ##' @param first_difference
 ##' @param centre_and_scale
 ##' @param larkin_args List of arguments to pass onto `larkin::forecast()`. 
+##' @param ricker_args List of arguments to pass onto `larkin::forecast()`. 
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
@@ -51,15 +52,24 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        first_difference = TRUE,
                                        centre_and_scale = TRUE),
 																		 larkin_args = list(
+																		 	run_stan = TRUE,#FALSE,
 																		 	prior_mean_alpha = 2,
 																		 	prior_mean_beta = -rep(1,4),
 																		 	prior_mean_sigma = 0.5,
 																		 	prior_sd_alpha = 0.5,
 																		 	prior_sd_beta = rep(0.25,4),
 																		 	prior_sd_sigma = 0.25),
-                                     M = 5) {
+																		 ricker_args = list(
+																		 	run_stan = TRUE,
+																		 	prior_mean_alpha = 2,
+																		 	prior_mean_beta = -1,
+																		 	prior_mean_sigma = 0.5,
+																		 	prior_sd_alpha = 0.5,
+																		 	prior_sd_beta = 0.25,
+																		 	prior_sd_sigma = 0.25),
+                                     M = 10) {
 
-	start_time <- Sys.time()
+	tictoc::tic("model run time")#start_time <- Sys.time()
 	
 	# Need explicit values for these three here
   if(is.null(salmon_sim_args$p_prime)){
@@ -95,7 +105,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   																	lar_q5 = numeric(),
   																	lar_95 = numeric(),
   																	lar_sd = numeric(),
-  																	lar_rhat = numeric()
+  																	lar_rhat = numeric(),
+  																	R_prime_T_ric_fit = numeric(),
+  																	ric_q5 = numeric(),
+  																	ric_95 = numeric(),
+  																	ric_sd = numeric(),
+  																	ric_rhat = numeric()
   																	)
   for(m in 1:M){
   	cat(m, " of ", M, " realisations")
@@ -135,6 +150,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     									 			 recruits = "R_prime_t",
     									 			 spawners = "S_t"), larkin_args))
 
+    fit.ric <- do.call(larkin::forecast,
+    									 c(list(data = simulated, 
+    									 			 recruits = "R_prime_t",
+    									 			 spawners = "S_t"), ricker_args))
     
     res_realisations[m, ] <- c(m,
                                R_prime_T_sim,
@@ -144,11 +163,17 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     													 fit.lar$forecasts$q5,
     													 fit.lar$forecasts$q95,
     													 fit.lar$forecasts$sd,
-    													 fit.lar$forecasts$max_rhat
+    													 fit.lar$forecasts$max_rhat,
+    													 fit.ric$forecasts$median,
+    													 fit.ric$forecasts$q5,
+    													 fit.ric$forecasts$q95,
+    													 fit.ric$forecasts$sd,
+    													 fit.ric$forecasts$max_rhat
     													 )
   }
 
-  end_time <- Sys.time()
-  cat("runtime = ", round(end_time-start_time, 0), "minutes")
+  # end_time <- Sys.time()
+  # cat("runtime = ", round(end_time-start_time, 2), "minutes")
+  tictoc::toc()
   return(res_realisations)
 }

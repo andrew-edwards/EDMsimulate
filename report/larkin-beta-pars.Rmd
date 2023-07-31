@@ -1,0 +1,161 @@
+---
+title: "Plot Beta Parameters from Fraser Sockeye Data"
+author: "Carrie Holt"
+date: "2023-07-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Plot beta parameters from Fraser Sockeye Data
+
+Parameter estimates are from Ann-Marie Huang (DFO, pers. comm. 2022). Parameters were estimated in 2021 for Fraser Sockeye Salmon populations using a Larkin stock-recruitment model
+
+```{r estimate}
+# Libraries
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+source("report/ppnErr.R")
+
+# Read in parameter estimates
+pars <- read.csv(file = "report/Larkin-summary-stats_sd2021_feb.csv")
+
+df <- pars %>% filter(X!="alpha"&X!="deviance"&X!="sigma") %>% 
+	dplyr::select(X, stk.name, mean) %>% 
+	group_by(stk.name) %>% 
+	mutate(mBeta = mean(mean), sBeta = sum(mean)) %>% 
+	ungroup() %>% 
+	mutate(rel= mean/mBeta) %>% 
+	mutate(ppn = mean/sBeta)
+
+alpha <- pars %>% filter(X=="alpha") %>% 
+	dplyr::select(X, stk.name, mean) %>% 
+	mutate(alpha = exp(mean)) %>% 
+	select(!mean)
+#summary(alpha$alpha)
+sigma <- pars %>% filter(X=="sigma") %>% 
+	dplyr::select(X, stk.name, mean)
+#summary(sigma$mean)
+
+```
+
+## Plot beta parameters
+
+Plot beta scaled parmeters (sum to one), grouped into three categories.
+
+```{r plot, echo=FALSE}
+
+ggplot(df, aes(x=X, y=ppn, group = stk.name)) + geom_line() + 
+	facet_wrap(vars(as.factor(stk.name)))#geom_line(aes(colour=stk.name))
+
+df.LargeB0 <- df %>% filter(stk.name == "Birkenhead"|
+													stk.name == "Bowron"|
+													stk.name == "Cultus"|
+													stk.name == "Fennel") # maybe Raft?
+
+p1 <- ggplot(df.LargeB0, aes(x=X, y=ppn, group = stk.name)) + geom_line() + 
+	geom_line(aes(colour=stk.name)) + ggtitle("Stocks with large beta0") +
+	ylim(0,0.6)
+
+df.ConstantB0 <- df %>% filter(stk.name == "Gates"|
+															stk.name == "L. Shuswap"|
+															stk.name == "Nadina"|
+															stk.name == "Quesnel"|
+																stk.name == "Seymour"|
+																stk.name == "Weaver") # maybe Raft?
+
+p2 <- ggplot(df.ConstantB0, aes(x=X, y=ppn, group = stk.name)) + geom_line() + 
+	geom_line(aes(colour=stk.name)) + 
+	ggtitle("Stocks with relative similar betas") + ylim(0,0.6)
+
+df.VariableB0 <- df %>% filter(stk.name == "Chiko"|
+															 	stk.name == "E. Stuart"|
+															 	stk.name == "Harrison"|
+															 	stk.name == "L. Stuart"|
+															 	stk.name == "Portage"|
+															 	stk.name == "Raft"|
+															 	stk.name == "Scotch"|
+															 	stk.name == "Stellako"|
+															 	stk.name == "Upper Pitt") # maybe Raft?
+
+p3 <- ggplot(df.VariableB0, aes(x=X, y=ppn, group = stk.name)) + geom_line() + 
+	geom_line(aes(colour=stk.name)) + 
+	ggtitle("Stocks with variable betas") + ylim(0,0.6)
+
+plot_grid(p1, p2, p3, nrow= 2, ncol=2)
+
+```
+ 
+ Plot simlated beta parameters for each of those three categories 
+```{r siulatedPlots}
+
+gen.ppns <- function(nTrials, scenario, err){
+	MCtrial <- 1
+	sim <- ppnErr(scenario, err, runif(4,0,1))
+	df.sim <- data.frame(X = c("beta0", "beta1", "beta2", "beta3"), 
+											 MCtrial, 
+											 ppn=sim)
+	for (i in 2:nTrials){
+		sim <-  ppnErr(scenario, err, runif(4,0,1))
+		if (round(sum(sim), 2) != 1) print(cat("Warning proportions do sum to 1"))
+		MCtrial <- i
+		df.sim <- add_row(df.sim, 
+											data.frame(X = c("beta0", "beta1", "beta2", "beta3"), 
+																 MCtrial, 
+																 ppn=sim))
+	}
+	return(df.sim)
+}
+
+# Simulated betas, where beta0 is large (group 1)
+set.seed(10)
+scenario <- c(0.45,0.25,0.15,0.15)
+nTrials <- 100
+err <- 0.3
+df.sim <- gen.ppns(nTrials, scenario, err)
+
+ggplot(df.sim, aes(x=X, y=ppn, group = as.factor(MCtrial))) +
+	geom_line() +
+	geom_line(aes(colour=as.factor(MCtrial))) +
+	guides(color = FALSE,  scale = "none") + ylim(0,0.6)
+
+
+# Simulated betas, where bete values are even with low variability (group 2)
+df.sim <- gen.ppns(nTrials=100, scenario = rep(0.25,4), err = 0.2)
+
+ggplot(df.sim, aes(x=X, y=ppn, group = as.factor(MCtrial))) +
+	geom_line() +
+	geom_line(aes(colour=as.factor(MCtrial))) +
+	guides(color = FALSE,  scale = "none") + ylim(0,0.6)
+
+
+# Simulated betas, where beta values are variable, but no trend (group 3)
+df.sim <- gen.ppns(nTrials=100, scenario = rep(0.25,4), err = 0.6)
+
+ggplot(df.sim, aes(x=X, y=ppn, group = as.factor(MCtrial))) +
+	geom_line() +
+	geom_line(aes(colour=as.factor(MCtrial))) +
+	guides(color = FALSE,  scale = "none") + ylim(0,0.6)
+
+# 
+# # BASE CASE PARS
+# x <- salmon_run(alpha = 7,
+# 								beta = rep(0.25,4),
+# 								p_prime = c(0.003, 0.917, 0.080),
+# 								rho = 0,
+# 								omega = 0.4,
+# 								sigma_nu = 1,
+# 								phi_1 = 0,
+# 								T = 100,
+# 								h_t = NULL,
+# 								R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1)*0.05,
+# 								deterministic = FALSE,
+# 								extirp = 2e-5)
+# 
+
+```
+ 
+ 

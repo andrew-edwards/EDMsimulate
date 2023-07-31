@@ -47,3 +47,10 @@ This enables installation directly from the GitHub site:
 devtools::install_github("andrew-edwards/EDMsimulate", build_vignettes = TRUE)
 library(EDMsimulate)
 ```
+
+
+Also, this packages requires the Larkin package, which is available here:
+```
+devtools::install_github("pbs-assess/larkin", build_vignettes = TRUE)
+library(larkin)
+```

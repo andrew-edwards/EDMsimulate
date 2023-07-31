@@ -8,14 +8,15 @@ salmon_sim(
   alpha = 7,
   beta = c(0.25, 0.25, 0.25, 0.25),
   p_prime = c(0.003, 0.917, 0.08),
-  rho = 0.5,
-  omega = 0.6,
-  sigma_nu = 0.8,
+  rho = 0,
+  omega = 0.4,
+  sigma_nu = 1,
   nu_t = NULL,
-  phi_1 = 0.1,
-  T = 100,
+  phi_1 = 0,
+  T = 80,
+  T_transient = 100,
   h_t = NULL,
-  R_t_init = c(25, 5, 1, 1, 25, 5, 1, 1) * 0.05,
+  R_t_init = c(25, 5, 1, 1, 25.01, 5.02, 1.01, 1.02) * 0.05,
   epsilon_tg = NULL,
   deterministic = FALSE,
   extirp = 2e-06
@@ -47,15 +48,19 @@ rho = 0 then no process noise. Ignored if `nu_t` specified.}
 
 \item{nu_t}{Explicit specification of the process noise term to allow
 reproducible simulations when testing different methods (see
-`epsilon_tg` also). Must be a numeric vector of length `T`, can have
+`epsilon_tg` also). Must be a numeric vector of length `T + T_transient`, can have
 negative values. If not specified then a default is created.}
 
 \item{phi_1}{Initial value of process noise.}
 
-\item{T}{Number of years to run the simulation, including the eight years
-needed for initialising the simulation, must be >=9.}
+\item{T}{Number of years of the simulation to return.}
 
-\item{h_t}{Vector of harvest rate for each year 1, 2, 3, ..., T. Or if a
+\item{T_transient}{Number of years to first run the model for a transient
+time; for later fitting using the `T` years from
+`(T_transient + 1):(T_transient + T)`. Total time includes the eight years
+needed for initialising the simulation, so `T_transient + T` must be >=9.}
+
+\item{h_t}{Vector of harvest rate for each year 1, 2, 3, ..., `T_transient`. Or if a
 single value then this will be the constant rate for all years. If NULL
 then harvest rate will be set to 0.2 for all years.}
 
@@ -63,7 +68,7 @@ then harvest rate will be set to 0.2 for all years.}
 model.}
 
 \item{epsilon_tg}{Specified matrix of random variation in the `p_tg`. Must
-be of dimension `T * length(p_prime)` (returns error if not), where
+be of dimension `T_transient * length(p_prime)` (returns error if not), where
 `length(p_prime) = 3` for the default. Each column of `epsilon_tg`
 corresponds to the respective element of `p_prime`, so column 1 refers to age-3,
 etc (see equations in write up). For running multiple simulations, this
@@ -104,5 +109,6 @@ Simulates Larkin population dynamics model, based on Appendix F of Holt
   model the recruitment R_t has to be given for the first eight years. All
   parameters must be >=0, some >0. Units of recruits and spawners are
   nominally millions of fish, and is the only absolute scale because the
-  beta_i sum to 1.
+  beta_i sum to 1. Simulation runs for a transient time of `T_transient`
+  years and then saves ouputs values for the next `T` years.
 }

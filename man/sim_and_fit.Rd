@@ -3,9 +3,13 @@
 \name{sim_and_fit}
 \alias{sim_and_fit}
 \title{Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
- full results for any specific simulation.}
+ full results for any specific simulation. Removes knowledge of the final
+ `R_prime_T` since knowing that affects the rho calculations.}
 \usage{
-sim_and_fit(salmon_sim_args = list(), pbsEDM_args = list())
+sim_and_fit(
+  salmon_sim_args = list(),
+  pbsEDM_args = list(lags = list(R_prime_t = 0, S_t = 0:3))
+)
 }
 \arguments{
 \item{salmon_sim_args}{List of arguments to pass onto `salmon_sim()`.}
@@ -20,7 +24,8 @@ List object with components:
 }
 \description{
 Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
- full results for any specific simulation.
+ full results for any specific simulation. Removes knowledge of the final
+ `R_prime_T` since knowing that affects the rho calculations.
 }
 \examples{
 \dontrun{
