@@ -1,5 +1,6 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# cmdstan three paragraphs based on https://github.com/stan-dev/cmdstanr/issues/463
 on:
   push:
     branches: [main]
@@ -15,6 +16,11 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
     steps:
+      - name: cmdstan env vars
+        run: |
+          echo "CMDSTAN_PATH=${HOME}/.cmdstan" >> $GITHUB_ENV
+        shell: bash
+
       - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-r@v2
@@ -29,3 +35,17 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
+
+      - name: Cache cmdstan
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.CMDSTAN_PATH }}
+          key: ${{ runner.os }}-cmdstan-${{ env.CMDSTAN_VERSION }}
+          restore-keys: ${{ runner.os }}-cmdstan-
+
+      - name: Install cmdstan
+        run: |
+          version <- Sys.getenv("CMDSTAN_VERSION")
+          url <- sprintf("https://github.com/stan-dev/cmdstan/releases/download/v%s/cmdstan-%s.tar.gz", version, version)
+          cmdstanr::install_cmdstan(cores = 2, release_url = url)
+        shell: Rscript {0}
