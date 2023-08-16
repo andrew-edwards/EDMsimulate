@@ -4,14 +4,15 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
 
   expect_equal(1 + 1, 2)   # dummy to not have empty test
 
-  cmdstanr::check_cmdstan_toolchain()   # if gives error on GHA then will be fiddly to
+  # cmdstanr::check_cmdstan_toolchain()   # if gives error on GHA then will be fiddly to
   # include tests. If doesn't error then ideally want to do cmdstanr::install_cmdstan()
   # which should automatically set the path.
 
 
   # Works locally for Andy now, takes a while so stopped and just trying M = 2.
-  # default_sim_fit_realisations_create_in_test <-
-  #   sim_and_fit_realisations(M = 2)
+  # Though this keeps closing R locally after running it.
+  default_sim_fit_realisations_create_in_test <-
+    sim_and_fit_realisations(M = 2)
 
   # Not updated yet since going to tweak function further with more options -
   #  this currently fails since sim_and_fit_realisations() now outputs more and

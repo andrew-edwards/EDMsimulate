@@ -1,8 +1,8 @@
-##' @title Simulation of multiple realisaztions of Larkin population dynamics 
+##' @title Simulation of multiple realisaztions of Larkin population dynamics
 ##' model with estimation
-##' 
-##' @description Simulate a population and fit it using pbsEDM::pbsEDM(), 
-##' doing multiple realisations for a given set of parameters (so the only 
+##'
+##' @description Simulate a population and fit it using pbsEDM::pbsEDM(),
+##' doing multiple realisations for a given set of parameters (so the only
 ##' difference is the stochasticity)
 ##'
 ##' This only returns the simulated recruitment `R_prime_T_sim` for the final time step, the
@@ -25,8 +25,8 @@
 ##'   their defaults in `pbsEDM()` are FALSE, not TRUE like here.
 ##' @param first_difference
 ##' @param centre_and_scale
-##' @param larkin_args List of arguments to pass onto `larkin::forecast()`. 
-##' @param ricker_args List of arguments to pass onto `larkin::forecast()`. 
+##' @param larkin_args List of arguments to pass onto `larkin::forecast()`.
+##' @param ricker_args List of arguments to pass onto `larkin::forecast()`.
 ##' @param M number of realisations
 ##'
 ##' @return Tibble with row `m` corresponding to realisation `m` and giving
@@ -70,7 +70,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      M = 10) {
 
 	tictoc::tic("model run time")#start_time <- Sys.time()
-	
+
 	# Need explicit values for these three here
   if(is.null(salmon_sim_args$p_prime)){
     p_prime <- eval(formals(salmon_sim)$p_prime)
@@ -146,15 +146,15 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         # should catch lagging misnaming.
 
     fit.lar <- do.call(larkin::forecast,
-    									 c(list(data = simulated, 
+    									 c(list(data = simulated,
     									 			 recruits = "R_prime_t",
     									 			 spawners = "S_t"), larkin_args))
 
     fit.ric <- do.call(larkin::forecast,
-    									 c(list(data = simulated, 
+    									 c(list(data = simulated,
     									 			 recruits = "R_prime_t",
     									 			 spawners = "S_t"), ricker_args))
-    
+
     res_realisations[m, ] <- c(m,
                                R_prime_T_sim,
                                fit.edm$N_forecast[T],
