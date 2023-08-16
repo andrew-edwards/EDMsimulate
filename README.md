@@ -9,6 +9,8 @@ Simulating populations for some EDM analyses. Under development, and not really 
 
 report/ contains earlier analyses that have now been included in first manuscript, and code likely better as vignettes in pbsEDM. 
 
+We use the R package `cmdstanr` which uses `cmdstan` which needs Rtools4.3 (if running R 4.3). Install Rtools. Do `library(cmdstanr)` and follow the instructions for getting `cmdstan` and setting it up. 
+
 ### Vignette
 
 The vignette showing examples of the functions is available [here](http://htmlpreview.github.io/?https://github.com/andrew-edwards/EDMsimulate/blob/master/doc/salmon_sim.html), and directly in the package (see below).
