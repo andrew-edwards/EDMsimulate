@@ -17,11 +17,13 @@ URL: https://github.com/andrew-edwards/EDMsimulate
 BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
 Imports:
     dplyr,
-    pbsEDM
+    pbsEDM,
+    larkin
 Suggests:
     testthat,
     knitr,
     rmarkdown
-Remotes: pbs-assess/pbsEDM
+Remotes: pbs-assess/pbsEDM, 
+		pbs-assess/larkin
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
