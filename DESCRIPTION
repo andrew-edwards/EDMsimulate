@@ -8,7 +8,7 @@ Authors@R:
            email = "andrew.edwards@dfo-mpo.gc.ca",
            comment = c(ORCID = "0000-0003-2749-8198"))
 Description: Simulates fish stocks to then test using Empirical Dynamic Modelling methods. Primarily for use within PBS for now.
-Depends: 
+Depends:
     R (>= 2.10)
 License: GPL (>=2)
 Encoding: UTF-8
@@ -18,12 +18,13 @@ BugReports: https://github.com/andrew-edwards/EDMsimulate/issues
 Imports:
     dplyr,
     pbsEDM,
-    larkin
+    larkin,
+    tictoc
 Suggests:
     testthat,
     knitr,
     rmarkdown
-Remotes: pbs-assess/pbsEDM, 
-		pbs-assess/larkin
+Remotes: pbs-assess/pbsEDM,
+	 pbs-assess/larkin
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
