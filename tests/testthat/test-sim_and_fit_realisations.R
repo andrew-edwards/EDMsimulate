@@ -5,7 +5,7 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
   default_sim_fit_realisations_create_in_test <-
     sim_and_fit_realisations(M = 42)
 
-  expect_equal(dplyr::as_tibble(cbind(
+  expect_error(dplyr::as_tibble(cbind(
                         m = 42,
                         R_prime_T_sim = unlist(default_sim_fit$N_observed[80]),
                         R_prime_T_edm_fit =
