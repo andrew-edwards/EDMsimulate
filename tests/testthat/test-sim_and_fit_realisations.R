@@ -13,6 +13,12 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
   # Though this keeps closing R locally after running it.
 
   skip_on_ci()
+
+  if(Sys.getenv("USERNAME") == "EdwardsAnd"){
+    skip()
+  }           # Will fail on Emacs Speaks Statistics; keep an eye on
+              #  https://discourse.mc-stan.org/t/cmdstanr-backend-ends-r-process-in-emacs-but-not-terminal/32421
+
   default_sim_fit_realisations_create_in_test <-
     sim_and_fit_realisations(M = 2)
    # note this isn't a proper test yet; and also have to do the
@@ -21,7 +27,8 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
 
   # Not updated yet since going to tweak function further with more options -
   #  this currently fails since sim_and_fit_realisations() now outputs more and
-  #  we haven't updated the test. Probably have to skip this one on GHA.
+  #  we haven't updated the test. Probably have to skip this one on GHA. Think
+  #  this should be an error for expect_equal? But want an expect_equal one eventually.
   ## expect_error(dplyr::as_tibble(cbind(
   ##                       m = 42,
   ##                       R_prime_T_sim = unlist(default_sim_fit$N_observed[80]),
