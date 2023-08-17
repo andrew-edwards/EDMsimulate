@@ -25,3 +25,10 @@
 ##'
 ##' @source Generated from running `data-raw/default_sim_seed_42_new.R`.
 "default_sim_seed_42_new_fit"
+
+##' Example simulations and fits from running `sim_and_fit_realisations()`.
+##'
+##' @format List of sim_and_fit_realisations fitting results - see `?sim_and_fit_realisations`
+##'
+##' @source Generated from running `data-raw/three_sim_fits.R`
+"three_sim_fits"
