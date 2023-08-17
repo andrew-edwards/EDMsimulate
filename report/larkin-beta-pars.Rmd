@@ -18,10 +18,10 @@ Parameter estimates are from Ann-Marie Huang (DFO, pers. comm. 2022). Parameters
 library(dplyr)
 library(ggplot2)
 library(cowplot)
-source("report/ppnErr.R")
+source(here::here("report/ppnErr.R"))
 
 # Read in parameter estimates
-pars <- read.csv(file = "report/Larkin-summary-stats_sd2021_feb.csv")
+pars <- read.csv(file = here::here("report/Larkin-summary-stats_sd2021_feb.csv"))
 
 df <- pars %>% filter(X!="alpha"&X!="deviance"&X!="sigma") %>% 
 	dplyr::select(X, stk.name, mean) %>% 
