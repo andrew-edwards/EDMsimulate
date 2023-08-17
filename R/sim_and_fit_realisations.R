@@ -156,11 +156,15 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
-                           list(epsilon_tg = epsilon_tg)))   # will still get ignored
+                           list(epsilon_tg = epsilon_tg,
+                                nu_t = nu_t)))
+                                        # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
                                         # Returns values for years 1:T (so we
-                                        #  are done with T_transient from here on)
+                                        #  are done with T_transient from here
+                                        #  on)
+
     R_prime_T_sim <- simulated$R_prime_t[T] # Value we are testing the forecast of. Does not
                                 # return a tibble like simulated[T, "R_t"]
                                 # does. Then replace in simulated by NA:
