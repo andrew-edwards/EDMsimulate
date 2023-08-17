@@ -105,12 +105,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     X_rho = numeric(),
                                     X_rmse = numeric(),
                                     R_prime_T_lar_fit = numeric(),
-                                    lar_q5 = numeric(),
+                                    lar_5 = numeric(),
                                     lar_95 = numeric(),
                                     lar_sd = numeric(),
                                     lar_rhat = numeric(),
                                     R_prime_T_ric_fit = numeric(),
-                                    ric_q5 = numeric(),
+                                    ric_5 = numeric(),
                                     ric_95 = numeric(),
                                     ric_sd = numeric(),
                                     ric_rhat = numeric()
@@ -172,7 +172,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                            larkin_args))
 
       res_realisations[m, "R_prime_T_lar_fit"] = fit_lar$forecasts$median
-      res_realisations[m, "lar_q5"] = fit_lar$forecasts$q5
+      res_realisations[m, "lar_5"] = fit_lar$forecasts$q5
       res_realisations[m, "lar_95"] = fit_lar$forecasts$q95
       res_realisations[m, "lar_sd"] = fit_lar$forecasts$sd
       res_realisations[m, "lar_rhat"] = fit_lar$forecasts$max_rhat # Note
@@ -187,7 +187,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                            ricker_args))
 
       res_realisations[m, "R_prime_T_ric_fit"] = fit_ric$forecasts$median
-      res_realisations[m, "ric_q5"] = fit_ric$forecasts$q5
+      res_realisations[m, "ric_5"] = fit_ric$forecasts$q5
       res_realisations[m, "ric_95"] = fit_ric$forecasts$q95
       res_realisations[m, "ric_sd"] = fit_ric$forecasts$sd
       res_realisations[m, "ric_rhat"] = fit_ric$forecasts$max_rhat # Note
