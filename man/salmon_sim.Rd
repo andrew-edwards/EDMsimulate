@@ -23,8 +23,9 @@ salmon_sim(
 )
 }
 \arguments{
-\item{alpha}{Ratio of recruits to spawners at low spawner abundance in the
-absence of noise.}
+\item{alpha}{Number or vector of length (T+T_transient), where each element 
+is the annual ratio of recruits to spawners at low spawner abundance in 
+the absence of noise.}
 
 \item{beta}{Vector [beta_0, beta_1, beta_2, beta_3] that scales
 the relative magnitude of density dependence based on the current spawning stock

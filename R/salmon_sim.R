@@ -10,8 +10,9 @@
 ##'   nominally millions of fish, and is the only absolute scale because the
 ##'   beta_i sum to 1. Simulation runs for a transient time of `T_transient`
 ##'   years and then saves ouputs values for the next `T` years.
-##' @param alpha Ratio of recruits to spawners at low spawner abundance in the
-##'   absence of noise.
+##' @param alpha Number or vector of length (T+T_transient), where each element 
+##'   is the annual ratio of recruits to spawners at low spawner abundance in 
+##'   the absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
 ##'   the relative magnitude of density dependence based on the current spawning stock
 ##'   (beta_0) and the previous three years (beta_1, beta_2 and beta_3), with
@@ -226,11 +227,17 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
     }
   }
 
-  # Initialize - depends directly on initial conditions
+  # Create vector of alpha values if only a single value is iprovided
+  if(length(alpha) ==1) {
+  	alpha <- rep(alpha, T_total)
+  }
+
+   # Initialize - depends directly on initial conditions
   R_t <- c(R_t_init, rep(NA, T_total - length(R_t_init)))
   S_t <- (1 - h_t) * R_t
-
-  R_prime_t <- alpha * S_t * exp(- beta[1] * S_t -
+  
+  
+  R_prime_t <- alpha[1:T_total] * S_t * exp(- beta[1] * S_t -
                                  beta[2] * EDMsimulate::shift(S_t, 1) -
                                  beta[3] * EDMsimulate::shift(S_t, 2) -
                                  beta[4] * EDMsimulate::shift(S_t, 3) +
@@ -247,7 +254,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
       S_t[i] <- 0
     }
 
-    R_prime_t[i] <- alpha * S_t[i] * exp(- beta[1] * S_t[i] -
+    R_prime_t[i] <- alpha[i] * S_t[i] * exp(- beta[1] * S_t[i] -
                                          beta[2] * S_t[i-1] -
                                          beta[3] * S_t[i-2] -
                                          beta[4] * S_t[i-3] +
@@ -267,7 +274,8 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                 "epsilon_t3" = epsilon_tg[non_transient, 1],
                 "epsilon_t4" = epsilon_tg[non_transient, 2],
                 "epsilon_t5" = epsilon_tg[non_transient, 3],
-                "phi_t" = phi_t[non_transient])
+                "phi_t" = phi_t[non_transient],
+  							"producitivity" = alpha[non_transient])
 }
 
 
