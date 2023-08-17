@@ -34,7 +34,7 @@
 ##'   year `T`, followed by the values reported in the `results`
 ##'   object in output from `pbsEDM:pbsEDM()`, namely `E N_rho N_rmse X_rho
 ##'   X_rmse` (exact columns may change in future). Probably won't need all
-##'   those, but save them for now as good for understanding.
+##'   those, but save them for now as good for understanding. TODO describe Carrie's output
 ##' @export
 ##' @author Andrew Edwards
 ##' @examples
@@ -51,27 +51,27 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                                    S_t = 0:3),
                                        first_difference = TRUE,
                                        centre_and_scale = TRUE),
-																		 larkin_args = list(
-																		 	run_stan = TRUE,#FALSE,
-																		 	prior_mean_alpha = 2,
-																		 	prior_mean_beta = -rep(1,4),
-																		 	prior_mean_sigma = 0.5,
-																		 	prior_sd_alpha = 0.5,
-																		 	prior_sd_beta = rep(0.25,4),
-																		 	prior_sd_sigma = 0.25),
-																		 ricker_args = list(
-																		 	run_stan = TRUE,
-																		 	prior_mean_alpha = 2,
-																		 	prior_mean_beta = -1,
-																		 	prior_mean_sigma = 0.5,
-																		 	prior_sd_alpha = 0.5,
-																		 	prior_sd_beta = 0.25,
-																		 	prior_sd_sigma = 0.25),
+                                     larkin_args = list(
+                                       run_stan = TRUE,#FALSE,
+                                       prior_mean_alpha = 2,
+                                       prior_mean_beta = -rep(1,4),
+                                       prior_mean_sigma = 0.5,
+                                       prior_sd_alpha = 0.5,
+                                       prior_sd_beta = rep(0.25,4),
+                                       prior_sd_sigma = 0.25),
+                                     ricker_args = list(
+                                       run_stan = TRUE,
+                                       prior_mean_alpha = 2,
+                                       prior_mean_beta = -1,
+                                       prior_mean_sigma = 0.5,
+                                       prior_sd_alpha = 0.5,
+                                       prior_sd_beta = 0.25,
+                                       prior_sd_sigma = 0.25),
                                      M = 10) {
 
-	tictoc::tic("model run time")#start_time <- Sys.time()
+  tictoc::tic("model run time")#start_time <- Sys.time()
 
-	# Need explicit values for these three here
+  # Need explicit values for these three here
   if(is.null(salmon_sim_args$p_prime)){
     p_prime <- eval(formals(salmon_sim)$p_prime)
   } else {
@@ -101,19 +101,20 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     N_rmse = numeric(),
                                     X_rho = numeric(),
                                     X_rmse = numeric(),
-  																	R_prime_T_lar_fit = numeric(),
-  																	lar_q5 = numeric(),
-  																	lar_95 = numeric(),
-  																	lar_sd = numeric(),
-  																	lar_rhat = numeric(),
-  																	R_prime_T_ric_fit = numeric(),
-  																	ric_q5 = numeric(),
-  																	ric_95 = numeric(),
-  																	ric_sd = numeric(),
-  																	ric_rhat = numeric()
-  																	)
+                                    R_prime_T_lar_fit = numeric(),
+                                    lar_q5 = numeric(),
+                                    lar_95 = numeric(),
+                                    lar_sd = numeric(),
+                                    lar_rhat = numeric(),
+                                    R_prime_T_ric_fit = numeric(),
+                                    ric_q5 = numeric(),
+                                    ric_95 = numeric(),
+                                    ric_sd = numeric(),
+                                    ric_rhat = numeric()
+                                    )
+
   for(m in 1:M){
-  	cat(m, " of ", M, " realisations")
+    cat(m, " of ", M, " realisations")
     set.seed(m)
 
     epsilon_tg <- matrix(rnorm(T_total * length(p_prime),
@@ -135,41 +136,41 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 # neighbour etc., though our code ensure that anyway).
 
     fit.edm <- do.call(pbsEDM::pbsEDM,
-                   c(list(N = simulated),
-                     pbsEDM_args))
+                       c(list(N = simulated),
+                         pbsEDM_args))
 
     stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
-                  names(as.data.frame(fit.edm$N))[1] == "R_prime_t")
+                names(as.data.frame(fit.edm$N))[1] == "R_prime_t")
 
     testthat::expect_equal(simulated$R_prime_t,
                            fit.edm$N_observed[-(T+1)])  # Extra check, above one
                                         # should catch lagging misnaming.
 
     fit.lar <- do.call(larkin::forecast,
-    									 c(list(data = simulated,
-    									 			 recruits = "R_prime_t",
-    									 			 spawners = "S_t"), larkin_args))
+                       c(list(data = simulated,
+                              recruits = "R_prime_t",
+                              spawners = "S_t"), larkin_args))
 
     fit.ric <- do.call(larkin::forecast,
-    									 c(list(data = simulated,
-    									 			 recruits = "R_prime_t",
-    									 			 spawners = "S_t"), ricker_args))
+                       c(list(data = simulated,
+                              recruits = "R_prime_t",
+                              spawners = "S_t"), ricker_args))
 
     res_realisations[m, ] <- c(m,
                                R_prime_T_sim,
                                fit.edm$N_forecast[T],
                                fit.edm$results,
-    													 fit.lar$forecasts$median,
-    													 fit.lar$forecasts$q5,
-    													 fit.lar$forecasts$q95,
-    													 fit.lar$forecasts$sd,
-    													 fit.lar$forecasts$max_rhat,
-    													 fit.ric$forecasts$median,
-    													 fit.ric$forecasts$q5,
-    													 fit.ric$forecasts$q95,
-    													 fit.ric$forecasts$sd,
-    													 fit.ric$forecasts$max_rhat
-    													 )
+                               fit.lar$forecasts$median,
+                               fit.lar$forecasts$q5,
+                               fit.lar$forecasts$q95,
+                               fit.lar$forecasts$sd,
+                               fit.lar$forecasts$max_rhat,
+                               fit.ric$forecasts$median,
+                               fit.ric$forecasts$q5,
+                               fit.ric$forecasts$q95,
+                               fit.ric$forecasts$sd,
+                               fit.ric$forecasts$max_rhat
+                               )
   }
 
   # end_time <- Sys.time()
