@@ -16,7 +16,9 @@
 ##' specific realisation.
 ##'
 ##' @param salmon_sim_args List of arguments to pass onto `salmon_sim()`,
-##'   including `T` for the final time step. TODO make p_prime standalone
+##'   including `T` for the final time step. If any of `p_prime`, `T`,
+##'   `T_transient`, or `sigma_nu` are not specified then they are given the
+##'   default values from `salmon_sim()`. TODO make p_prime standalone
 ##' @param T Explicit `T` because we need a default; this gets overwritten by
 ##'   any `T` in `salmon_sim_args`.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
