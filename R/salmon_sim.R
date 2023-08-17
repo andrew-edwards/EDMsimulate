@@ -129,36 +129,36 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
   if(length(h_t) == 1){    # Repeat a single given value
     h_t <- rep(h_t, T_total)
   }
-
-  if(min(c(alpha,
-           beta,
-           p_prime,
-           rho,
-           omega,
-           sigma_nu,
-           phi_1,
-           T,
+  	
+  if(min(c(beta,
+  				 p_prime,
+  				 rho,
+  				 omega,
+  				 sigma_nu,
+  				 phi_1,
+  				 T,
            T_transient,
-           h_t,
-           R_t_init,
-           extirp)) < 0 ) {
-    stop("all parameters and initialisation variables must be >=0")
+  				 h_t,
+  				 extirp)) < 0 ) {
+    stop("beta, p_prime, rho, omega, sigma_nu, phi_1, T, T_transient, h_t, and extirp parameters must be >=0")
   }
 
-  if(min(c(alpha,
-           max(R_t_init))) == 0 ) {
-    stop("alpha and at least one value of R_t_init must be >0")
+  if(min(c(max(R_t_init))) == 0 ) {
+    stop("at least one value of R_t_init must be >0")
    }
 
-  if(length(c(alpha,
-              rho,
+  if(length(c(rho,
               omega,
               sigma_nu,
               phi_1,
               T,
               T_transient,
-              extirp)) != 8){
-    stop("alpha, rho, omega, sigma_nu, phi_1, T, and T_transient must all have length 1")
+              extirp)) != 7){
+    stop("rho, omega, sigma_nu, phi_1, T, and T_transient must all have length 1")
+  }
+  
+  if(length(alpha) != 1 & length(alpha) != (T + T_transient)){
+  	stop("alpha must all have length 1 or (T + T_transient)")
   }
 
   if(length(p_prime) != 3 | sum(p_prime) != 1){
