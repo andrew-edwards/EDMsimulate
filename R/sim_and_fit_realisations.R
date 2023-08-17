@@ -89,7 +89,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   tictoc::tic("model run time")#start_time <- Sys.time()
 
-  # Need explicit values for these three here
+  # Need explicit values for these various values here
   if(is.null(salmon_sim_args$p_prime)){
     p_prime <- eval(formals(salmon_sim)$p_prime)
   } else {
@@ -108,8 +108,15 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     T_transient <- salmon_sim_args$T_transient
   }
 
+  if(is.null(salmon_sim_args$sigma_nu)){
+    sigma_nu <- eval(formals(salmon_sim)$sigma_nu)
+  } else {
+    sigma_nu <- salmon_sim_args$sigma_nu
+  }
+
   T_total <- T_transient + T
 
+  # Set up results tibble to be filled in
   res_realisations <- dplyr::tibble(m = numeric(),
                                     R_prime_T_sim = numeric(),
                                     R_prime_T_edm_fit = numeric(),
@@ -131,8 +138,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     ric_rhat = numeric()
                                     )
 
+  # First do all the simulations, to then paraellise the fitting.
+  all_sims <- vector("list", M)     # create list
+
   for(m in 1:M){
-    cat(m, " of ", M, " realisations")
     set.seed(m)
 
     epsilon_tg <- matrix(rnorm(T_total * length(p_prime),
@@ -141,30 +150,47 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                          T_total,
                          length(p_prime))
 
+    nu_t <- rnorm(T_total,
+                  -sigma_nu^2 / 2,
+                  sigma_nu)
+
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
-                           list(epsilon_tg = epsilon_tg)))   # will still get ignored
+                           list(epsilon_tg = epsilon_tg,
+                                nu_t = nu_t)))
+                                        # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
                                         # Returns values for years 1:T (so we
-                                        #  are done with T_transient from here on)
+                                        #  are done with T_transient from here
+                                        #  on)
+
     R_prime_T_sim <- simulated$R_prime_t[T] # Value we are testing the forecast of. Does not
-                                # return a tibble like simulated[T, "R_t"] does.
+                                # return a tibble like simulated[T, "R_t"]
+                                # does. Then replace in simulated by NA:
     simulated[T, "R_prime_t"] <- NA    # Ensure no knowledge of it for pbsEDM() (as
-                                # neighbour etc., though our code ensure that anyway).
+                                # neighbour etc., though our code ensure that
+                                # anyway) or Larkin or Ricker.
 
     res_realisations[m, "m"] <- m
     res_realisations[m, "R_prime_T_sim"] <- R_prime_T_sim
 
+    all_sims[[m]] <- simulated
+  }
+
+  # Carrie can parallelise this loop
+  for(m in 1:M){
+    cat(m, " of ", M, " realisations")
+
     if(edm_fit){
       fit_edm <- do.call(pbsEDM::pbsEDM,
-                         c(list(N = simulated),
+                         c(list(N = all_sims[[m]]),
                            pbsEDM_args))
 
       stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
                   names(as.data.frame(fit_edm$N))[1] == "R_prime_t")
 
-      testthat::expect_equal(simulated$R_prime_t,
+      testthat::expect_equal(all_sims[[m]]$R_prime_t,
                              fit_edm$N_observed[-(T+1)])  # Extra check, above one
                                                           # should catch lagging misnaming.
 
@@ -181,7 +207,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     if(larkin_fit){
       fit_lar <- do.call(larkin::forecast,
-                         c(list(data = simulated,
+                         c(list(data = all_sims[[m]],
                                 recruits = "R_prime_t",
                                 spawners = "S_t"),
                            larkin_args))
@@ -196,7 +222,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     if(ricker_fit){
       fit_ric <- do.call(larkin::forecast,
-                         c(list(data = simulated,
+                         c(list(data = all_sims[[m]],
                                 recruits = "R_prime_t",
                                 spawners = "S_t"),
                            ricker_args))
