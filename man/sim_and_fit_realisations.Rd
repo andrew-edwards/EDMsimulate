@@ -2,11 +2,14 @@
 % Please edit documentation in R/sim_and_fit_realisations.R
 \name{sim_and_fit_realisations}
 \alias{sim_and_fit_realisations}
-\title{Simulation of multiple realisaztions of Larkin population dynamics 
-model with estimation}
+\title{Simulation of multiple realisations of Larkin population dynamics
+model with estimation using EDM, and Larkin and Ricker models.}
 \usage{
 sim_and_fit_realisations(
   salmon_sim_args = list(),
+  edm_fit = TRUE,
+  larkin_fit = FALSE,
+  ricker_fit = FALSE,
   pbsEDM_args = list(lags = list(R_prime_t = 0, S_t = 0:3), first_difference = TRUE,
     centre_and_scale = TRUE),
   larkin_args = list(run_stan = TRUE, prior_mean_alpha = 2, prior_mean_beta = -rep(1, 4),
@@ -40,24 +43,38 @@ their defaults in `pbsEDM()` are FALSE, not TRUE like here.}
 any `T` in `salmon_sim_args`.}
 }
 \value{
-Tibble with row `m` corresponding to realisation `m` and giving
-the simulated recruitment from year-T spawners, `R_prime_T_sim`, and fitted recruitment `R_prime_T_edm_fit` for
-  year `T`, followed by the values reported in the `results`
-  object in output from `pbsEDM:pbsEDM()`, namely `E N_rho N_rmse X_rho
-  X_rmse` (exact columns may change in future). Probably won't need all
-  those, but save them for now as good for understanding.
+Tibble with row `m` corresponding to realisation `m`, for which
+the seed for the simulated data set is given by `set.seed(m)`. Columns are
+\describe{
+  \item{m:}{realisation, from 1 to `M`}
+  \item{R_prime_T_sim:}{the simulated `R_prime_T` value (i.e. simulated
+  recruitment from year-T spawners) for the final time
+  step), which was not used for any of the fitting methods}
+  \item{R_prime_T_edm_fit`:}{forecasted value of the final recruitment calculated using EDM}
+  \item{`E`, `N_rho`, `N_rmse`, `X_rho`, `X_rmse`:}{standard output from EDM}
+  \item{R_prime_T_lar_fit`:}{forecasted value of the final recruitment calculated using fitting a Larkin
+  model}
+  \item{`lar_5`, `lar_95`, `lar_sd`, `lar_rhat`:}{5th and 95th percentiles
+  and standard deviation of `R_prime_t_lar_fit`, and max rhat TODO what is
+  that, from fitting the Larkin model}
+  \item{`R_prime_T_ric_fit`, `ric_5`, `ric_95`, `ric_sd`, `ric_rhat`:}{ equivalent
+  results from fitting a Ricker model.}
+}
 }
 \description{
-Simulate a population and fit it using pbsEDM::pbsEDM(), 
-doing multiple realisations for a given set of parameters (so the only 
-difference is the stochasticity)
+Simulate a population and fit it using `pbsEDM::pbsEDM()` for
+  EDM, and `larkin::forecast()` for Larkin and Ricker model. Can switch off
+  running of any of the methods. Doing multiple realisations for a given set
+  of parameters (so the only difference is the stochasticity)
 
-This only returns the simulated recruitment `R_prime_T_sim` for the final time step, the
+For each realisation `m`, this calculates returns the simulated recruitment `R_prime_T_sim` for the final time step, the
 forecasted `R_prime_T_edm_fit` calculated using EDM (obviously taking `R_prime_T_sim`
-out of the input to `pbsEDM::pbsEDM()`, and the EDM summary results. Use
-`sim_and_fit()` with a particular seed to get full results for any
-specific realisation. The seed for each simulated data set is given by
-`set.seed(m)` where `m` is the simulation number, going from 1 to `M`.
+out of the input to `pbsEDM::pbsEDM()`, and the EDM summary results;
+  followed by outputs from fitting the Larkin and Ricker models.
+
+For EDM
+use `sim_and_fit()` with a particular seed to get full results for any
+specific realisation.
 }
 \examples{
 \dontrun{
@@ -65,7 +82,10 @@ TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
                                                   S_t = 0:3),
                                       first_difference = TRUE))
 res$fit$results$X_rho
-# Think of year 80 as being 2019ish, not 2023.
+# Think of year 80 as being 2019ish, not 2023. Unless we change it to
+  returns ;)
+sim_and_fit_realisations(M=1)
+res <- sim_and_fit_realisations(M=2, larkin_fit = TRUE, ricker_fit = TRUE)
 }
 }
 \author{
