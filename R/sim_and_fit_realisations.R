@@ -46,6 +46,9 @@
 ##' # Think of year 80 as being 2019ish, not 2023.
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
+                                     edm_fit = TRUE,
+                                     larkin_fit = FALSE,
+                                     ricker_fit = FALSE,
                                      pbsEDM_args = list(
                                        lags = list(R_prime_t = 0,
                                                    S_t = 0:3),
@@ -132,45 +135,64 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         #  are done with T_transient from here on)
     R_prime_T_sim <- simulated$R_prime_t[T] # Value we are testing the forecast of. Does not
                                 # return a tibble like simulated[T, "R_t"] does.
-    simulated[T, "R_prime_t"] = NA    # Ensure no knowledge of it for pbsEDM() (as
+    simulated[T, "R_prime_t"] <- NA    # Ensure no knowledge of it for pbsEDM() (as
                                 # neighbour etc., though our code ensure that anyway).
 
-    fit.edm <- do.call(pbsEDM::pbsEDM,
-                       c(list(N = simulated),
-                         pbsEDM_args))
+    res_realisations[m, "m"] <- m
+    res_realisations[m, "R_prime_T_sim"] <- R_prime_T_sim
 
-    stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
-                names(as.data.frame(fit.edm$N))[1] == "R_prime_t")
+    if(edm_fit){
+      fit_edm <- do.call(pbsEDM::pbsEDM,
+                         c(list(N = simulated),
+                           pbsEDM_args))
 
-    testthat::expect_equal(simulated$R_prime_t,
-                           fit.edm$N_observed[-(T+1)])  # Extra check, above one
-                                        # should catch lagging misnaming.
+      stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
+                  names(as.data.frame(fit_edm$N))[1] == "R_prime_t")
 
-    fit.lar <- do.call(larkin::forecast,
-                       c(list(data = simulated,
-                              recruits = "R_prime_t",
-                              spawners = "S_t"), larkin_args))
+      testthat::expect_equal(simulated$R_prime_t,
+                             fit_edm$N_observed[-(T+1)])  # Extra check, above one
+                                                          # should catch lagging misnaming.
 
-    fit.ric <- do.call(larkin::forecast,
-                       c(list(data = simulated,
-                              recruits = "R_prime_t",
-                              spawners = "S_t"), ricker_args))
+      res_realisations[m, "R_prime_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
+                                        # double check what to do when pbsedm
+                                        # arguments change
+      res_realisations[m, "E"] = fit_edm$results$E  # Though will need specific
+                                                    # lags also kept track of or specified
+      res_realisations[m, "N_rho"] = fit_edm$results$N_rho
+      res_realisations[m, "N_rmse"] = fit_edm$results$N_rmse
+      res_realisations[m, "X_rho"] = fit_edm$results$X_rho
+      res_realisations[m, "X_rmse"] = fit_edm$results$X_rmse
+    }
 
-    res_realisations[m, ] <- c(m,
-                               R_prime_T_sim,
-                               fit.edm$N_forecast[T],
-                               fit.edm$results,
-                               fit.lar$forecasts$median,
-                               fit.lar$forecasts$q5,
-                               fit.lar$forecasts$q95,
-                               fit.lar$forecasts$sd,
-                               fit.lar$forecasts$max_rhat,
-                               fit.ric$forecasts$median,
-                               fit.ric$forecasts$q5,
-                               fit.ric$forecasts$q95,
-                               fit.ric$forecasts$sd,
-                               fit.ric$forecasts$max_rhat
-                               )
+    if(larkin_fit){
+      fit_lar <- do.call(larkin::forecast,
+                         c(list(data = simulated,
+                                recruits = "R_prime_t",
+                                spawners = "S_t"),
+                           larkin_args))
+
+      res_realisations[m, "R_prime_T_lar_fit"] = fit_lar$forecasts$median
+      res_realisations[m, "lar_q5"] = fit_lar$forecasts$q5
+      res_realisations[m, "lar_95"] = fit_lar$forecasts$q95
+      res_realisations[m, "lar_sd"] = fit_lar$forecasts$sd
+      res_realisations[m, "lar_rhat"] = fit_lar$forecasts$max_rhat # Note
+                                        # max_rhat TODO check with Carrie
+    }
+
+    if(ricker_fit){
+      fit_ric <- do.call(larkin::forecast,
+                         c(list(data = simulated,
+                                recruits = "R_prime_t",
+                                spawners = "S_t"),
+                           ricker_args))
+
+      res_realisations[m, "R_prime_T_ric_fit"] = fit_ric$forecasts$median
+      res_realisations[m, "ric_q5"] = fit_ric$forecasts$q5
+      res_realisations[m, "ric_95"] = fit_ric$forecasts$q95
+      res_realisations[m, "ric_sd"] = fit_ric$forecasts$sd
+      res_realisations[m, "ric_rhat"] = fit_ric$forecasts$max_rhat # Note
+
+    }
   }
 
   # end_time <- Sys.time()
