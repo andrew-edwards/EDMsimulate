@@ -89,7 +89,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   tictoc::tic("model run time")#start_time <- Sys.time()
 
-  # Need explicit values for these three here
+  # Need explicit values for these various values here
   if(is.null(salmon_sim_args$p_prime)){
     p_prime <- eval(formals(salmon_sim)$p_prime)
   } else {
@@ -106,6 +106,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     T_transient <- eval(formals(salmon_sim)$T_transient)
   } else {
     T_transient <- salmon_sim_args$T_transient
+  }
+
+  if(is.null(salmon_sim_args$sigma_nu)){
+    sigma_nu <- eval(formals(salmon_sim)$sigma_nu)
+  } else {
+    sigma_nu <- salmon_sim_args$sigma_nu
   }
 
   T_total <- T_transient + T
@@ -143,6 +149,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                1),
                          T_total,
                          length(p_prime))
+
+    nu_t <- rnorm(T_total,
+                  -sigma_nu^2 / 2,
+                  sigma_nu)
 
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
