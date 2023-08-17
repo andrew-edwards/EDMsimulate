@@ -11,9 +11,12 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
   skip_on_ci()
 
   if(Sys.getenv("USERNAME") == "EdwardsAnd"){
-    skip()
+    if(Sys.getenv("TERM") == "emacs"){
+      skip()
+    }
   }           # Will fail on Emacs Speaks Statistics; keep an eye on
               #  https://discourse.mc-stan.org/t/cmdstanr-backend-ends-r-process-in-emacs-but-not-terminal/32421
+  # Andy can still run test() in an R shell.
 
   three_sim_fits_create_in_test <- sim_and_fit_realisations(M = 3,
                                                             larkin_fit = TRUE,
