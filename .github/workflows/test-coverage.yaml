@@ -35,7 +35,8 @@ jobs:
             install_path = file.path(Sys.getenv("RUNNER_TEMP"), "package")
           )
         shell: Rscript {0}
-	target: 0%
+	default:
+	  target: 0%
 
       - name: Show testthat output
         if: always()
