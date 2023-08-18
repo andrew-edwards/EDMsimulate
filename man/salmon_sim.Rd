@@ -23,8 +23,8 @@ salmon_sim(
 )
 }
 \arguments{
-\item{alpha}{Number or vector of length (T+T_transient), where each element 
-is the annual ratio of recruits to spawners at low spawner abundance in 
+\item{alpha}{Number or vector of length (T+T_transient), where each element
+is the annual ratio of recruits to spawners at low spawner abundance in
 the absence of noise.}
 
 \item{beta}{Vector [beta_0, beta_1, beta_2, beta_3] that scales
@@ -91,7 +91,7 @@ this value should be changed also).}
 }
 \value{
 Tibble of years (rows) with named columns:
-  t: year;
+  t: year, covering the non-transient years;
   R_t: total recruits returning in year t;
   R_prime_t: number of adult recruits generated from spawners in year t that
     will return to freshwater (and then be subject to fishing and can then
@@ -99,7 +99,10 @@ Tibble of years (rows) with named columns:
   S_t: number of fish that spawn in year t;
   h_t: harvest rate in year t;
   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
-    4 and 5.
+    4 and 5;
+  epsilon_t3, epsilon_t4, epsilon_t5: realised stochastic variation in the epsilons
+  phi_t: realised stochastic variation in `phi_t`
+  alpha: alpha productivity values, since we now allow the option for time-varying
 }
 \description{
 Simulates Larkin population dynamics model, based on Appendix F of Holt

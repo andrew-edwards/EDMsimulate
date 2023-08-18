@@ -5,7 +5,7 @@ test_that("sim_and_fit() runs and gives correct answer for default simulations (
   default_sim_fit_create_in_test <- sim_and_fit()
 
   expect_equal(dplyr::select(default_sim_fit_create_in_test$simulated,
-                             -c("productivity")),
+                             -c("alpha")),
                default_sim)
 
 # TODO - get this back in and figure out

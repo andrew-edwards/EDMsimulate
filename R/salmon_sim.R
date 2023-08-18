@@ -62,7 +62,7 @@
 ##'   same units as recruits and spawners (so if those are assumed to change,
 ##'   this value should be changed also).
 ##' @return Tibble of years (rows) with named columns:
-##'   t: year;
+##'   t: year, covering the non-transient years;
 ##'   R_t: total recruits returning in year t;
 ##'   R_prime_t: number of adult recruits generated from spawners in year t that
 ##'     will return to freshwater (and then be subject to fishing and can then
@@ -70,7 +70,10 @@
 ##'   S_t: number of fish that spawn in year t;
 ##'   h_t: harvest rate in year t;
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
-##'     4 and 5.
+##'     4 and 5;
+##'   epsilon_t3, epsilon_t4, epsilon_t5: realised stochastic variation in the epsilons
+##'   phi_t: realised stochastic variation in `phi_t`
+##'   alpha: alpha productivity values, since we now allow the option for time-varying
 ##' @export
 salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                        beta = c(0.25, 0.25, 0.25, 0.25),
@@ -277,7 +280,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                 "epsilon_t4" = epsilon_tg[non_transient, 2],
                 "epsilon_t5" = epsilon_tg[non_transient, 3],
                 "phi_t" = phi_t[non_transient],
-  							"productivity" = alpha[non_transient])
+                "alpha" = alpha[non_transient])
 }
 
 

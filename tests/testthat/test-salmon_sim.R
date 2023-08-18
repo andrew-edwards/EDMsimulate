@@ -4,7 +4,7 @@ test_that("salmon_sim() gives correct answer with defaults", {
   set.seed(42)
   default_sim_create_in_test <- salmon_sim()
 
-  expect_equal(dplyr::select(default_sim_create_in_test, -c("productivity")),
+  expect_equal(dplyr::select(default_sim_create_in_test, -c("alpha")),
                default_sim)
 })
 
