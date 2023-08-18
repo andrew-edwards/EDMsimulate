@@ -49,7 +49,7 @@ test_that("salmon_sim() gives error if length(nu_t) != T", {
 })
 
 test_that("salmon_sim() gives error if all parameters (excluding nu_t) not >= 0", {
-          expect_error(salmon_sim(alpha = -1))
+          expect_error(salmon_sim(rho = -1))
 })
 
 test_that("salmon_sim() gives error if alpha = 0", {
