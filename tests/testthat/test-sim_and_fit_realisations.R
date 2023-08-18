@@ -1,3 +1,6 @@
+# Stan not running properly in GHA so have to skip the ones that do Larkin and
+# Ricker fits.
+
 context("sim_and_fit_realisations.R")
 
 test_that("sim_and_fit_realisations() runs and gives correct answer for simulation with default inputs", {
@@ -8,12 +11,16 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
   # include tests. If doesn't error then ideally want to do cmdstanr::install_cmdstan()
   # which should automatically set the path.
 
-  # TODO when come to update tests.
-  # Andy should make some EDM tests again.
-  # Also use something like these to check outputs:
-  # ten_sim_fits_create_in_test <- sim_and_fit_realisations()_
-  # expect_equal(dplyr::pull(ten_sim_fits_create_in_test$res_realisations[10, ],
-  #                                 "R_prime_T_edm_fit"), dplyr::pull(ten_sim_fits_create_in_test$fit_edm_full_series[10, ], "80"))
+  ten_sim_fits_edm_only_create_in_test <- sim_and_fit_realisations()
+  # checking the full time series output matches the summary one:
+  expect_equal(dplyr::pull(ten_sim_fits_edm_only_create_in_test$res_realisations[10, ],
+                           "R_prime_T_edm_fit"), dplyr::pull(ten_sim_fits_edm_only_create_in_test$fit_edm_full_series[10, ], "80"))
+
+  # Check with an earlier saved one (do this test on GHA, so can't compare
+  #  three_sim_fits Ricker and Larkin values
+  expect_equal(dplyr::select(three_sim_fits[3, ], "m":"X_rmse"),
+               dplyr::select(ten_sim_fits_edm_only_create_in_test$res_realisations[3, ], "m":"X_rmse"))
+
   # And save one as data object to compare.
 
   skip_on_ci()
