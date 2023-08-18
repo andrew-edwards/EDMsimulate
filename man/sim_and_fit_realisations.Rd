@@ -51,22 +51,36 @@ their defaults in `pbsEDM()` are FALSE, not TRUE like here.}
 any `T` in `salmon_sim_args`.}
 }
 \value{
-Tibble with row `m` corresponding to realisation `m`, for which
-the seed for the simulated data set is given by `set.seed(m)`. Columns are
+List containing `res_realisations`, `fit_edm_full_series`, `fit_lar_full_series`,
+  and `fit_ric_full_series`. These are:
 \describe{
-  \item{m:}{realisation, from 1 to `M`}
-  \item{R_prime_T_sim:}{the simulated `R_prime_T` value (i.e. simulated
-  recruitment from year-T spawners) for the final time
-  step), which was not used for any of the fitting methods}
-  \item{R_prime_T_edm_fit`:}{forecasted value of the final recruitment calculated using EDM}
-  \item{`E`, `N_rho`, `N_rmse`, `X_rho`, `X_rmse`:}{standard output from EDM}
-  \item{R_prime_T_lar_fit`:}{forecasted value of the final recruitment calculated using fitting a Larkin
-  model}
-  \item{`lar_5`, `lar_95`, `lar_sd`, `lar_rhat`:}{5th and 95th percentiles
-  and standard deviation of `R_prime_t_lar_fit`, and max rhat TODO what is
-  that, from fitting the Larkin model}
-  \item{`R_prime_T_ric_fit`, `ric_5`, `ric_95`, `ric_sd`, `ric_rhat`:}{ equivalent
-  results from fitting a Ricker model.}
+  \item{res_realisations:}{Tibble with row `m` corresponding to realisation `m`, for which
+the seed for the simulated data set is given by `set.seed(m)`. Columns of
+  which are:}
+  \describe{
+    \item{m:}{realisation, from 1 to `M`}
+    \item{R_prime_T_sim:}{the simulated `R_prime_T` value (i.e. simulated
+    recruitment from year-T spawners) for the final time
+    step), which was not used for any of the fitting methods}
+    \item{R_prime_T_edm_fit`:}{forecasted value of the final recruitment calculated using EDM}
+    \item{`E`, `N_rho`, `N_rmse`, `X_rho`, `X_rmse`:}{standard output from EDM}
+    \item{R_prime_T_lar_fit`:}{forecasted value of the final recruitment calculated using fitting a Larkin
+    model}
+    \item{`lar_5`, `lar_95`, `lar_sd`, `lar_rhat`:}{5th and 95th percentiles
+    and standard deviation of `R_prime_t_lar_fit`, and max rhat TODO what is
+    that, from fitting the Larkin model}
+    \item{`R_prime_T_ric_fit`, `ric_5`, `ric_95`, `ric_sd`, `ric_rhat`:}{ equivalent
+    results from fitting a Ricker model.}
+  }
+}
+Remaining objects of list are
+\describe{
+  \item{fit_edm_full_series, fit_lar_full_series,
+  fit_ric_full_series:}{tibbles of full
+  fitted time series from each of the three methods; each is a tibble with
+  realisation `m` in the first columns, and remaining columns referring to
+  the time step from 1:T+1. Note that second column has name "1" referring
+  to first time step; so refer to columns by name ("1") not number (1).}
 }
 }
 \description{
@@ -78,7 +92,9 @@ Simulate a population and fit it using `pbsEDM::pbsEDM()` for
 For each realisation `m`, this calculates returns the simulated recruitment `R_prime_T_sim` for the final time step, the
 forecasted `R_prime_T_edm_fit` calculated using EDM (obviously taking `R_prime_T_sim`
 out of the input to `pbsEDM::pbsEDM()`, and the EDM summary results;
-  followed by outputs from fitting the Larkin and Ricker models.
+  followed by outputs from fitting the Larkin and Ricker models. Also
+  returns the estimated fitted value at each time step for all three
+  methods.
 
 For EDM
 use `sim_and_fit()` with a particular seed to get full results for any

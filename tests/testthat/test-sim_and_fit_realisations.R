@@ -30,7 +30,7 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
                                                             larkin_fit = TRUE,
                                                             ricker_fit = TRUE)
   expect_equal(three_sim_fits,
-               three_sim_fits_create_in_test)
+               three_sim_fits_create_in_test$res_realisations)
 
   # Not updated yet since going to tweak function further with more options -
   #  this currently fails since sim_and_fit_realisations() now outputs more and
