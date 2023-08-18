@@ -34,7 +34,7 @@ library(ggplot2)
 # extirp = 2e-6
 
 # Run simulation
-df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=0.01) %>% dplyr::filter(t>4)
+df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=1) %>% dplyr::filter(t>4)
 
 	# Declare arguments for estimation function
 	data <- df
