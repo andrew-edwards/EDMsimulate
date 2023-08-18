@@ -36,7 +36,6 @@ sim_and_fit <- function(salmon_sim_args = list(),
   stopifnot(names(pbsEDM_args$lags)[1] == "R_switch")
   names(pbsEDM_args$lags)[1] <- R_switch
 
-
   simulated <- do.call(salmon_sim,
                        salmon_sim_args)
 

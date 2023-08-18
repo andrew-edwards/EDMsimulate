@@ -21,6 +21,10 @@
 ##'   default values from `salmon_sim()`. TODO make p_prime standalone
 ##' @param T Explicit `T` because we need a default; this gets overwritten by
 ##'   any `T` in `salmon_sim_args`.
+##' @param R_switch either `R_prime_t` or `R_t` to specify which one
+##'   the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
+##'   RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
+##'   message command when done.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here, and that `R_prime_t`
 ##'   has to be the first one (with a lag of zero, so `R_prime_t = 0` or `R_prime_t = 0:1`
@@ -66,8 +70,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      edm_fit = TRUE,
                                      larkin_fit = FALSE,
                                      ricker_fit = FALSE,
+                                     R_switch = "R_prime_t",
                                      pbsEDM_args = list(
-                                       lags = list(R_prime_t = 0,
+                                       lags = list(R_switch = 0,
                                                    S_t = 0:3),
                                        first_difference = TRUE,
                                        centre_and_scale = TRUE),
@@ -89,7 +94,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        prior_sd_sigma = 0.25),
                                      M = 10) {
 
+  message("** NOTE ** Larking and Ricker fits not set up yet to do R_switch = R_t, and will just use R_prime_t")
   tictoc::tic("model run time")#start_time <- Sys.time()
+
+  stopifnot(R_switch %in% c("R_t", "R_prime_t"))
+  stopifnot(names(pbsEDM_args$lags)[1] == "R_switch")
+  names(pbsEDM_args$lags)[1] <- R_switch
 
   # Need explicit values for these various values here
   if(is.null(salmon_sim_args$p_prime)){
@@ -118,22 +128,25 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   T_total <- T_transient + T
 
-  # Set up results tibble to be filled in
+  # Set up results tibble to be filled in. Call things R_switch... here then
+  #  rename at the end with R_t or R_prime_t before returning (to avoid
+  #  confusion with the saved output that would arise with having it called R_switch)
+
   res_realisations <- dplyr::tibble(m = numeric(),
-                                    R_prime_T_sim = numeric(),
-                                    R_prime_T_edm_fit = numeric(),
+                                    R_switch_T_sim = numeric(),
+                                    R_switch_T_edm_fit = numeric(),
                                     E = numeric(),   # Though will need specific
                                         # lags also kept track of or specified
                                     N_rho = numeric(),
                                     N_rmse = numeric(),
                                     X_rho = numeric(),
                                     X_rmse = numeric(),
-                                    R_prime_T_lar_fit = numeric(),
+                                    R_switch_T_lar_fit = numeric(),
                                     lar_5 = numeric(),
                                     lar_95 = numeric(),
                                     lar_sd = numeric(),
                                     lar_rhat = numeric(),
-                                    R_prime_T_ric_fit = numeric(),
+                                    R_switch_T_ric_fit = numeric(),
                                     ric_5 = numeric(),
                                     ric_95 = numeric(),
                                     ric_sd = numeric(),
@@ -167,20 +180,22 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         #  are done with T_transient from here
                                         #  on)
 
-    R_prime_T_sim <- simulated$R_prime_t[T] # Value we are testing the forecast of. Does not
+    R_switch_T_sim <- dplyr::pull(simulated,
+                                  R_switch)[T]
+                                # Value we are testing the forecast of. Does not
                                 # return a tibble like simulated[T, "R_t"]
                                 # does. Then replace in simulated by NA:
-    simulated[T, "R_prime_t"] <- NA    # Ensure no knowledge of it for pbsEDM() (as
+    simulated[T, R_switch] <- NA    # Ensure no knowledge of it for pbsEDM() (as
                                 # neighbour etc., though our code ensure that
                                 # anyway) or Larkin or Ricker.
 
     res_realisations[m, "m"] <- m
-    res_realisations[m, "R_prime_T_sim"] <- R_prime_T_sim
+    res_realisations[m, "R_switch_T_sim"] <- R_switch_T_sim
 
     all_sims[[m]] <- simulated
   }
 
-  # Carrie can parallelise this loop
+  # Carrie can parallelise this loop TODO
   for(m in 1:M){
     cat(m, " of ", M, " realisations")
 
@@ -189,14 +204,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                          c(list(N = all_sims[[m]]),
                            pbsEDM_args))
 
-      stopifnot("First lags argument in pbsEDM_args must relate to R_prime_t with no lag" =
-                  names(as.data.frame(fit_edm$N))[1] == "R_prime_t")
+      testthat::expect_equal(dplyr::pull(all_sims[[m]], R_switch),
+                             fit_edm$N_observed[-(T+1)])  # Extra check
 
-      testthat::expect_equal(all_sims[[m]]$R_prime_t,
-                             fit_edm$N_observed[-(T+1)])  # Extra check, above one
-                                                          # should catch lagging misnaming.
-
-      res_realisations[m, "R_prime_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
+      res_realisations[m, "R_switch_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
                                         # double check what to do when pbsedm
                                         # arguments change
       res_realisations[m, "E"] = fit_edm$results$E  # Though will need specific
@@ -210,11 +221,13 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     if(larkin_fit){
       fit_lar <- do.call(larkin::forecast,
                          c(list(data = all_sims[[m]],
-                                recruits = "R_prime_t",
+                                recruits = "R_prime_t", # TODO Andy not sure if/how
+                                        # we can input R_t here, so not
+                                        # replacing with R_switch. See issue #14
                                 spawners = "S_t"),
                            larkin_args))
 
-      res_realisations[m, "R_prime_T_lar_fit"] = fit_lar$forecasts$median
+      res_realisations[m, "R_switch_T_lar_fit"] = fit_lar$forecasts$median
       res_realisations[m, "lar_5"] = fit_lar$forecasts$q5
       res_realisations[m, "lar_95"] = fit_lar$forecasts$q95
       res_realisations[m, "lar_sd"] = fit_lar$forecasts$sd
@@ -225,18 +238,31 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     if(ricker_fit){
       fit_ric <- do.call(larkin::forecast,
                          c(list(data = all_sims[[m]],
-                                recruits = "R_prime_t",
+                                recruits = "R_prime_t",  # TODO Same as for Larkin
                                 spawners = "S_t"),
                            ricker_args))
 
-      res_realisations[m, "R_prime_T_ric_fit"] = fit_ric$forecasts$median
+      res_realisations[m, "R_switch_T_ric_fit"] = fit_ric$forecasts$median
       res_realisations[m, "ric_5"] = fit_ric$forecasts$q5
       res_realisations[m, "ric_95"] = fit_ric$forecasts$q95
       res_realisations[m, "ric_sd"] = fit_ric$forecasts$sd
       res_realisations[m, "ric_rhat"] = fit_ric$forecasts$max_rhat # Note
-
     }
   }
+
+  stringr::str_sub(R_switch,
+                   -1,
+                   -1) <- ""     # This modifies R_switch (takes off final t so it's
+                                 # either R_ or R_prime_)
+
+  names(res_realisations)[names(res_realisations) == "R_switch_T_sim"] <-
+    paste0(R_switch, "T_sim")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_edm_fit"] <-
+    paste0(R_switch, "T_edm_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_lar_fit"] <-
+    paste0(R_switch, "T_lar_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_ric_fit"] <-
+    paste0(R_switch, "T_ric_fit")
 
   # end_time <- Sys.time()
   # cat("runtime = ", round(end_time-start_time, 2), "minutes")
