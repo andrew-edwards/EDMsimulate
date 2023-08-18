@@ -3,19 +3,26 @@
 \name{sim_and_fit}
 \alias{sim_and_fit}
 \title{Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
- full results for any specific simulation. Removes knowledge of the final
- `R_prime_T` since knowing that affects the rho calculations.}
+ full results for any specific simulation. Allows estimation based on `R_t`
+ or `R_prime_t`. Removes knowledge of the final
+ value since knowing that affects the rho calculations.}
 \usage{
 sim_and_fit(
   salmon_sim_args = list(),
-  pbsEDM_args = list(lags = list(R_prime_t = 0, S_t = 0:3))
+  pbsEDM_args = list(lags = list(R_switch = 0, S_t = 0:3)),
+  R_switch = "R_prime_t"
 )
 }
 \arguments{
 \item{salmon_sim_args}{List of arguments to pass onto `salmon_sim()`.}
 
 \item{pbsEDM_args}{List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
-that `lags` has no default, so needs to be specified here.}
+that `lags` has no default, so needs to be specified here. First one
+must be called `R_switch` to then get automatically changed to what is
+specified by the `R_switch` parameter}
+
+\item{R_switch}{either `R_prime_t` or `R_t` to specify which one
+the calculations are based on.}
 }
 \value{
 List object with components:
@@ -24,8 +31,9 @@ List object with components:
 }
 \description{
 Simulate a population and fit it using pbsEDM::pbsEDM(), for getting
- full results for any specific simulation. Removes knowledge of the final
- `R_prime_T` since knowing that affects the rho calculations.
+ full results for any specific simulation. Allows estimation based on `R_t`
+ or `R_prime_t`. Removes knowledge of the final
+ value since knowing that affects the rho calculations.
 }
 \examples{
 \dontrun{
