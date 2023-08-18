@@ -128,7 +128,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   T_total <- T_transient + T
 
-  # Set up results tibble to be filled in. Call things R_switch... here then
+  # Set up results tibbles to be filled in. Call things R_switch... here then
   #  rename at the end with R_t or R_prime_t before returning (to avoid
   #  confusion with the saved output that would arise with having it called R_switch)
 
@@ -152,6 +152,19 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     ric_sd = numeric(),
                                     ric_rhat = numeric()
                                     )
+
+  tbl_colnames <- tbl_colnames <- c("m", 1:(T+1))
+  # Save the full time series as fit by each method, each row is realisation m
+  #  followed but R_switch_t for each t
+  fit_edm_full_series <- tibble::as_tibble(matrix(NA,
+                                                  nrow = M,
+                                                  ncol = length(tbl_colnames)),
+                                           .name_repair = ~ tbl_colnames)  # Empty tibble correctly named; columns are logical
+                                                                           # but will get changed to double/numeric when they get filled in.
+                                                                           #  TODO prob faster to build it the right size straight away
+  fit_lar_full_series <- fit_edm_full_series
+  fit_ric_full_series <- fit_edm_full_series
+
 
   # First do all the simulations, to then paraellise the fitting.
   all_sims <- vector("list", M)     # create list
@@ -207,6 +220,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       testthat::expect_equal(dplyr::pull(all_sims[[m]], R_switch),
                              fit_edm$N_observed[-(T+1)])  # Extra check
 
+      fit_edm_full_series[m, ]  <- t(c(m,
+                                       fit_edm$N_forecast))
+
       res_realisations[m, "R_switch_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
                                         # double check what to do when pbsedm
                                         # arguments change
@@ -227,6 +243,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 spawners = "S_t"),
                            larkin_args))
 
+      # TODO: Carrie to replace *** by the forecast values from Larkin estimation:
+      # fit_ric_full_series[m, ]  <- t(c(m,
+      #                                  ***))
+
       res_realisations[m, "R_switch_T_lar_fit"] = fit_lar$forecasts$median
       res_realisations[m, "lar_5"] = fit_lar$forecasts$q5
       res_realisations[m, "lar_95"] = fit_lar$forecasts$q95
@@ -241,6 +261,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 recruits = "R_prime_t",  # TODO Same as for Larkin
                                 spawners = "S_t"),
                            ricker_args))
+
+      # TODO Carrie to replace *** by the forecast values from Ricker.
+      # fit_ric_full_series[m, ]  <- t(c(m,
+      #                                  ***))
 
       res_realisations[m, "R_switch_T_ric_fit"] = fit_ric$forecasts$median
       res_realisations[m, "ric_5"] = fit_ric$forecasts$q5
@@ -267,5 +291,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   # end_time <- Sys.time()
   # cat("runtime = ", round(end_time-start_time, 2), "minutes")
   tictoc::toc()
-  return(res_realisations)
+
+  return(list(res_realisations = res_realisations,
+              fit_edm_full_series = fit_edm_full_series,
+              fit_lar_full_series = fit_lar_full_series,
+              fit_ric_full_series = fit_ric_full_series))
 }
