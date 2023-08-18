@@ -21,7 +21,17 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
   expect_equal(dplyr::select(three_sim_fits[3, ], "m":"X_rmse"),
                dplyr::select(ten_sim_fits_edm_only_create_in_test$res_realisations[3, ], "m":"X_rmse"))
 
-  # And save one as data object to compare.
+
+  # Test excplicitly specifying other options:
+  expect_no_error(sim_and_fit_realisations(salmon_sim_args = list(
+                                             p_prime = c(0.1, 0.8, 0.1),
+                                             T = 50,
+                                             T_transient = 10,
+                                             sigma_nu = 0.5)))
+
+
+
+  # TODO save one as data object to compare.
 
   skip_on_ci()
 
