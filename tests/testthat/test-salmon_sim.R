@@ -57,7 +57,7 @@ test_that("salmon_sim() gives error if alpha = 0", {
 })
 
 test_that("salmon_sim() gives error if scalar inputs are vectors instead", {
-          expect_error(salmon_sim(alpha = c(0.2, 0.5)))
+          expect_error(salmon_sim(rho = c(0.2, 0.5)))
 })
 
 test_that("salmon_sim() gives error if beta wrong length or does not sum to 1", {
