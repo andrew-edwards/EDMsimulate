@@ -10,8 +10,8 @@
 ##'   nominally millions of fish, and is the only absolute scale because the
 ##'   beta_i sum to 1. Simulation runs for a transient time of `T_transient`
 ##'   years and then saves ouputs values for the next `T` years.
-##' @param alpha Number or vector of length (T+T_transient), where each element 
-##'   is the annual ratio of recruits to spawners at low spawner abundance in 
+##' @param alpha Number or vector of length (T+T_transient), where each element
+##'   is the annual ratio of recruits to spawners at low spawner abundance in
 ##'   the absence of noise.
 ##' @param beta Vector [beta_0, beta_1, beta_2, beta_3] that scales
 ##'   the relative magnitude of density dependence based on the current spawning stock
@@ -62,7 +62,7 @@
 ##'   same units as recruits and spawners (so if those are assumed to change,
 ##'   this value should be changed also).
 ##' @return Tibble of years (rows) with named columns:
-##'   t: year;
+##'   t: year, covering the non-transient years;
 ##'   R_t: total recruits returning in year t;
 ##'   R_prime_t: number of adult recruits generated from spawners in year t that
 ##'     will return to freshwater (and then be subject to fishing and can then
@@ -70,7 +70,10 @@
 ##'   S_t: number of fish that spawn in year t;
 ##'   h_t: harvest rate in year t;
 ##'   p_t3, p_t4, p_t5: proportion of R_prime in year t that later returned at age 3,
-##'     4 and 5.
+##'     4 and 5;
+##'   epsilon_t3, epsilon_t4, epsilon_t5: realised stochastic variation in the epsilons
+##'   phi_t: realised stochastic variation in `phi_t`
+##'   alpha: alpha productivity values, since we now allow the option for time-varying
 ##' @export
 salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                        beta = c(0.25, 0.25, 0.25, 0.25),
@@ -130,22 +133,24 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
   if(length(h_t) == 1){    # Repeat a single given value
     h_t <- rep(h_t, T_total)
   }
-  	
-  if(min(c(beta,
-  				 p_prime,
-  				 rho,
-  				 omega,
-  				 sigma_nu,
-  				 phi_1,
-  				 T,
+
+  if(min(c(alpha,
+           beta,
+           p_prime,
+           rho,
+           omega,
+           sigma_nu,
+           phi_1,
+           T,
            T_transient,
-  				 h_t,
-  				 extirp)) < 0 ) {
-    stop("beta, p_prime, rho, omega, sigma_nu, phi_1, T, T_transient, h_t, and extirp parameters must be >=0")
+           h_t,
+           extirp)) < 0 ) {
+    stop("alpha, beta, p_prime, rho, omega, sigma_nu, phi_1, T, T_transient, h_t, and extirp parameters must be >=0")
   }
 
-  if(min(c(max(R_t_init))) == 0 ) {
-    stop("at least one value of R_t_init must be >0")
+  if(min(alpha,
+         c(max(R_t_init))) == 0 ) {
+    stop("alpha and at least one value of R_t_init must be >0")
    }
 
   if(length(c(rho,
@@ -157,7 +162,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
               extirp)) != 7){
     stop("rho, omega, sigma_nu, phi_1, T, and T_transient must all have length 1")
   }
-  
+
   if(length(alpha) != 1 & length(alpha) != (T + T_transient)){
   	stop("alpha must all have length 1 or (T + T_transient)")
   }
@@ -235,8 +240,8 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
    # Initialize - depends directly on initial conditions
   R_t <- c(R_t_init, rep(NA, T_total - length(R_t_init)))
   S_t <- (1 - h_t) * R_t
-  
-  
+
+
   R_prime_t <- alpha[1:T_total] * S_t * exp(- beta[1] * S_t -
                                  beta[2] * EDMsimulate::shift(S_t, 1) -
                                  beta[3] * EDMsimulate::shift(S_t, 2) -
@@ -275,7 +280,7 @@ salmon_sim <- function(alpha = 7,  # Carrie's updated defaults
                 "epsilon_t4" = epsilon_tg[non_transient, 2],
                 "epsilon_t5" = epsilon_tg[non_transient, 3],
                 "phi_t" = phi_t[non_transient],
-  							"producitivity" = alpha[non_transient])
+                "alpha" = alpha[non_transient])
 }
 
 

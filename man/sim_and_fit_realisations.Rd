@@ -10,7 +10,8 @@ sim_and_fit_realisations(
   edm_fit = TRUE,
   larkin_fit = FALSE,
   ricker_fit = FALSE,
-  pbsEDM_args = list(lags = list(R_prime_t = 0, S_t = 0:3), first_difference = TRUE,
+  R_switch = "R_prime_t",
+  pbsEDM_args = list(lags = list(R_switch = 0, S_t = 0:3), first_difference = TRUE,
     centre_and_scale = TRUE),
   larkin_args = list(run_stan = TRUE, prior_mean_alpha = 2, prior_mean_beta = -rep(1, 4),
     prior_mean_sigma = 0.5, prior_sd_alpha = 0.5, prior_sd_beta = rep(0.25, 4),
@@ -23,7 +24,14 @@ sim_and_fit_realisations(
 }
 \arguments{
 \item{salmon_sim_args}{List of arguments to pass onto `salmon_sim()`,
-including `T` for the final time step. TODO make p_prime standalone}
+including `T` for the final time step. If any of `p_prime`, `T`,
+`T_transient`, or `sigma_nu` are not specified then they are given the
+default values from `salmon_sim()`. TODO make p_prime standalone}
+
+\item{R_switch}{either `R_prime_t` or `R_t` to specify which one
+the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
+RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
+message command when done.}
 
 \item{pbsEDM_args}{List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 that `lags` has no default, so needs to be specified here, and that `R_prime_t`
