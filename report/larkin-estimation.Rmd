@@ -18,6 +18,8 @@ This code demonstrates Larkin model estimation on simulated data
 library(larkin)
 library(dplyr)
 library(ggplot2)
+library(EDMsimulate)
+
 
 ## Base Case parameters for simluation
 # alpha = 7,

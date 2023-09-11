@@ -253,40 +253,50 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     if(larkin_fit){
       fit_lar <- do.call(larkin::forecast,
                          c(list(data = all_sims[[m]],
-                                recruits = "R_prime_t", # TODO Andy not sure if/how
-                                        # we can input R_t here, so not
-                                        # replacing with R_switch. See issue #14
-                                spawners = "S_t"),
+                                recruits = "R_prime_t", 
+                         			 # This is simply the label for recruitment, and 
+                         			 # does not specify the type of forecats (recruits 
+                         			 # vs returns)
+                                spawners = "S_t"), 
+                         			 #This is the label for spawners
                            larkin_args))
 
       # TODO: Carrie to replace *** by the forecast values from Larkin estimation:
       # fit_ric_full_series[m, ]  <- t(c(m,
       #                                  ***))
 
-      res_realisations[m, "R_switch_T_lar_fit"] = fit_lar$forecasts$median
-      res_realisations[m, "lar_5"] = fit_lar$forecasts$q5
-      res_realisations[m, "lar_95"] = fit_lar$forecasts$q95
-      res_realisations[m, "lar_sd"] = fit_lar$forecasts$sd
-      res_realisations[m, "lar_rhat"] = fit_lar$forecasts$max_rhat # Note
-                                        # max_rhat TODO check with Carrie
+      names(fit_lar)[names(fit_lar) == paste0("forecasts_", R_switch)] <- 
+      	"forecasts"
+      res_realisations[m, "R_switch_T_lar_fit"] <-  
+      	fit_lar$forecasts$median
+      res_realisations[m, "lar_5"]  <- fit_lar$forecasts$q5
+      res_realisations[m, "lar_95"] <- fit_lar$forecasts$q95
+      res_realisations[m, "lar_sd"] <- fit_lar$forecasts$sd
+      res_realisations[m, "lar_rhat"] <-  fit_lar$forecasts$max_rhat 
+     # AE: Note max_rhat TODO check with Carrie
     }
 
     if(ricker_fit){
       fit_ric <- do.call(larkin::forecast,
                          c(list(data = all_sims[[m]],
-                                recruits = "R_prime_t",  # TODO Same as for Larkin
+                                recruits = "R_prime_t",  
                                 spawners = "S_t"),
                            ricker_args))
 
       # TODO Carrie to replace *** by the forecast values from Ricker.
       # fit_ric_full_series[m, ]  <- t(c(m,
       #                                  ***))
-
-      res_realisations[m, "R_switch_T_ric_fit"] = fit_ric$forecasts$median
-      res_realisations[m, "ric_5"] = fit_ric$forecasts$q5
-      res_realisations[m, "ric_95"] = fit_ric$forecasts$q95
-      res_realisations[m, "ric_sd"] = fit_ric$forecasts$sd
-      res_realisations[m, "ric_rhat"] = fit_ric$forecasts$max_rhat # Note
+      
+      names(fit_ric)[names(fit_ric) == paste0("forecasts_", R_switch)] <- 
+      	"forecasts"
+      res_realisations[m, "R_switch_T_ric_fit"] <- 
+      	fit_ric$forecasts$median
+      res_realisations[m, "ric_5"]  <-  fit_ric$forecasts$q5
+      res_realisations[m, "ric_95"] <-  fit_ric$forecasts$q95
+      res_realisations[m, "ric_sd"] <-  fit_ric$forecasts$sd
+      res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat 
+      
+      
     }
   }
 

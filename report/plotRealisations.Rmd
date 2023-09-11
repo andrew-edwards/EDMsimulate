@@ -23,12 +23,39 @@ library(larkin)
 # See larkin-compareMLE-Bayes.Rmd for a comparison
 # larkin_args() and ricker_args() have default values, but if one element 
 # changes, the entire list needs to be included here
+
+# # List of elements for running function separately
+# salmon_sim_args <- list(sigma_nu = 1, omega = 0.4)
+# edm_fit <-  TRUE
+# larkin_fit <-  TRUE
+# ricker_fit <-  TRUE
+# R_switch <-  "R_prime_t"
+# pbsEDM_args <- list(lags = list(R_switch = 0,
+# 															 S_t = 0:3),
+# 									 first_difference = TRUE,
+# 									 centre_and_scale = TRUE)
+# larkin_args = list( run_stan = TRUE,
+# 										prior_mean_alpha = 2,
+# 										prior_mean_beta = -rep(1,4),
+# 										prior_mean_sigma = 0.5,
+# 										prior_sd_alpha = 0.5,
+# 										prior_sd_beta = rep(0.25,4),
+# 										prior_sd_sigma = 0.25)
+# ricker_args <- list(run_stan = TRUE,
+# 									 prior_mean_alpha = 2,
+# 									 prior_mean_beta = -1,
+# 									 prior_mean_sigma = 0.5,
+# 									 prior_sd_alpha = 0.5,
+# 									 prior_sd_beta = 0.25,
+# 									 prior_sd_sigma = 0.25)
+# M <-  10
+
 run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
 																						 	list(sigma_nu = 1, 
 																						 			 omega = 0.4), 
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
-																						 R_switch = "R_prime_t",
+																						 R_switch = "R_t",#"R_prime_t",
 																						 larkin_args = list(
 																						 	run_stan = FALSE,
 																						  prior_mean_alpha = 2,
@@ -51,6 +78,7 @@ Then plot outputs.
 
 ```{r plotForecasts}
 
+# To revise, to account for R_t
 run.out <- run$res_realisations %>% dplyr::mutate(absErr_edm = 
 														 	(R_prime_T_edm_fit - R_prime_T_sim), 
 														 absErr_lar = 
