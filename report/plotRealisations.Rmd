@@ -28,6 +28,7 @@ run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 			 omega = 0.4), 
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
+																						 R_switch = "R_prime_t",
 																						 larkin_args = list(
 																						 	run_stan = FALSE,
 																						  prior_mean_alpha = 2,
@@ -44,26 +45,26 @@ run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	prior_sd_alpha = 0.5,
 																						 	prior_sd_beta = 0.25,
 																						 	prior_sd_sigma = 0.25),
-																						 M = 100)
+																						 M = 10)
 ```
 Then plot outputs.
 
 ```{r plotForecasts}
 
-run <- run %>% dplyr::mutate(absErr_edm = 
+run.out <- run$res_realisations %>% dplyr::mutate(absErr_edm = 
 														 	(R_prime_T_edm_fit - R_prime_T_sim), 
 														 absErr_lar = 
 														 	(R_prime_T_lar_fit - R_prime_T_sim),
 														 absErr_ric = 
 														 	(R_prime_T_ric_fit - R_prime_T_sim))
 
-absErr <- tidyr::pivot_longer(run, c(absErr_edm, absErr_lar, absErr_ric), 
+absErr <- tidyr::pivot_longer(run.out, c(absErr_edm, absErr_lar, absErr_ric), 
 																names_to="forMethod", 
 																names_prefix = "absErr_", 
 																values_to="absErr")
 absErr <- absErr %>% select(m,forMethod, absErr)
 
-forecast_data <- tidyr::pivot_longer(run, c(R_prime_T_edm_fit, 
+forecast_data <- tidyr::pivot_longer(run.out, c(R_prime_T_edm_fit, 
 																						R_prime_T_lar_fit,
 																						R_prime_T_ric_fit), 
 															names_to="forMethod", 
