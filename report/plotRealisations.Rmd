@@ -34,14 +34,14 @@ library(larkin)
 # 															 S_t = 0:3),
 # 									 first_difference = TRUE,
 # 									 centre_and_scale = TRUE)
-# larkin_args = list( run_stan = TRUE,
+# larkin_args = list( run_stan = FALSE,
 # 										prior_mean_alpha = 2,
 # 										prior_mean_beta = -rep(1,4),
 # 										prior_mean_sigma = 0.5,
 # 										prior_sd_alpha = 0.5,
 # 										prior_sd_beta = rep(0.25,4),
 # 										prior_sd_sigma = 0.25)
-# ricker_args <- list(run_stan = TRUE,
+# ricker_args <- list(run_stan = FALSE,
 # 									 prior_mean_alpha = 2,
 # 									 prior_mean_beta = -1,
 # 									 prior_mean_sigma = 0.5,
@@ -49,7 +49,7 @@ library(larkin)
 # 									 prior_sd_beta = 0.25,
 # 									 prior_sd_sigma = 0.25)
 # M <-  10
-
+# 
 run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
 																						 	list(sigma_nu = 1, 
 																						 			 omega = 0.4), 
