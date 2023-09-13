@@ -110,7 +110,6 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        prior_sd_sigma = 0.25),
                                      M = 10) {
 
-  message("** NOTE ** Larking and Ricker fits not set up yet to do R_switch = R_t, and will just use R_prime_t")
   tictoc::tic("model run time")#start_time <- Sys.time()
 
   stopifnot(R_switch %in% c("R_t", "R_prime_t"))
