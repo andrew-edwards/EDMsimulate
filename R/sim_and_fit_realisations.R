@@ -178,8 +178,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                            .name_repair = ~ tbl_colnames)  # Empty tibble correctly named; columns are logical
                                                                            # but will get changed to double/numeric when they get filled in.
                                                                            #  TODO prob faster to build it the right size straight away
-  fit_lar_full_series <- fit_edm_full_series
-  fit_ric_full_series <- fit_edm_full_series
+  fit_lar_full_series <- tibble::as_tibble(matrix(NA,
+  																								nrow = M,
+  																								ncol = 1+T),
+  																				 .name_repair = ~ c("m", 1:T))
+  																				 
+  fit_ric_full_series <-  fit_lar_full_series
 
 
   # First do all the simulations, to then paraellise the fitting.
@@ -255,16 +259,42 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                          c(list(data = all_sims[[m]],
                                 recruits = "R_prime_t", 
                          			 # This is simply the label for recruitment, and 
-                         			 # does not specify the type of forecats (recruits 
-                         			 # vs returns)
+                         			 # does not specify the type of forecasts. 
                                 spawners = "S_t"), 
-                         			 #This is the label for spawners
                            larkin_args))
 
-      # TODO: Carrie to replace *** by the forecast values from Larkin estimation:
-      # fit_ric_full_series[m, ]  <- t(c(m,
-      #                                  ***))
-
+      # Give the full time-series of predicted values:
+      # For the stan version, all MCMC draws are provided for both R_prime_t 
+      # and R_t from larkin::forecast. First, the median of posteriors is 
+      # calculated for either R_prime_t or R_t
+      if(larkin_args$run_stan){
+      	if (R_switch == "R_prime_t"){ 
+      		predR_med <- apply(fit_lar$predR_prime_t, 2, median, na.rm=T)
+      	}
+      	if (R_switch == "R_t"){
+      		predR_med <- apply(fit_lar$predR_t, 2, median, na.rm=T)
+      	}
+      	fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length( 
+      		larkin_args$prior_mean_beta ) - 1), predR_med) )
+      	# Note,the first 3 years are NAs, since the Larkin model cannot be  
+      	# calculated until year 4 of time-series as it requires lagged spawner 
+      	# abundances at t=-1, t=-2 and =-3 years.
+      }
+      
+      # For MLE version, the best estimates are provided for R_prime_t 
+      # and R_t from larkin::forecast.
+      if(!larkin_args$run_stan){
+      	if (R_switch == "R_prime_t"){
+      		fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length(
+      			larkin_args$prior_mean_beta)  - 1),	fit_lar$predR_prime_t))
+      	}
+      	
+      	if (R_switch == "R_t"){
+      		fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length( 
+      			larkin_args$prior_mean_beta ) - 1),	fit_lar$predR_t) )
+      	}
+      }
+      
       names(fit_lar)[names(fit_lar) == paste0("forecasts_", R_switch)] <- 
       	"forecasts"
       res_realisations[m, "R_switch_T_lar_fit"] <-  
@@ -283,9 +313,32 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 spawners = "S_t"),
                            ricker_args))
 
-      # TODO Carrie to replace *** by the forecast values from Ricker.
-      # fit_ric_full_series[m, ]  <- t(c(m,
-      #                                  ***))
+    
+      # Give the full time-series of predicted values:
+      # For the stan version, all MCMC draws are provided for both R_prime_t 
+      # and R_t from larkin::forecast. First, the median of posterior is 
+      # calculated. 
+      if(ricker_args$run_stan){
+      	if (R_switch == "R_prime_t"){ 
+      		predR_med <- apply(fit_ric$predR_prime_t, 2, median, na.rm=T)
+      	}
+      	if (R_switch == "R_t"){
+      		predR_med <- apply(fit_ric$predR_t, 2, median, na.rm=T)
+      	}
+      	fit_ric_full_series[m, ]  <- t( c(m, predR_med) )
+      }
+      
+      # For MLE version, the best estimates are provided for R_prime_t 
+      # and R_t from larkin::forecast.
+      if(!ricker_args$run_stan){
+      	if (R_switch == "R_prime_t"){
+      		fit_ric_full_series[m, ]  <- t( c(m, fit_ric$predR_prime_t) )
+      	}
+      	
+      	if (R_switch == "R_t"){
+      		fit_ric_full_series[m, ]  <- t( c(m,	fit_ric$predR_t) )
+      	}
+      }
       
       names(fit_ric)[names(fit_ric) == paste0("forecasts_", R_switch)] <- 
       	"forecasts"
@@ -294,10 +347,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       res_realisations[m, "ric_5"]  <-  fit_ric$forecasts$q5
       res_realisations[m, "ric_95"] <-  fit_ric$forecasts$q95
       res_realisations[m, "ric_sd"] <-  fit_ric$forecasts$sd
-      res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat 
-      
-      
+      res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat
     }
+  	
   }
 
   stringr::str_sub(R_switch,

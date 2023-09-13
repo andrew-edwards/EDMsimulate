@@ -36,7 +36,7 @@ library(EDMsimulate)
 # extirp = 2e-6
 
 # Run simulation
-df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=1) %>% dplyr::filter(t>4)
+df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=1) #%>% dplyr::filter(t>4)
 
 	# Declare arguments for estimation function
 	data <- df
@@ -45,7 +45,7 @@ df <- salmon_sim(omega=0.01, rho = 0, sigma_nu=1) %>% dplyr::filter(t>4)
 	spawners <- "S_t"
 	p_prime <- c(0.003, 0.917, 0.080)
 	environs <- character(0)# c("flow", "pdo", "npgo_annual") # character(0)
-	run_stan <- FALSE#TRUE
+	run_stan <- TRUE
 	prior_mean_alpha <- 2
 	prior_mean_beta <- rep(0.25,4)#c(-8, -6, -4, -2) # c(-4) # to estimate Ricker, put only 1 value here
 	prior_mean_gamma <- numeric(0)#rep(0, 3) # numeric(0)
