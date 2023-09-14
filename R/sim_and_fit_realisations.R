@@ -368,9 +368,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   											 Series="Simulated", 
   											 EstimationBias = NA)
   			df <- df %>% add_row(Year = 1:T,
-  													 Abundance =  t(fit_edm_full_series[m, 3:(T+2)]),
+  													 Abundance =  t(fit_edm_full_series[m, 2:(T+1)]),
   													 Series = "EDM",
-  													 EstimationBias = t(fit_edm_full_series[m, 3:(T+2)]) - sim) %>% 
+  													 EstimationBias = t(fit_edm_full_series[m, 2:(T+1)]) - sim) %>% 
   				add_row(Year = 1:T, 
   								Abundance =  t(fit_lar_full_series[m, 2:(T+1)]),	
   								Series = "Larkin",
@@ -380,7 +380,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   								Series = "Ricker",
   								EstimationBias = t(fit_ric_full_series[m, 2:(T+1)]) - sim) 
   			
-  			cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m, 3:(T+2)])), 
+  			cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m, 2:(T+1)])), 
   										 use="pairwise.complete.obs")
   			cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m, 2:(T+1)])), 
   										 use="pairwise.complete.obs")
