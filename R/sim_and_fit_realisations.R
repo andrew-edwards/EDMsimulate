@@ -232,7 +232,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     cat(m, " of ", M, " realisations")
 
     if(edm_fit){
-      fit_edm <- do.call(pbsEDM::pbsEDM,
+    	fit_edm <- do.call(pbsEDM::pbsEDM,
                          c(list(N = all_sims[[m]]),
                            pbsEDM_args))
 
@@ -243,6 +243,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       fit_edm_full_series[m, ]  <- t(c(m,
                                        fit_edm$N_forecast))
 
+      # TO DO AE: Check that this call below to T=80 is correct, as the time- 
+      # series fit_edm$N_forecast is 81 years long, and when predictions are 
+      # aligned 1:81 (or 2:82 in fit_edm_full_series[m, ]) then it aligns well 
+      # with sims 1:80 (see plots below)
       res_realisations[m, "R_switch_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
                                         # double check what to do when pbsedm
                                         # arguments change
