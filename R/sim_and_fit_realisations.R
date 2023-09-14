@@ -239,6 +239,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       testthat::expect_equal(dplyr::pull(all_sims[[m]], R_switch),
                              fit_edm$N_observed[-(T+1)])  # Extra check
 
+      # TO DO AE: Check that the time-series is aligned correctly
       fit_edm_full_series[m, ]  <- t(c(m,
                                        fit_edm$N_forecast))
 
@@ -348,8 +349,73 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       res_realisations[m, "ric_sd"] <-  fit_ric$forecasts$sd
       res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat
     }
-  	
-  }
+
+		plot_realisation <- TRUE
+  	if(plot_realisation){
+  		if(m==1){
+  			# PLot simulated and predicted values for one realisation
+  			# First get simulated values
+  			sim <- all_sims[[m]] %>% dplyr::pull(R_switch)
+  			sim[T] <- R_switch_T_sim # All last years value back in
+  			
+  			# Then add predicted values
+  			df <- data.frame(Year = 1:T,
+  											 Abundance= sim,
+  											 Series="Simulated", 
+  											 EstimationBias = NA)
+  			df <- df %>% add_row(Year = 1:T,
+  													 Abundance =  t(fit_edm_full_series[m, 3:(T+2)]),
+  													 Series = "EDM",
+  													 EstimationBias = t(fit_edm_full_series[m, 3:(T+2)]) - sim) %>% 
+  				add_row(Year = 1:T, 
+  								Abundance =  t(fit_lar_full_series[m, 2:(T+1)]),	
+  								Series = "Larkin",
+  								EstimationBias = t(fit_lar_full_series[m, 2:(T+1)]) - sim) %>% 
+  				add_row(Year = 1:T, 
+  								Abundance = t(fit_ric_full_series[m, 2:(T+1)]),	
+  								Series = "Ricker",
+  								EstimationBias = t(fit_ric_full_series[m, 2:(T+1)]) - sim) 
+  			
+  			cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m, 3:(T+2)])), 
+  										 use="pairwise.complete.obs")
+  			cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m, 2:(T+1)])), 
+  										 use="pairwise.complete.obs")
+  			cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m, 2:(T+1)])), 
+  										 use="pairwise.complete.obs")
+  			
+  			yMax <- max(sim, na.rm=T)
+  			
+  			plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) + 
+  				geom_line(aes(colour=Series, linewidth=Series)) +
+  				scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
+  				scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2"), 
+  																			 "grey")) +
+  				geom_text(x=(T-15), y=yMax*0.8, 
+  									label=paste0("EDM cor = ", round(cor.edm,2)),
+  									colour = brewer.pal(n=3, name ="Dark2")[1]) +
+  				geom_text(x=(T-15), y=yMax*0.7, 
+  									label=paste0("Larkin cor = ", round(cor.lar,2)),
+  									colour = brewer.pal(n=3, name ="Dark2")[2]) +
+  				geom_text(x=(T-15), y=yMax*0.6, 
+  									label=paste0("Ricker cor = ", round(cor.ric,2)),
+  									colour = brewer.pal(n=3, name ="Dark2")[3]) + 
+  				geom_text(x=5, y=yMax*0., 
+  								label=paste0("realisation = ", m))
+  			
+  			
+  		  			
+  			plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>% ggplot(aes(x=Year, y=EstimationBias, group=Series)) + 
+  				geom_line(aes(colour=Series)) +
+  				scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")))
+  			
+  			p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
+  			p1
+  			# ggsave(filename = paste0("report/realisation", m, ".png"), p1)
+  			}  	
+  		
+  		}
+		
+  	}
 
   stringr::str_sub(R_switch,
                    -1,

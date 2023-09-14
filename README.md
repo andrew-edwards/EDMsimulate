@@ -55,4 +55,14 @@ Also, this packages requires the Larkin package, which is available here:
 ```
 devtools::install_github("pbs-assess/larkin", build_vignettes = TRUE)
 library(larkin)
+
 ```
+And several other R packages
+```
+library(ggplot2)
+library(RcolorBrewer)
+library(grid.arrange)
+library(dplyr)
+
+```
+
