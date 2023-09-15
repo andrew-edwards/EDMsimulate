@@ -221,6 +221,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 # neighbour etc., though our code ensure that
                                 # anyway) or Larkin or Ricker.
 
+    # Add a column to the df, simulated that identifies the realisation, m, as 
+    # the list order (and hence realisation number) gets lost in parallelisation
+    simulated['m'] <- m
     res_realisations[m, "m"] <- m
     res_realisations[m, "R_switch_T_sim"] <- R_switch_T_sim
 
@@ -354,7 +357,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat
     }
 
-		plot_realisation <- TRUE
+		plot_realisation <- FALSE
   	if(plot_realisation){
   		if(m==1){
   			# PLot simulated and predicted values for one realisation

@@ -30,7 +30,7 @@ library(RColorBrewer)
 # edm_fit <-  TRUE
 # larkin_fit <-  TRUE
 # ricker_fit <-  TRUE
-# R_switch <-  "R_prime_t"#"R_t"#
+# R_switch <-  "R_t"#R_prime_t"#"R_t"#
 # pbsEDM_args <- list(lags = list(R_switch = 0,
 # 															 S_t = 0:3),
 # 									 first_difference = TRUE,
