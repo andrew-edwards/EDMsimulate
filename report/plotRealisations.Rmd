@@ -25,8 +25,10 @@ library(RColorBrewer)
 # larkin_args() and ricker_args() have default values, but if one element 
 # changes, the entire list needs to be included here
 
-# # List of elements for running function separately
+# List of elements for running function separately
 # salmon_sim_args <- list(sigma_nu = 1, omega = 0.4)
+# target_hr <- 0.2
+# sigma_ou <- 0.05
 # edm_fit <-  TRUE
 # larkin_fit <-  TRUE
 # ricker_fit <-  TRUE
@@ -54,6 +56,8 @@ library(RColorBrewer)
 run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
 																						 	list(sigma_nu = 1, 
 																						 			 omega = 0.4), 
+																						 target_hr = 0.2,
+																						 sigma_ou = 0.05,
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -73,12 +77,13 @@ run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	prior_sd_alpha = 0.5,
 																						 	prior_sd_beta = 0.25,
 																						 	prior_sd_sigma = 0.25),
-																						 M = 10)
+																						 M = 100)
 ```
 Then plot outputs.
 
 ```{r plotForecasts}
 # Get results for either R_prime (recruitment) or R_ (returns)
+# Suggestion to put code below into a function:
 if(names(run$res_realisations)[2]=="R_prime_T_sim"){
 	res_realisations_plot <- run$res_realisations %>% 
 		dplyr::rename( R_sim = R_prime_T_sim) %>% 
@@ -138,6 +143,97 @@ p2 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) +
 p2
 
 ```
+The above example assumes returns are the variable being predictd. Another option is recruitment (by brood year), which is the more direct predictor of Larkin model. The simulation is repeated with recruitment.
+
+```{r}
+run <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+																						 	list(sigma_nu = 1, 
+																						 			 omega = 0.4), 
+																						 target_hr = 0.2,
+																						 sigma_ou = 0.05,
+																						 larkin_fit = TRUE,
+																						 ricker_fit = TRUE,
+																						 R_switch = "R_prime_t",#"R_t",#
+																						 larkin_args = list(
+																						 	run_stan = FALSE,
+																						  prior_mean_alpha = 2,
+																						  prior_mean_beta = -rep(1,4),
+																						  prior_mean_sigma = 0.5,
+																						  prior_sd_alpha = 0.5,
+																						  prior_sd_beta = rep(0.25,4),
+																						  prior_sd_sigma = 0.25),
+																						 ricker_args = list(
+																						 	run_stan = FALSE,
+																						 	prior_mean_alpha = 2,
+																						 	prior_mean_beta = -1,
+																						 	prior_mean_sigma = 0.5,
+																						 	prior_sd_alpha = 0.5,
+																						 	prior_sd_beta = 0.25,
+																						 	prior_sd_sigma = 0.25),
+																						 M = 100)
+
+
+if(names(run$res_realisations)[2]=="R_prime_T_sim"){
+	res_realisations_plot <- run$res_realisations %>% 
+		dplyr::rename( R_sim = R_prime_T_sim) %>% 
+		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
+		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
+		dplyr::rename( R_ric = R_prime_T_ric_fit)
+}
+if(names(run$res_realisations)[2]=="R_T_sim"){
+	res_realisations_plot <- run$res_realisations %>% 
+		dplyr::rename( R_sim = R_T_sim) %>% 
+		dplyr::rename( R_edm = R_T_edm_fit) %>% 
+		dplyr::rename( R_lar = R_T_lar_fit) %>% 
+		dplyr::rename( R_ric = R_T_ric_fit)
+}
+
+# Calculate absolute error in forecast for EDM, Larkin and Ricker
+run.out <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
+														 	(R_edm - R_sim), 
+														 absErr_lar = 
+														 	(R_lar - R_sim),
+														 absErr_ric = 
+														 	(R_ric - R_sim))
+
+# Pivot absolute errors into a long table for plotting with ggplot
+absErr <- tidyr::pivot_longer(run.out, c(absErr_edm, absErr_lar, absErr_ric), 
+																names_to="forMethod", 
+																names_prefix = "absErr_", 
+																values_to="absErr")
+absErr <- absErr %>% select(m,forMethod, absErr)
+
+# Pivot forecasted estimates into a long table for plotting with ggplot
+forecast_data <- tidyr::pivot_longer(run.out, c(R_edm, 
+																						R_lar,
+																						R_ric), 
+															names_to="forMethod", 
+															names_prefix = "R_", 
+															values_to="R_fit") 
+forecast_data <- forecast_data %>% 
+	dplyr::select(m,forMethod, R_fit, R_sim)
+
+# Plot forecasts against true (simulated) values
+p1 <- forecast_data %>% ggplot(aes(x=R_sim, 
+																	 y=R_fit, 
+																	 colour=forMethod)) + 
+	geom_point() + 
+	geom_smooth(method='lm', formula= y~x) + 
+	xlab("Simulated 'true' recruitment") + 
+	ylab("Forecasted recruitment") +
+	geom_abline(slope=1, intercept = 0, col="dark grey")
+p1
+
+# Plot distribution of absolute errors in forecast
+p2 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+	geom_density() +
+	xlab("Absolute error in forecast") +
+	ylab("Density")
+p2
+
+```
+
+
 The Larkin and Ricker models tend to have absolute errors in forecast that are closer to zero, compared with EDM.
 
 The simulation is then repeated, but with altered beta parameters where beta0 is dominant over the remaining beta parameters (more similar to a Ricker model).
@@ -147,6 +243,8 @@ run2 <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(sigma_nu = 1, 
 																						 			 omega = 0.4,
 																						 			 beta = c(0.45, 0.25, 0.15, 0.15)), 
+																						 target_hr = 0.2,
+																						 sigma_ou = 0.05,
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
@@ -166,7 +264,7 @@ run2 <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	prior_sd_alpha = 0.5,
 																						 	prior_sd_beta = 0.25,
 																						 	prior_sd_sigma = 0.25),
-																						 M = 10)
+																						 M = 100)
 
 # Get results for either R_prime (recruitment) or R_ (returns)
 if(names(run2$res_realisations)[2]=="R_prime_T_sim"){
@@ -249,6 +347,8 @@ run3 <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 			 sigma_nu = 1, 
 																						 			 omega = 0.4,
 																						 			 beta = c(0.45, 0.25, 0.15, 0.15)), 
+																							target_hr = 0.2,
+																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
 																							larkin_fit = TRUE,
 																							ricker_fit = TRUE,

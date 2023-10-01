@@ -23,6 +23,12 @@
 ##'   default values from `salmon_sim()`. TODO make p_prime standalone
 ##' @param T Explicit `T` because we need a default; this gets overwritten by
 ##'   any `T` in `salmon_sim_args`.
+##'   Note to AE: I think this parameter can be removed, please confirm
+##' @param target_hr Target harvest rate to generate time-series of harvest 
+##'   rates with outcome uncertainty (uncertainty in outcomes form 
+##'   implementing the target). If omitted a default of constant hr = 0.2 used, 
+##'   the same default assumption in salmon_sim()
+##' @param sigma_ou Standard deviation in outcome uncertainty
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
 ##'   the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
 ##'   RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
@@ -83,7 +89,9 @@
 ##' res <- sim_and_fit_realisations(M=2, larkin_fit = TRUE, ricker_fit = TRUE)
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
-                                     edm_fit = TRUE,
+																		 target_hr = 0.2,
+																		 sigma_ou = 0,
+																		 edm_fit = TRUE,
                                      larkin_fit = FALSE,
                                      ricker_fit = FALSE,
                                      R_switch = "R_prime_t",
@@ -200,6 +208,31 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     nu_t <- rnorm(T_total,
                   -sigma_nu^2 / 2,
                   sigma_nu)
+    
+    # Beta-distributed outcome uncertainty (uncertainty in outcomes of 
+    # implementing target harvest rate), as applied in samSim
+    # https://github.com/Pacific-salmon-assess/samSim
+    if(target_hr != 0){
+    	if(sigma_ou != 0){
+    		location <- pmax(0.00001, 
+    										 target_hr^2 * (((1 - target_hr) / sigma_ou^2) - 
+    										 							 	(1 / sigma_ou)))
+    		shape <- pmax(0.00001, location * (1 / target_hr - 1))
+    		h_t <- rbeta(n = T_total, shape1 = location, shape2 = shape)		
+    	}
+    	if(sigma_ou == 0){
+    		# make blank draw with dummy pars to balance random number generator
+    		# Perhaps not needed because of set.seed at start of each trial, except
+    		# if more uncertainties are added in the future below
+    		blank <- rbeta(T_total, 0.5, 0.5, ncp = 0)
+    		h_t <- rep(T_total, target_hr)		
+    	}
+    }
+    if(target_hr == 0){
+     	# make blank draw with dummy pars to balance random number generator
+    	blank <- rbeta(T_total, 0.5, 0.5, ncp = 0)
+    	h_t <- rep(T_total, target_hr)
+    }
 
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
@@ -357,9 +390,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       res_realisations[m, "ric_rhat"] <- fit_ric$forecasts$max_rhat
     }
 
-		plot_realisation <- FALSE
+		plot_realisation <- TRUE#FALSE
   	if(plot_realisation){
-  		if(m==1){
+  		if(m==M){
   			# PLot simulated and predicted values for one realisation
   			# First get simulated values
   			sim <- all_sims[[m]] %>% dplyr::pull(R_switch)
@@ -411,7 +444,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   			
   			
   		  			
-  			plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>% ggplot(aes(x=Year, y=EstimationBias, group=Series)) + 
+  			plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>% 
+  				ggplot(aes(x=Year, y=EstimationBias, group=Series)) + 
   				geom_line(aes(colour=Series)) +
   				scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")))
   			

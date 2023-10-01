@@ -7,6 +7,8 @@ model with estimation using EDM, and Larkin and Ricker models.}
 \usage{
 sim_and_fit_realisations(
   salmon_sim_args = list(),
+  target_hr = 0.2,
+  sigma_ou = 0,
   edm_fit = TRUE,
   larkin_fit = FALSE,
   ricker_fit = FALSE,
@@ -28,6 +30,13 @@ including `T` for the final time step. If any of `p_prime`, `T`,
 `T_transient`, or `sigma_nu` are not specified then they are given the
 default values from `salmon_sim()`. TODO make p_prime standalone}
 
+\item{target_hr}{Target harvest rate to generate time-series of harvest 
+rates with outcome uncertainty (uncertainty in outcomes form 
+implementing the target). If omitted a default of constant hr = 0.2 used, 
+the same default assumption in salmon_sim()}
+
+\item{sigma_ou}{Standard deviation in outcome uncertainty}
+
 \item{R_switch}{either `R_prime_t` or `R_t` to specify which one
 the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
 RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
@@ -48,7 +57,8 @@ their defaults in `pbsEDM()` are FALSE, not TRUE like here.}
 \item{M}{number of realisations}
 
 \item{T}{Explicit `T` because we need a default; this gets overwritten by
-any `T` in `salmon_sim_args`.}
+any `T` in `salmon_sim_args`.
+Note to AE: I think this parameter can be removed, please confirm}
 }
 \value{
 List containing `res_realisations`, `fit_edm_full_series`, `fit_lar_full_series`,
