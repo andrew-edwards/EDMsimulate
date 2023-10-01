@@ -28,7 +28,7 @@
 ##'   rates with outcome uncertainty (uncertainty in outcomes form 
 ##'   implementing the target). If omitted a default of constant hr = 0.2 used, 
 ##'   the same default assumption in salmon_sim()
-##' @param sigma_ou Standard deviation in outcome uncertainty
+##' @param sigma_ou Standard deviation in outcome uncertainty. Default = 0.
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
 ##'   the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
 ##'   RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
