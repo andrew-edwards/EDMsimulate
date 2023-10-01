@@ -1,4 +1,6 @@
-##' Fit EDM, Larkin, and Ricker models 
+##' @title Fit EDM, Larkin, and Ricker models 
+##' @description Fits EDM, Larkin, and Ricker models to simulated data using 
+##'   parallel processing
 ##' @param all_sims List of simulated data generated from salmon_sim()
 ##' @param res_realisations Empty data frame with correct headers for outputs 
 ##'   of estimation
@@ -12,8 +14,10 @@
 ##' @param larkin_args List of arguments to pass onto `larkin::....()`. 
 ##' @param ricker_args List of arguments to pass onto `larkin::....()`. 
 ##' @return List object call output with components:
-##'  - `simulated:` the simulated tibble
-##'  - `fit:` the full output from pbsEDM::pbsEDM().
+##'  - `single_realisation` forecasts from all models in last year
+##'  - `edm_fit_single` predictions for each year from EDM
+##'  - `edm_lar_single` predictions for each year from larkin
+##'  - `edm_ric_single` predictions for each year from ricker
 ##' @export
 ##' @author Carrie Holt and Andrew Edwards
 ##' @examples
