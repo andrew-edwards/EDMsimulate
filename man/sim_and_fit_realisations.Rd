@@ -15,10 +15,10 @@ sim_and_fit_realisations(
   R_switch = "R_prime_t",
   pbsEDM_args = list(lags = list(R_switch = 0, S_t = 0:3), first_difference = TRUE,
     centre_and_scale = TRUE),
-  larkin_args = list(run_stan = TRUE, prior_mean_alpha = 2, prior_mean_beta = -rep(1, 4),
-    prior_mean_sigma = 0.5, prior_sd_alpha = 0.5, prior_sd_beta = rep(0.25, 4),
+  larkin_args = list(run_stan = FALSE, prior_mean_alpha = 2, prior_mean_beta = -rep(1,
+    4), prior_mean_sigma = 0.5, prior_sd_alpha = 0.5, prior_sd_beta = rep(0.25, 4),
     prior_sd_sigma = 0.25),
-  ricker_args = list(run_stan = TRUE, prior_mean_alpha = 2, prior_mean_beta = -1,
+  ricker_args = list(run_stan = FALSE, prior_mean_alpha = 2, prior_mean_beta = -1,
     prior_mean_sigma = 0.5, prior_sd_alpha = 0.5, prior_sd_beta = 0.25, prior_sd_sigma =
     0.25),
   M = 10
@@ -35,7 +35,7 @@ rates with outcome uncertainty (uncertainty in outcomes form
 implementing the target). If omitted a default of constant hr = 0.2 used, 
 the same default assumption in salmon_sim()}
 
-\item{sigma_ou}{Standard deviation in outcome uncertainty}
+\item{sigma_ou}{Standard deviation in outcome uncertainty. Default = 0.}
 
 \item{R_switch}{either `R_prime_t` or `R_t` to specify which one
 the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR

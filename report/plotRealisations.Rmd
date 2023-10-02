@@ -19,6 +19,7 @@ library(dplyr)
 library(ggplot2)
 library(larkin)
 library(parallel)
+library(tidyr)
 library(RColorBrewer)
 
 # Run using stan-optim for Larkin model to speed up model runs
@@ -62,73 +63,18 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
-																						 larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
 																						 M = 100)
 ```
 Then plot outputs.
 
 ```{r plotForecasts}
-# Get results for either R_prime (recruitment) or R_ (returns)
-# Suggestion to put code below into a function:
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
 
-# Calculate absolute error in forecast for EDM, Larkin and Ricker
-out.df <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
-
-# Pivot absolute errors into a long table for plotting with ggplot
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-# Pivot forecasted estimates into a long table for plotting with ggplot
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	dplyr::select(m,forMethod, R_fit, R_sim)
+# Extract forecasts and forecast errors
+results_bc <- forecast_errors(out, label="base_case")
 
 # Plot forecasts against true (simulated) values
-p1 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_bc$forecasts %>% 
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
@@ -137,7 +83,8 @@ p1 <- forecast_data %>% ggplot(aes(x=R_sim,
 p1
 
 # Plot distribution of absolute errors in forecast
-p2 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p2 <- results_bc$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
@@ -155,69 +102,13 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
 																						 R_switch = "R_prime_t",#"R_t",#
-																						 larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
-																						 M = 100)
+																						  M = 100)
 
-
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
-
-# Calculate absolute error in forecast for EDM, Larkin and Ricker
-out.df <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
-
-# Pivot absolute errors into a long table for plotting with ggplot
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-# Pivot forecasted estimates into a long table for plotting with ggplot
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	dplyr::select(m,forMethod, R_fit, R_sim)
-
+# Extract forecasts and forecast errors
+results_rec <- forecast_errors(out, label="recruits")
 # Plot forecasts against true (simulated) values
-p1 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_rec$forecasts %>% 
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
@@ -226,7 +117,8 @@ p1 <- forecast_data %>% ggplot(aes(x=R_sim,
 p1
 
 # Plot distribution of absolute errors in forecast
-p2 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p2 <- results_rec$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
@@ -249,76 +141,25 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
-																						 larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
 																						 M = 100)
 
-# Get results for either R_prime (recruitment) or R_ (returns)
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
+# Extract forecasts and forecast errors
+results_ric <- forecast_errors(out, label="ricker")
 
-out.df <- res_realisations_plot  %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
-
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	select(m,forMethod, R_fit, R_sim)
-
-p3 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_ric$forecasts %>% 
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
-p3
-p4 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p1
+p2 <- results_ric$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
-p4
+p2
 
 ```
 
@@ -333,69 +174,15 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 larkin_fit = TRUE,
 																						 ricker_fit = TRUE,
 																						 R_switch = "R_t",#"R_t",#
-																						 larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
 																						 M = 100)
 
+# Extract forecasts and forecast errors
+results_sigma_nu_0.1 <- forecast_errors(out, label="sigma_nu_0.1")
 
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
-
-# Calculate absolute error in forecast for EDM, Larkin and Ricker
-out.df <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
-
-# Pivot absolute errors into a long table for plotting with ggplot
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-# Pivot forecasted estimates into a long table for plotting with ggplot
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	dplyr::select(m,forMethod, R_fit, R_sim)
 
 # Plot forecasts against true (simulated) values
-p1 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_sigma_nu_0.1$forecasts %>%
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
@@ -404,7 +191,8 @@ p1 <- forecast_data %>% ggplot(aes(x=R_sim,
 p1
 
 # Plot distribution of absolute errors in forecast
-p2 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p2 <- results_sigma_nu_0.1$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
@@ -420,9 +208,10 @@ Simulations were then run including temporal variabilty in productivity (Larkin 
 alpha1 <- c(rep(exp(2), 100), rep(exp(2), 76), seq(exp(2), exp(1.75), length.out=4))
 alpha2 <- c(rep(exp(2), 100), rep(exp(2), 34), seq(exp(2), exp(0.5), length.out=46))
 alpha3 <- c(rep(exp(2), 100), rep(exp(2), 54), seq(exp(2), exp(0.5), length.out=26))
-df <- data.frame(year = rep(1:180,3), 
-								 productivity = c(alpha1, alpha2, alpha3), 
-								 trend=c(rep(1,180), rep(2, 180), rep(3,180)))
+alpha4 <- c(rep(exp(2), 100), rep(exp(2), 34), rep(exp(0.5),46))
+df <- data.frame(year = rep(1:180,4), 
+								 productivity = c(alpha1, alpha2, alpha3, alpha4), 
+								 trend=c(rep(1,180), rep(2, 180), rep(3,180), rep(4,180)))
 
 p1 <- df |> ggplot2::ggplot(aes(x=year, y=productivity, colour=as.factor(trend))) + geom_line()
 p1
@@ -442,79 +231,30 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
 																							larkin_fit = TRUE,
 																							ricker_fit = TRUE,
-																							larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
-																						 M = 100)
+																							M = 100)
 
-# Get results for either R_prime (recruitment) or R_ (returns)
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
+# Extract forecasts and forecast errors
+results_alpha_decline <- forecast_errors(out, label = "alpha_decline")
 
-out.df <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
 
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	select(m,forMethod, R_fit, R_sim)
-
-p4 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_alpha_decline$forecasts %>%
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
-p4
-p5 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p1
+p2 <- results_alpha_decline$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
-p5
+p2
 
 ```
-And repeated with low process variation. 
+
+And repeated with low process variation and alpha decline. 
 ```{r}
 
 out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
@@ -526,76 +266,26 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
 																							larkin_fit = TRUE,
 																							ricker_fit = TRUE,
-																							larkin_args = list(
-																						 	run_stan = FALSE,
-																						  prior_mean_alpha = 2,
-																						  prior_mean_beta = -rep(1,4),
-																						  prior_mean_sigma = 0.5,
-																						  prior_sd_alpha = 0.5,
-																						  prior_sd_beta = rep(0.25,4),
-																						  prior_sd_sigma = 0.25),
-																						 ricker_args = list(
-																						 	run_stan = FALSE,
-																						 	prior_mean_alpha = 2,
-																						 	prior_mean_beta = -1,
-																						 	prior_mean_sigma = 0.5,
-																						 	prior_sd_alpha = 0.5,
-																						 	prior_sd_beta = 0.25,
-																						 	prior_sd_sigma = 0.25),
-																						 M = 100)
+																							M = 100)
 
-# Get results for either R_prime (recruitment) or R_ (returns)
-if(names(out$res_realisations)[2]=="R_prime_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_prime_T_sim) %>% 
-		dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_prime_T_ric_fit)
-}
-if(names(out$res_realisations)[2]=="R_T_sim"){
-	res_realisations_plot <- out$res_realisations %>% 
-		dplyr::rename( R_sim = R_T_sim) %>% 
-		dplyr::rename( R_edm = R_T_edm_fit) %>% 
-		dplyr::rename( R_lar = R_T_lar_fit) %>% 
-		dplyr::rename( R_ric = R_T_ric_fit)
-}
+# Extract forecasts and forecast errors
+results_alpha_decline_sigma_nu_0.1 <- forecast_errors(out, label = "alpha_decline_sigma_nu_0.1")
 
-out.df <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-														 	(R_edm - R_sim), 
-														 absErr_lar = 
-														 	(R_lar - R_sim),
-														 absErr_ric = 
-														 	(R_ric - R_sim))
 
-absErr <- tidyr::pivot_longer(out.df, c(absErr_edm, absErr_lar, absErr_ric), 
-																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-absErr <- absErr %>% select(m,forMethod, absErr)
-
-forecast_data <- tidyr::pivot_longer(out.df, c(R_edm, 
-																						R_lar,
-																						R_ric), 
-															names_to="forMethod", 
-															names_prefix = "R_", 
-															values_to="R_fit") 
-forecast_data <- forecast_data %>% 
-	select(m,forMethod, R_fit, R_sim)
-
-p4 <- forecast_data %>% ggplot(aes(x=R_sim, 
-																	 y=R_fit, 
-																	 colour=forMethod)) + 
+p1 <- results_alpha_decline_sigma_nu_0.1$forecasts %>%
+	ggplot(aes(x=R_sim,  y=R_fit, colour=forMethod)) + 
 	geom_point() + 
 	geom_smooth(method='lm', formula= y~x) + 
 	xlab("Simulated 'true' recruitment") + 
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
-p4
-p5 <- absErr %>% ggplot(aes(x=absErr, colour=forMethod)) + 
+p1
+p2 <- results_alpha_decline_sigma_nu_0.1$absErr %>% 
+	ggplot(aes(x=absErr, colour=forMethod)) + 
 	geom_density() +
 	xlab("Absolute error in forecast") +
 	ylab("Density")
-p5
+p2
 
 
 ```

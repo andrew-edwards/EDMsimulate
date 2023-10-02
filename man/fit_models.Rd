@@ -36,11 +36,14 @@ specified by the `R_switch` parameter}
 }
 \value{
 List object call output with components:
- - `simulated:` the simulated tibble
- - `fit:` the full output from pbsEDM::pbsEDM().
+ - `single_realisation` forecasts from all models in last year
+ - `edm_fit_single` predictions for each year from EDM
+ - `edm_lar_single` predictions for each year from larkin
+ - `edm_ric_single` predictions for each year from ricker
 }
 \description{
-Fit EDM, Larkin, and Ricker models
+Fits EDM, Larkin, and Ricker models to simulated data using 
+  parallel processing
 }
 \examples{
 \dontrun{
