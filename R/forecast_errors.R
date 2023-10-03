@@ -34,21 +34,60 @@ forecast_errors <- function(run, label){
 	}
 	
 	# Calculate absolute error in forecast for EDM, Larkin and Ricker
-	out.plot <- res_realisations_plot %>% dplyr::mutate(absErr_edm = 
-																										 	(R_edm - R_sim), 
-																										 absErr_lar = 
-																										 	(R_lar - R_sim),
-																										 absErr_ric = 
-																										 	(R_ric - R_sim))
+	out.plot <- res_realisations_plot %>% 
+		dplyr::mutate(Err_edm = (R_edm - R_sim), 
+									Err_lar = (R_lar - R_sim),
+									Err_ric = (R_ric - R_sim)) %>% 
+		dplyr::mutate(absErr_edm = abs(R_edm - R_sim), 
+									absErr_lar = abs(R_lar - R_sim),
+									absErr_ric = abs(R_ric - R_sim)) %>% 
+		dplyr::mutate(perErr_edm = 100*(R_edm - R_sim)/R_sim, 
+									perErr_lar = 100*(R_lar - R_sim)/R_sim,
+									perErr_ric = 	100*(R_ric - R_sim)/R_sim) %>%
+		dplyr::mutate(se_edm = (R_edm - R_sim)^2, 
+									se_lar = (R_lar - R_sim)^2,
+									se_ric = 	(R_ric - R_sim)^2)
+		
+	
+	
 	# add percent error, mse, and make absErr absolute (only positive)
 	
 	# Pivot absolute errors into a long table for plotting with ggplot
-	absErr <- tidyr::pivot_longer(out.plot, c(absErr_edm, absErr_lar, absErr_ric), 
+	errors <- tidyr::pivot_longer(out.plot, c(Err_edm, Err_lar, Err_ric), 
 																names_to="forMethod", 
-																names_prefix = "absErr_", 
-																values_to="absErr")
-	absErr <- absErr %>% select(m,forMethod, absErr) %>% 
-		dplyr::mutate(model_label = label)
+																names_prefix = "Err_", 
+																values_to="value")
+	errors <- errors %>% dplyr::select(m,forMethod, value) %>% 
+		dplyr::mutate(model_label = label) %>% 
+		dplyr::mutate(error="Err")
+	
+	ae <- tidyr::pivot_longer(out.plot, c(absErr_edm, absErr_lar, absErr_ric), 
+														names_to="forMethod", 
+														names_prefix = "absErr_", 
+														values_to="value")
+	ae <- ae %>% dplyr::select(m,forMethod, value) %>% 
+		dplyr::mutate(model_label = label) %>% 
+		dplyr::mutate(error="absErr")
+	
+	pe <- tidyr::pivot_longer(out.plot, c(perErr_edm, perErr_lar, perErr_ric), 
+																names_to="forMethod", 
+																names_prefix = "perErr_", 
+																values_to="value")
+	pe <- pe %>% dplyr::select(m,forMethod, value) %>% 
+		dplyr::mutate(model_label = label) %>% 
+		dplyr::mutate(error="perErr")
+	
+	se <- tidyr::pivot_longer(out.plot, c(se_edm, se_lar, se_ric), 
+														names_to="forMethod", 
+														names_prefix = "se_", 
+														values_to="value")
+	se <- se %>% dplyr::select(m,forMethod, value) %>% 
+		dplyr::mutate(model_label = label) %>% 
+		dplyr::mutate(error="se")
+	
+	errors <- errors %>% dplyr::add_row(ae) %>% dplyr::add_row(pe) %>% 
+		dplyr::add_row(se)
+	
 	
 	# Pivot forcasted estimates into a long table for plotting with ggplot
 	forecasts <- tidyr::pivot_longer(out.plot, c(R_edm, 
@@ -62,5 +101,5 @@ forecast_errors <- function(run, label){
 		dplyr::mutate(model_label = label)
 	
 	return(list(forecasts = forecasts,
-							absErr = absErr)	)
+							errors = errors)	)
 }
