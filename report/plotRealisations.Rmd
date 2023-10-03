@@ -386,17 +386,20 @@ discrete_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
 																	 				 "sigma_nu_0.1", "alpha_decline",
 																	 				 "alpha_decline_sigma_nu_0.1")))
 
-dodge <- position_dodge(width = 0.4)
+dodge_pe <- position_dodge(width = 0.6)
+dodge_ae <- position_dodge(width = 0.7)
 
 
 p1 <- discrete_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1.3,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(-100,100) + ylab("Percent error")
+  geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
+  geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	ggtitle("Discrete sensitivity analyses")
 p2 <- discrete_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1.2,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(0,1)+ylab("Absolute error")
+  geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
+  geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	ggtitle("Discrete sensitivity analyses")
 
 p1
 p2
@@ -465,14 +468,20 @@ sigma_nu_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
 																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
 																	 				 "sigma_nu_0.7", "base_case")))
 
+dodge_pe <- position_dodge(width = 0.6)
+dodge_ae <- position_dodge(width = 0.7)
+
 p1 <- sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1.3,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(-100,100) + ylab("Percent error")
+  geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
+  geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
 p2 <- sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(0,1)+ylab("Absolute error")
+  geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
+  geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
+
 
 p1
 p2
@@ -510,7 +519,7 @@ results_alpha_decline_sigma_nu_0.5 <- forecast_errors(out, label = "sigma_nu_0.5
 
 out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 0.7, 
+																						 			 sigma_nu = 0.8, 
 																						 			 omega = 0.4), 
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
@@ -520,35 +529,55 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																							M = 100)
 
 # Extract forecasts and forecast errors
-results_alpha_decline_sigma_nu_0.7 <- forecast_errors(out, label = "sigma_nu_0.7")
+results_alpha_decline_sigma_nu_0.8 <- forecast_errors(out, label = "sigma_nu_0.8")
 
 
 alpha_decline_sigma_nu_sens_pe <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>% 
 	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>% 
 	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>% 
 	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.7$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
 	dplyr::mutate(model_label=factor(model_label, 
 																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.7", "alpha_decline")))
+																	 				 "sigma_nu_0.8", "alpha_decline")))
 
 alpha_decline_sigma_nu_sens_ae <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>% 
 	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>% 
 	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>% 
 	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.7$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
 	dplyr::mutate(model_label=factor(model_label, 
 																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.7", "alpha_decline")))
+																	 				 "sigma_nu_0.8", "alpha_decline")))
+
+dodge_pe <- position_dodge(width = 0.6)
+dodge_ae <- position_dodge(width = 0.7)
 
 p1 <- alpha_decline_sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1.3,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(-100,100) + ylab("Percent error")
+  geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
+  geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
+			 subtitle = "under scenario of declining alpha over time") + 
+	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
+                              "sigma_nu_0.3" = "0.3",
+															"sigma_nu_0.5" = "0.5",
+															"sigma_nu_0.8" = "0.8",
+															"alpha_decline" = "1.0")) + 
+	labs(x="sigma_nu")
 p2 <- alpha_decline_sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
-  geom_violin(position = dodge, width=1.2,  aes(alpha = 0.5))+
-  geom_boxplot(width = .1, outlier.colour = NA, position = dodge) +
-	ylim(0,1)+ylab("Absolute error")
+  geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
+  geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
+		 subtitle = "under scenario of declining alpha over time")+
+	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
+                              "sigma_nu_0.3" = "0.3",
+															"sigma_nu_0.5" = "0.5",
+															"sigma_nu_0.8" = "0.8",
+															"alpha_decline" = "1.0")) + 
+	labs(x="sigma_nu")
+
 
 p1
 p2
