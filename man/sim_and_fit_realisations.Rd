@@ -30,9 +30,9 @@ including `T` for the final time step. If any of `p_prime`, `T`,
 `T_transient`, or `sigma_nu` are not specified then they are given the
 default values from `salmon_sim()`. TODO make p_prime standalone}
 
-\item{target_hr}{Target harvest rate to generate time-series of harvest 
-rates with outcome uncertainty (uncertainty in outcomes form 
-implementing the target). If omitted a default of constant hr = 0.2 used, 
+\item{target_hr}{Target harvest rate to generate time-series of harvest
+rates with outcome uncertainty (uncertainty in outcomes form
+implementing the target). If omitted a default of constant hr = 0.2 used,
 the same default assumption in salmon_sim()}
 
 \item{sigma_ou}{Standard deviation in outcome uncertainty. Default = 0.}
