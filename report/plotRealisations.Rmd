@@ -27,7 +27,7 @@ library(RColorBrewer)
 # larkin_args() and ricker_args() have default values, but if one element 
 # changes, the entire list needs to be included here
 
-# List of elements for running function separately
+# # List of elements for running function separately
 # salmon_sim_args <- list(sigma_nu = 1, omega = 0.4)
 # target_hr <- 0.2
 # sigma_ou <- 0.05
