@@ -24,9 +24,9 @@
 ##' @param T Explicit `T` because we need a default; this gets overwritten by
 ##'   any `T` in `salmon_sim_args`.
 ##'   Note to AE: I think this parameter can be removed, please confirm
-##' @param target_hr Target harvest rate to generate time-series of harvest 
-##'   rates with outcome uncertainty (uncertainty in outcomes form 
-##'   implementing the target). If omitted a default of constant hr = 0.2 used, 
+##' @param target_hr Target harvest rate to generate time-series of harvest
+##'   rates with outcome uncertainty (uncertainty in outcomes form
+##'   implementing the target). If omitted a default of constant hr = 0.2 used,
 ##'   the same default assumption in salmon_sim()
 ##' @param sigma_ou Standard deviation in outcome uncertainty. Default = 0.
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
@@ -89,9 +89,9 @@
 ##' res <- sim_and_fit_realisations(M=2, larkin_fit = TRUE, ricker_fit = TRUE)
 ##' }
 sim_and_fit_realisations <- function(salmon_sim_args = list(),
-																		 target_hr = 0.2,
-																		 sigma_ou = 0,
-																		 edm_fit = TRUE,
+                                     target_hr = 0.2,
+                                     sigma_ou = 0,
+                                     edm_fit = TRUE,
                                      larkin_fit = FALSE,
                                      ricker_fit = FALSE,
                                      R_switch = "R_prime_t",
@@ -186,10 +186,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                                                            # but will get changed to double/numeric when they get filled in.
                                                                            #  TODO prob faster to build it the right size straight away
   fit_lar_full_series <- tibble::as_tibble(matrix(NA,
-  																								nrow = M,
-  																								ncol = 1+T),
-  																				 .name_repair = ~ c("m", 1:T))
-  																				 
+                                                  nrow = M,
+                                                  ncol = 1+T),
+                                           .name_repair = ~ c("m", 1:T))
+
   fit_ric_full_series <-  fit_lar_full_series
 
 
@@ -208,24 +208,24 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     nu_t <- rnorm(T_total,
                   -sigma_nu^2 / 2,
                   sigma_nu)
-    
-    # Beta-distributed outcome uncertainty (uncertainty in outcomes of 
+
+    # Beta-distributed outcome uncertainty (uncertainty in outcomes of
     # implementing target harvest rate), as applied in samSim
     # https://github.com/Pacific-salmon-assess/samSim
     if(target_hr != 0){
     	if(sigma_ou != 0){
-    		location <- pmax(0.00001, 
-    										 target_hr^2 * (((1 - target_hr) / sigma_ou^2) - 
-    										 							 	(1 / sigma_ou)))
+    		location <- pmax(0.00001,
+                                 target_hr^2 * (((1 - target_hr) / sigma_ou^2) -
+                                                (1 / sigma_ou)))
     		shape <- pmax(0.00001, location * (1 / target_hr - 1))
-    		h_t <- rbeta(n = T_total, shape1 = location, shape2 = shape)		
+    		h_t <- rbeta(n = T_total, shape1 = location, shape2 = shape)
     	}
     	if(sigma_ou == 0){
     		# make blank draw with dummy pars to balance random number generator
     		# Perhaps not needed because of set.seed at start of each trial, except
     		# if more uncertainties are added in the future below
     		blank <- rbeta(T_total, 0.5, 0.5, ncp = 0)
-    		h_t <- rep(T_total, target_hr)		
+    		h_t <- rep(T_total, target_hr)
     	}
     }
     if(target_hr == 0){
@@ -254,7 +254,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                 # neighbour etc., though our code ensure that
                                 # anyway) or Larkin or Ricker.
 
-    # Add a column to the df, simulated that identifies the realisation, m, as 
+    # Add a column to the df, simulated that identifies the realisation, m, as
     # the list order (and hence realisation number) gets lost in parallelisation
     simulated['m'] <- m
     res_realisations[m, "m"] <- m
@@ -266,22 +266,22 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   # Carrie has parallelised this loop below
   # for(m in 1:M){
   #   cat(m, " of ", M, " realisations")
-  # 
+  #
   #   if(edm_fit){
   #   	fit_edm <- do.call(pbsEDM::pbsEDM,
   #                        c(list(N = all_sims[[m]]),
   #                          pbsEDM_args))
-  # 
+  #
   #     testthat::expect_equal(dplyr::pull(all_sims[[m]], R_switch),
   #                            fit_edm$N_observed[-(T+1)])  # Extra check
-  # 
+  #
   #     # TO DO AE: Check that the time-series is aligned correctly
   #     fit_edm_full_series[m, ]  <- t(c(m,
   #                                      fit_edm$N_forecast))
-  # 
-  #     # TO DO AE: Check that this call below to T=80 is correct, as the time- 
-  #     # series fit_edm$N_forecast is 81 years long, and when predictions are 
-  #     # aligned 1:81 (or 2:82 in fit_edm_full_series[m, ]) then it aligns well 
+  #
+  #     # TO DO AE: Check that this call below to T=80 is correct, as the time-
+  #     # series fit_edm$N_forecast is 81 years long, and when predictions are
+  #     # aligned 1:81 (or 2:82 in fit_edm_full_series[m, ]) then it aligns well
   #     # with sims 1:80 (see plots below)
   #     res_realisations[m, "R_switch_T_edm_fit"] = fit_edm$N_forecast[T] # TODO
   #                                       # double check what to do when pbsedm
@@ -293,73 +293,73 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   #     res_realisations[m, "X_rho"] = fit_edm$results$X_rho
   #     res_realisations[m, "X_rmse"] = fit_edm$results$X_rmse
   #   }
-  # 
+  #
   #   if(larkin_fit){
   #     fit_lar <- do.call(larkin::forecast,
   #                        c(list(data = all_sims[[m]],
-  #                               recruits = "R_prime_t", 
-  #                        			 # This is simply the label for recruitment, and 
-  #                        			 # does not specify the type of forecasts. 
-  #                               spawners = "S_t"), 
+  #                               recruits = "R_prime_t",
+  #                        			 # This is simply the label for recruitment, and
+  #                        			 # does not specify the type of forecasts.
+  #                               spawners = "S_t"),
   #                          larkin_args))
-  # 
+  #
   #     # Give the full time-series of predicted values:
-  #     # For the stan version, all MCMC draws are provided for both R_prime_t 
-  #     # and R_t from larkin::forecast. First, the median of posteriors is 
+  #     # For the stan version, all MCMC draws are provided for both R_prime_t
+  #     # and R_t from larkin::forecast. First, the median of posteriors is
   #     # calculated for either R_prime_t or R_t
   #     if(larkin_args$run_stan){
-  #     	if (R_switch == "R_prime_t"){ 
+  #     	if (R_switch == "R_prime_t"){
   #     		predR_med <- apply(fit_lar$predR_prime_t, 2, median, na.rm=T)
   #     	}
   #     	if (R_switch == "R_t"){
   #     		predR_med <- apply(fit_lar$predR_t, 2, median, na.rm=T)
   #     	}
-  #     	fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length( 
+  #     	fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length(
   #     		larkin_args$prior_mean_beta ) - 1), predR_med) )
-  #     	# Note,the first 3 years are NAs, since the Larkin model cannot be  
-  #     	# calculated until year 4 of time-series as it requires lagged spawner 
+  #     	# Note,the first 3 years are NAs, since the Larkin model cannot be
+  #     	# calculated until year 4 of time-series as it requires lagged spawner
   #     	# abundances at t=-1, t=-2 and =-3 years.
   #     }
-  #     
-  #     # For MLE version, the best estimates are provided for R_prime_t 
+  #
+  #     # For MLE version, the best estimates are provided for R_prime_t
   #     # and R_t from larkin::forecast.
   #     if(!larkin_args$run_stan){
   #     	if (R_switch == "R_prime_t"){
   #     		fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length(
   #     			larkin_args$prior_mean_beta)  - 1),	fit_lar$predR_prime_t))
   #     	}
-  #     	
+  #
   #     	if (R_switch == "R_t"){
-  #     		fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length( 
+  #     		fit_lar_full_series[m, ]  <- t( c(m, rep(NA, length(
   #     			larkin_args$prior_mean_beta ) - 1),	fit_lar$predR_t) )
   #     	}
   #     }
-  #     
-  #     names(fit_lar)[names(fit_lar) == paste0("forecasts_", R_switch)] <- 
+  #
+  #     names(fit_lar)[names(fit_lar) == paste0("forecasts_", R_switch)] <-
   #     	"forecasts"
-  #     res_realisations[m, "R_switch_T_lar_fit"] <-  
+  #     res_realisations[m, "R_switch_T_lar_fit"] <-
   #     	fit_lar$forecasts$median
   #     res_realisations[m, "lar_5"]  <- fit_lar$forecasts$q5
   #     res_realisations[m, "lar_95"] <- fit_lar$forecasts$q95
   #     res_realisations[m, "lar_sd"] <- fit_lar$forecasts$sd
-  #     res_realisations[m, "lar_rhat"] <-  fit_lar$forecasts$max_rhat 
+  #     res_realisations[m, "lar_rhat"] <-  fit_lar$forecasts$max_rhat
   #    # AE: Note max_rhat TODO check with Carrie
   #   }
-  # 
+  #
   #   if(ricker_fit){
   #     fit_ric <- do.call(larkin::forecast,
   #                        c(list(data = all_sims[[m]],
-  #                               recruits = "R_prime_t",  
+  #                               recruits = "R_prime_t",
   #                               spawners = "S_t"),
   #                          ricker_args))
-  # 
-  #   
+  #
+  #
   #     # Give the full time-series of predicted values:
-  #     # For the stan version, all MCMC draws are provided for both R_prime_t 
-  #     # and R_t from larkin::forecast. First, the median of posterior is 
-  #     # calculated. 
+  #     # For the stan version, all MCMC draws are provided for both R_prime_t
+  #     # and R_t from larkin::forecast. First, the median of posterior is
+  #     # calculated.
   #     if(ricker_args$run_stan){
-  #     	if (R_switch == "R_prime_t"){ 
+  #     	if (R_switch == "R_prime_t"){
   #     		predR_med <- apply(fit_ric$predR_prime_t, 2, median, na.rm=T)
   #     	}
   #     	if (R_switch == "R_t"){
@@ -367,22 +367,22 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   #     	}
   #     	fit_ric_full_series[m, ]  <- t( c(m, predR_med) )
   #     }
-  #     
-  #     # For MLE version, the best estimates are provided for R_prime_t 
+  #
+  #     # For MLE version, the best estimates are provided for R_prime_t
   #     # and R_t from larkin::forecast.
   #     if(!ricker_args$run_stan){
   #     	if (R_switch == "R_prime_t"){
   #     		fit_ric_full_series[m, ]  <- t( c(m, fit_ric$predR_prime_t) )
   #     	}
-  #     	
+  #
   #     	if (R_switch == "R_t"){
   #     		fit_ric_full_series[m, ]  <- t( c(m,	fit_ric$predR_t) )
   #     	}
   #     }
-  #     
-  #     names(fit_ric)[names(fit_ric) == paste0("forecasts_", R_switch)] <- 
+  #
+  #     names(fit_ric)[names(fit_ric) == paste0("forecasts_", R_switch)] <-
   #     	"forecasts"
-  #     res_realisations[m, "R_switch_T_ric_fit"] <- 
+  #     res_realisations[m, "R_switch_T_ric_fit"] <-
   #     	fit_ric$forecasts$median
   #     res_realisations[m, "ric_5"]  <-  fit_ric$forecasts$q5
   #     res_realisations[m, "ric_95"] <-  fit_ric$forecasts$q95
@@ -392,99 +392,101 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   # }
 
   numCores <- detectCores() - 1 # number of cores to use
-  
+
   cl<- makeCluster(numCores, type = "PSOCK") # type of cluster
-  clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin), 
-  									 library(testthat), library(dplyr)))
-  clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch", 
-  										"T", "larkin_args", "ricker_args"))#, envir=environment())
-  outputs <- parLapply(cl, all_sims, function(x) { 
-  	fit_models(x, res_realisations = res_realisations,	R_switch = R_switch,
-  						 T = T,
-  						 pbsEDM_args = pbsEDM_args,
-  						 larkin_args = larkin_args,
-  						 ricker_args = ricker_args)
+  clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
+                     library(testthat), library(dplyr)))
+  clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
+                      "T", "larkin_args", "ricker_args"))#, envir=environment())
+
+  outputs <- parLapply(cl, all_sims, function(x) {
+    fit_models(x,
+               res_realisations = res_realisations,
+               R_switch = R_switch,
+               T = T,
+               pbsEDM_args = pbsEDM_args,
+               larkin_args = larkin_args,
+               ricker_args = ricker_args)
   	}
   )
   stopCluster(cl)
-  
+
   for(m in 1:M){
-  	res_realisations[m,] <- outputs[[m]]$single_realisation
-  	fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
-  	fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
-  	fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
+    res_realisations[m,] <- outputs[[m]]$single_realisation
+    fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
+    fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
+    fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
   }
-  
-  
+
+
   plot_realisation <- TRUE#FALSE
   if(plot_realisation){
-  	m_plot <- 1 #which realisation to plot
-  	# if(m==M){
-  		# PLot simulated and predicted values for one realisation
-  		# First get simulated values
-  		sim <- all_sims[[m_plot]] %>% dplyr::pull(R_switch)
-  		sim[T] <- R_switch_T_sim # All last years value back in
-  		
-  		# Then add predicted values
-  		df <- data.frame(Year = 1:T,
-  										 Abundance= sim,
-  										 Series="Simulated", 
-  										 EstimationBias = NA)
-  		df <- df %>% add_row(Year = 1:T,
-  												 Abundance =  t(fit_edm_full_series[m_plot, 2:(T+1)]),
-  												 Series = "EDM",
-  												 EstimationBias = 
-  												 	t(fit_edm_full_series[m_plot, 2:(T+1)]) - sim) %>% 
-  			add_row(Year = 1:T, 
-  							Abundance =  t(fit_lar_full_series[m_plot, 2:(T+1)]),	
-  							Series = "Larkin",
-  							EstimationBias = t(fit_lar_full_series[m_plot, 2:(T+1)]) - sim) %>% 
-  			add_row(Year = 1:T, 
-  							Abundance = t(fit_ric_full_series[m_plot, 2:(T+1)]),	
-  							Series = "Ricker",
-  							EstimationBias = t(fit_ric_full_series[m_plot, 2:(T+1)]) - sim) 
-  		
-  		cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+1)])), 
-  									 use="pairwise.complete.obs")
-  		cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+1)])), 
-  									 use="pairwise.complete.obs")
-  		cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+1)])), 
-  									 use="pairwise.complete.obs")
-  		
-  		yMax <- max(sim, na.rm=T)
-  		
-  		plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) + 
-  			geom_line(aes(colour=Series, linewidth=Series)) +
-  			scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
-  			scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2"), 
-  																		 "grey")) +
-  			geom_text(x=(T-15), y=yMax*0.8, 
-  								label=paste0("EDM cor = ", round(cor.edm,2)),
-  								colour = brewer.pal(n=3, name ="Dark2")[1]) +
-  			geom_text(x=(T-15), y=yMax*0.7, 
-  								label=paste0("Larkin cor = ", round(cor.lar,2)),
-  								colour = brewer.pal(n=3, name ="Dark2")[2]) +
-  			geom_text(x=(T-15), y=yMax*0.6, 
-  								label=paste0("Ricker cor = ", round(cor.ric,2)),
-  								colour = brewer.pal(n=3, name ="Dark2")[3]) + 
-  			geom_text(x=5, y=yMax*0., 
-  								label=paste0("realisation = ", m_plot))
-  		
-  		
-  		
-  		plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>% 
-  			ggplot(aes(x=Year, y=EstimationBias, group=Series)) + 
-  			geom_line(aes(colour=Series)) +
-  			scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")))
-  		
-  		p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
-  		p1
+    m_plot <- 1 #which realisation to plot
+    # if(m==M){
+    # PLot simulated and predicted values for one realisation
+    # First get simulated values
+    sim <- all_sims[[m_plot]] %>% dplyr::pull(R_switch)
+    sim[T] <- R_switch_T_sim # All last years value back in
+
+    # Then add predicted values
+    df <- data.frame(Year = 1:T,
+                     Abundance= sim,
+                     Series="Simulated",
+                     EstimationBias = NA)
+    df <- df %>% add_row(Year = 1:T,
+                         Abundance =  t(fit_edm_full_series[m_plot, 2:(T+1)]),
+                         Series = "EDM",
+                         EstimationBias = t(fit_edm_full_series[m_plot, 2:(T+1)]) - sim) %>%
+      add_row(Year = 1:T,
+              Abundance =  t(fit_lar_full_series[m_plot, 2:(T+1)]),
+              Series = "Larkin",
+              EstimationBias = t(fit_lar_full_series[m_plot, 2:(T+1)]) - sim) %>%
+      add_row(Year = 1:T,
+              Abundance = t(fit_ric_full_series[m_plot, 2:(T+1)]),
+              Series = "Ricker",
+              EstimationBias = t(fit_ric_full_series[m_plot, 2:(T+1)]) - sim)
+
+    cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+1)])),
+                   use="pairwise.complete.obs")
+    cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+1)])),
+                   use="pairwise.complete.obs")
+    cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+1)])),
+                   use="pairwise.complete.obs")
+
+    yMax <- max(sim, na.rm=T)
+
+    plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) +
+      geom_line(aes(colour=Series, linewidth=Series)) +
+      scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
+      scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2"),
+                                     "grey")) +
+      geom_text(x=(T-15), y=yMax*0.8,
+                label=paste0("EDM cor = ", round(cor.edm,2)),
+                colour = brewer.pal(n=3, name ="Dark2")[1]) +
+      geom_text(x=(T-15), y=yMax*0.7,
+                label=paste0("Larkin cor = ", round(cor.lar,2)),
+                colour = brewer.pal(n=3, name ="Dark2")[2]) +
+      geom_text(x=(T-15), y=yMax*0.6,
+                label=paste0("Ricker cor = ", round(cor.ric,2)),
+                colour = brewer.pal(n=3, name ="Dark2")[3]) +
+      geom_text(x=5, y=yMax*0.,
+                label=paste0("realisation = ", m_plot))
+
+
+
+    plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>%
+      ggplot(aes(x=Year, y=EstimationBias, group=Series)) +
+      geom_line(aes(colour=Series)) +
+      scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")))
+
+    p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
+    p1
   		# ggsave(filename = paste0("report/realisation", m, ".png"), p1)
-  	# }  	
-  	
+  	# }
+
   }
-  
-  
+
+
   stringr::str_sub(R_switch,
                    -1,
                    -1) <- ""     # This modifies R_switch (takes off final t so it's
