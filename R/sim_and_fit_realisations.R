@@ -398,7 +398,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                library(testthat), library(dplyr)))
 
   parallel::clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
-                      "T", "larkin_args", "ricker_args"), envir=environment())
+                      "T", "larkin_args", "ricker_args", "fit_models"), envir=environment())
 
   outputs <- parallel::parLapply(cl, all_sims, function(x) {
     fit_models(x,
