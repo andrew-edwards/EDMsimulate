@@ -391,15 +391,15 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   #   }
   # }
 
-  numCores <- detectCores() - 1 # number of cores to use
+  numCores <- parallel::detectCores() - 1 # number of cores to use
 
-  cl<- makeCluster(numCores, type = "PSOCK") # type of cluster
-  clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
-                     library(testthat), library(dplyr)))
-  clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
+  cl<- parallel::makeCluster(numCores, type = "PSOCK") # type of cluster
+  parallel::clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
+                               library(testthat), library(dplyr)))
+  parallel::clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
                       "T", "larkin_args", "ricker_args"))#, envir=environment())
 
-  outputs <- parLapply(cl, all_sims, function(x) {
+  outputs <- parallel::parLapply(cl, all_sims, function(x) {
     fit_models(x,
                res_realisations = res_realisations,
                R_switch = R_switch,
@@ -409,7 +409,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                ricker_args = ricker_args)
   	}
   )
-  stopCluster(cl)
+  parallel::stopCluster(cl)
 
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
