@@ -19,7 +19,8 @@ Imports:
     dplyr,
     pbsEDM,
     larkin,
-    tictoc
+    tictoc,
+    cmdstanr
 Suggests:
     testthat,
     knitr,

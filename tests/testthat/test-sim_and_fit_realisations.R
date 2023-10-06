@@ -7,6 +7,7 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
 
   expect_equal(1 + 1, 2)   # dummy to not have empty test
 
+  expect_no_error(cmdstanr::check_cmdstan_toolchain())
   # cmdstanr::check_cmdstan_toolchain()   # if gives error on GHA then will be fiddly to
   # include tests. If doesn't error then ideally want to do cmdstanr::install_cmdstan()
   # which should automatically set the path.
