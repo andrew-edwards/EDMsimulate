@@ -6,7 +6,7 @@
 ##'   of estimation
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
 ##'   the calculations are based on.
-##' @param T to be filled in
+##' @param T number of time points being used to forecast `R_switch` at `T+1`
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here. First one
 ##'   must be called `R_switch` to then get automatically changed to what is
@@ -15,9 +15,12 @@
 ##' @param ricker_args List of arguments to pass onto `larkin::....()`.
 ##' @return List object call output with components:
 ##'  - `single_realisation` forecasts from all models in last year
-##'  - `edm_fit_single` predictions for each year from EDM
-##'  - `edm_lar_single` predictions for each year from larkin
-##'  - `edm_ric_single` predictions for each year from ricker
+##'  - `fit_edm_single` predictions for each year from EDM, with realisation
+##'   number appended to start
+##'  - `fit_lar_single` predictions for each year from larkin, with realisation
+##'   number appended to start
+##'  - `fit_ric_single` predictions for each year from ricker, with realisation
+##'   number appended to start
 ##' @export
 ##' @author Carrie Holt and Andrew Edwards
 ##' @examples
@@ -43,19 +46,25 @@ fit_models <- function(all_sims,
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
   realisation <- pull(all_sims['m'][1,])
-  fit_edm_single  <- t(c(realisation, fit_edm$N_forecast))
 
+  fit_edm_single  <- t(c(realisation,
+                         fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
+  # Note the realisation number added to the front (to keep track of in parallel calculations).
+  # And had to take off the last value, as pbsEDM adds on an extra time step. So, for T
+  # = 80, we will have simulated 81, and so length(fit_edm_single) = 82 because of
+  # the realisation number added to the front.
 
   # TO DO AE: Check that this call below to T=80 is correct, as the time-
   # series fit_edm$N_forecast is 81 years long, and when predictions are
   # aligned 1:81 (or 2:82 in fit_edm_full_series[m, ]) then it aligns well
-  # with sims 1:80 (see plots below)
+  # with sims 1:80 (see plots below). AE fixed has fixed T+1 defintion,
+  # hopefully this then makes plots agree.
 
   # CH changed to single vector, and changed 'm' to 'realisation'
 
   single_realisation <- res_realisations[realisation,]
-  single_realisation[ "R_switch_T_edm_fit"] <-  fit_edm$N_forecast[T] # TODO
-  # double check what to do when pbsedm
+  single_realisation[ "R_switch_T_plus_1_edm_fit"] <-  fit_edm$N_forecast[T+1]
+  # TODO double check what to do when pbsedm
   # arguments change
   single_realisation["E"] <-  fit_edm$results$E  # Though will need specific
   # lags also kept track of or specified
@@ -79,10 +88,10 @@ fit_models <- function(all_sims,
   # calculated for either R_prime_t or R_t
   if(larkin_args$run_stan){
     if (R_switch == "R_prime_t"){
-      predR_med <- apply(fit_lar$predR_prime_t, 2, median, na.rm=T)
+      predR_med <- apply(fit_lar$predR_prime_t, 2, median, na.rm=TRUE)
     }
     if (R_switch == "R_t"){
-      predR_med <- apply(fit_lar$predR_t, 2, median, na.rm=T)
+      predR_med <- apply(fit_lar$predR_t, 2, median, na.rm=TRUE)
     }
     #CH changed 'm' to 'realisation'
     fit_lar_single  <- t( c(realisation, rep(NA, length(
@@ -110,7 +119,7 @@ fit_models <- function(all_sims,
 
   names(fit_lar)[names(fit_lar) == paste0("forecasts_", R_switch)] <-
     "forecasts"
-  single_realisation["R_switch_T_lar_fit"] <-
+  single_realisation["R_switch_T_plus_1_lar_fit"] <-
     fit_lar$forecasts$median
   single_realisation["lar_5"]  <- fit_lar$forecasts$q5
   single_realisation["lar_95"] <- fit_lar$forecasts$q95
@@ -131,10 +140,10 @@ fit_models <- function(all_sims,
   # calculated.
   if(ricker_args$run_stan){
     if (R_switch == "R_prime_t"){
-      predR_med <- apply(fit_ric$predR_prime_t, 2, median, na.rm=T)
+      predR_med <- apply(fit_ric$predR_prime_t, 2, median, na.rm=TRUE)
     }
     if (R_switch == "R_t"){
-      predR_med <- apply(fit_ric$predR_t, 2, median, na.rm=T)
+      predR_med <- apply(fit_ric$predR_t, 2, median, na.rm=TRUE)
     }
     #CH changed 'm' to 'realisation'
     fit_ric_single  <- t( c(realisation, predR_med) )
@@ -156,7 +165,7 @@ fit_models <- function(all_sims,
 
   names(fit_ric)[names(fit_ric) == paste0("forecasts_", R_switch)] <-
     "forecasts"
-  single_realisation["R_switch_T_ric_fit"] <-
+  single_realisation["R_switch_T_plus_1_ric_fit"] <-
     fit_ric$forecasts$median
   single_realisation["ric_5"]  <-  fit_ric$forecasts$q5
   single_realisation["ric_95"] <-  fit_ric$forecasts$q95

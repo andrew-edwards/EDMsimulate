@@ -1,29 +1,31 @@
 ##' @title Simulation of multiple realisations of Larkin population dynamics
-##' model with estimation using EDM, and Larkin and Ricker models.
+##' model with estimation using EDM (Simplex algorithm), multiview embedding, and Larkin and Ricker models.
 ##'
 ##' @description Simulate a population and fit it using `pbsEDM::pbsEDM()` for
-##'   EDM, and `larkin::forecast()` for Larkin and Ricker model. Can switch off
+##'   EDM, pbsEDM::multiview_embedding()` and `larkin::forecast()` for Larkin and Ricker model. Can switch off
 ##'   running of any of the methods. Doing multiple realisations for a given set
 ##'   of parameters (so the only difference is the stochasticity)
 ##'
-##' For each realisation `m`, this calculates returns the simulated recruitment `R_prime_T_sim` for the final time step, the
-##' forecasted `R_prime_T_edm_fit` calculated using EDM (obviously taking `R_prime_T_sim`
-##' out of the input to `pbsEDM::pbsEDM()`, and the EDM summary results;
-##'   followed by outputs from fitting the Larkin and Ricker models. Also
-##'   returns the estimated fitted value at each time step for all three
+##' For each realisation `m` (each being a different simulation), this uses each
+##'   method to estimate the return or recruitment (depending on `R_switch`) at
+##'   time step `T+1` (discarding the transients); see `salmon_sim_args` definition below for
+##'   details. Calculates how well each method performs, and also
+##'   returns the estimated fitted value at each time step for all four
 ##'   methods.
 ##'
-##' For EDM
-##' use `sim_and_fit()` with a particular seed to get full results for any
+##' For EDM use `sim_and_fit()` with a particular seed to get full results for any
 ##' specific realisation.
 ##'
 ##' @param salmon_sim_args List of arguments to pass onto `salmon_sim()`,
-##'   including `T` for the final time step. If any of `p_prime`, `T`,
+##'   If any of `p_prime`, `T`,
 ##'   `T_transient`, or `sigma_nu` are not specified then they are given the
-##'   default values from `salmon_sim()`. TODO make p_prime standalone
-##' @param T Explicit `T` because we need a default; this gets overwritten by
-##'   any `T` in `salmon_sim_args`.
-##'   Note to AE: I think this parameter can be removed, please confirm
+##'   default values from `salmon_sim()`. So we simulate for `T_transient` time steps,
+##'   then another `T+1` and discard the transients. Use knowledge of `1:T` to give a
+##'   forecast for the `T+1`th value, using each method. This agrees with the
+##'   EDM manusript notation, but because `T` in `salmon_sim()` is the length of
+##'   the simulation, we add 1 to `salmon_sim_args$T` when sending to
+##'   `salmon_sim()` from the current function.
+##'   TODO make p_prime standalone.
 ##' @param target_hr Target harvest rate to generate time-series of harvest
 ##'   rates with outcome uncertainty (uncertainty in outcomes form
 ##'   implementing the target). If omitted a default of constant hr = 0.2 used,
@@ -34,17 +36,19 @@
 ##'   RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
 ##'   message command when done.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
-##'   that `lags` has no default, so needs to be specified here, and that `R_prime_t`
-##'   has to be the first one (with a lag of zero, so `R_prime_t = 0` or `R_prime_t = 0:1`
+##'   that `lags` has no default, so needs to be specified here, and that `R_switch_t`
+##'   has to be the first one (with a lag of zero, so `R_switch_t = 0` or `R_switch_t = 0:1`
 ##'   etc.) to be the response variable. Note that the default list here is just
 ##'   to run examples, and if the list is different then `first_difference` and
 ##'   `centre_and_scale` need to be explicictly specified in the new list (since
 ##'   their defaults in `pbsEDM()` are FALSE, not TRUE like here.
+##' @param mve_args List of arguments to pass onto `pbsEDM::multiview_embedding()`.
 ##' @param larkin_args List of arguments to pass onto `larkin::forecast()`.
 ##' @param ricker_args List of arguments to pass onto `larkin::forecast()`.
 ##' @param M number of realisations
 ##'
-##' @return List containing `res_realisations`, `fit_edm_full_series`, `fit_lar_full_series`,
+##' @return List containing `res_realisations`, `fit_edm_full_series`,
+##'   `fit_mve_full_series`, `fit_lar_full_series`,
 ##'   and `fit_ric_full_series`. These are:
 ##' \describe{
 ##'   \item{res_realisations:}{Tibble with row `m` corresponding to realisation `m`, for which
@@ -52,25 +56,28 @@
 ##'   which are:}
 ##'   \describe{
 ##'     \item{m:}{realisation, from 1 to `M`}
-##'     \item{R_prime_T_sim:}{the simulated `R_prime_T` value (i.e. simulated
-##'     recruitment from year-T spawners) for the final time
+##'     \item{R_prime_T_plus_1_sim:}{the simulated `R_prime_T` value (i.e. simulated
+##'     recruitment from year-T spawners) for the final time TODO update R_wicth
 ##'     step), which was not used for any of the fitting methods}
-##'     \item{R_prime_T_edm_fit`:}{forecasted value of the final recruitment calculated using EDM}
-##'     \item{`E`, `N_rho`, `N_rmse`, `X_rho`, `X_rmse`:}{standard output from EDM}
-##'     \item{R_prime_T_lar_fit`:}{forecasted value of the final recruitment calculated using fitting a Larkin
+##'     \item{R_prime_T_plus_1_edm_fit`:}{forecasted value of the final recruitment calculated using EDM}
+##'     \item{`E`, `N_rho`, `N_rmse`, `X_rho`, `X_rmse`:}{standard output from
+##'   EDM}
+##'     \item{R_prime_T_plus_1_mve_fit`:}{forecasted value of the final recruitment
+##'   calculated using multiview embedding}
+##'     \item{R_prime_T_plus_1_lar_fit`:}{forecasted value of the final recruitment calculated using fitting a Larkin
 ##'     model}
 ##'     \item{`lar_5`, `lar_95`, `lar_sd`, `lar_rhat`:}{5th and 95th percentiles
 ##'     and standard deviation of `R_prime_t_lar_fit`, and max rhat TODO what is
 ##'     that, from fitting the Larkin model}
-##'     \item{`R_prime_T_ric_fit`, `ric_5`, `ric_95`, `ric_sd`, `ric_rhat`:}{ equivalent
+##'     \item{`R_prime_T_plus_1_ric_fit`, `ric_5`, `ric_95`, `ric_sd`, `ric_rhat`:}{ equivalent
 ##'     results from fitting a Ricker model.}
 ##'   }
 ##' }
 ##' Remaining objects of list are
 ##' \describe{
-##'   \item{fit_edm_full_series, fit_lar_full_series,
+##'   \item{fit_edm_full_series, fit_mve_full_series, fit_lar_full_series,
 ##'   fit_ric_full_series:}{tibbles of full
-##'   fitted time series from each of the three methods; each is a tibble with
+##'   fitted time series from each of the four methods; each is a tibble with
 ##'   realisation `m` in the first columns, and remaining columns referring to
 ##'   the time step from 1:T+1. Note that second column has name "1" referring
 ##'   to first time step; so refer to columns by name ("1") not number (1).}
@@ -79,6 +86,9 @@
 ##' @author Andrew Edwards
 ##' @examples
 ##' \dontrun{
+##' res <- sim_and_fit_realisations(M=2)
+##' res$fit_edm_full_series %>% as.data.frame()
+##'
 ##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
 ##'                                                   S_t = 0:3),
 ##'                                       first_difference = TRUE))
@@ -100,6 +110,11 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                                    S_t = 0:3),
                                        first_difference = TRUE,
                                        centre_and_scale = TRUE),
+                                     mve_args = list(
+                                       lags = list(R_t = 0:4,
+                                                   S_t = 0:8),
+                                       response = R_switch),   # This can be
+                                         # different from any lags
                                      larkin_args = list(
                                        run_stan = FALSE,
                                        prior_mean_alpha = 2,
@@ -121,8 +136,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   tictoc::tic("model run time")#start_time <- Sys.time()
 
   stopifnot(R_switch %in% c("R_t", "R_prime_t"))
-  stopifnot(names(pbsEDM_args$lags)[1] == "R_switch")
-  names(pbsEDM_args$lags)[1] <- R_switch
+  stopifnot(names(pbsEDM_args$lags)[1] == "R_switch")    # This is okay for mve
+  names(pbsEDM_args$lags)[1] <- R_switch                 # Simplex has to have
+                                        # R_switch as lag
 
   # Need explicit values for these various values here
   if(is.null(salmon_sim_args$p_prime)){
@@ -131,6 +147,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     p_prime <- salmon_sim_args$p_prime
   }
 
+  # T is the EDM defintion - we have 1:T and want to forecast T+1.
   if(is.null(salmon_sim_args$T)){
     T <- eval(formals(salmon_sim)$T)
   } else {
@@ -149,27 +166,31 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     sigma_nu <- salmon_sim_args$sigma_nu
   }
 
-  T_total <- T_transient + T
+  T_total <- T_transient + T + 1     # Simulating the extra value to then
+                                     # compare with the forecast from each method
 
   # Set up results tibbles to be filled in. Call things R_switch... here then
   #  rename at the end with R_t or R_prime_t before returning (to avoid
   #  confusion with the saved output that would arise with having it called R_switch)
 
   res_realisations <- dplyr::tibble(m = numeric(),
-                                    R_switch_T_sim = numeric(),
-                                    R_switch_T_edm_fit = numeric(),
+                                    R_switch_T_plus_1_sim = numeric(),
+                                    R_switch_T_plus_1_edm_fit = numeric(),
                                     E = numeric(),   # Though will need specific
                                         # lags also kept track of or specified
                                     N_rho = numeric(),
                                     N_rmse = numeric(),
                                     X_rho = numeric(),
                                     X_rmse = numeric(),
-                                    R_switch_T_lar_fit = numeric(),
+                                    R_switch_T_plus_1_mve_fit = numeric(),
+                                    mve_N_rho = numeric(),
+                                    mve_X_rho = numeric(),   # TODO check definition
+                                    R_switch_T_plus_1_lar_fit = numeric(),
                                     lar_5 = numeric(),
                                     lar_95 = numeric(),
                                     lar_sd = numeric(),
                                     lar_rhat = numeric(),
-                                    R_switch_T_ric_fit = numeric(),
+                                    R_switch_T_plus_1_ric_fit = numeric(),
                                     ric_5 = numeric(),
                                     ric_95 = numeric(),
                                     ric_sd = numeric(),
@@ -178,17 +199,16 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   tbl_colnames <- tbl_colnames <- c("m", 1:(T+1))
   # Save the full time series as fit by each method, each row is realisation m
-  #  followed but R_switch_t for each t
+  #  followed by R_switch_t for each t
   fit_edm_full_series <- tibble::as_tibble(matrix(NA,
                                                   nrow = M,
                                                   ncol = length(tbl_colnames)),
                                            .name_repair = ~ tbl_colnames)  # Empty tibble correctly named; columns are logical
                                                                            # but will get changed to double/numeric when they get filled in.
-                                                                           #  TODO prob faster to build it the right size straight away
   fit_lar_full_series <- tibble::as_tibble(matrix(NA,
                                                   nrow = M,
-                                                  ncol = 1+T),
-                                           .name_repair = ~ c("m", 1:T))
+                                                  ncol = length(tbl_colnames)),
+                                           .name_repair = ~ tbl_colnames)
 
   fit_ric_full_series <-  fit_lar_full_series
 
@@ -217,8 +237,11 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     		location <- pmax(0.00001,
                                  target_hr^2 * (((1 - target_hr) / sigma_ou^2) -
                                                 (1 / sigma_ou)))
-    		shape <- pmax(0.00001, location * (1 / target_hr - 1))
-    		h_t <- rbeta(n = T_total, shape1 = location, shape2 = shape)
+    		shape <- pmax(0.00001,
+                              location * (1 / target_hr - 1))
+    		h_t <- rbeta(n = T_total,
+                             shape1 = location,
+                             shape2 = shape)
     	}
     	if(sigma_ou == 0){
     		# make blank draw with dummy pars to balance random number generator
@@ -234,6 +257,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     	h_t <- rep(T_total, target_hr)
     }
 
+    salmon_sim_args$T <- T + 1          # Add 1 to simulate the extra year
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
                            list(epsilon_tg = epsilon_tg,
@@ -241,16 +265,16 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
-                                        # Returns values for years 1:T (so we
+                                        # Returns values for years 1:(T+1) (so we
                                         #  are done with T_transient from here
                                         #  on)
 
-    R_switch_T_sim <- dplyr::pull(simulated,
-                                  R_switch)[T]
+    R_switch_T_plus_1_sim <- dplyr::pull(simulated,
+                                  R_switch)[T+1]
                                 # Value we are testing the forecast of. Does not
-                                # return a tibble like simulated[T, "R_t"]
+                                # return a tibble like simulated[T+1, "R_t"]
                                 # does. Then replace in simulated by NA:
-    simulated[T, R_switch] <- NA    # Ensure no knowledge of it for pbsEDM() (as
+    simulated[T+1, R_switch] <- NA    # Ensure no knowledge of it for pbsEDM() (as
                                 # neighbour etc., though our code ensure that
                                 # anyway) or Larkin or Ricker.
 
@@ -258,12 +282,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     # the list order (and hence realisation number) gets lost in parallelisation
     simulated['m'] <- m
     res_realisations[m, "m"] <- m
-    res_realisations[m, "R_switch_T_sim"] <- R_switch_T_sim
+    res_realisations[m, "R_switch_T_plus_1_sim"] <- R_switch_T_plus_1_sim
 
     all_sims[[m]] <- simulated
   }
 
-  # Carrie has parallelised this loop below
+  # Carrie has parallelised this loop below. Andy not updated T here with new defn.
   # for(m in 1:M){
   #   cat(m, " of ", M, " realisations")
   #
@@ -412,7 +436,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   )
 
   parallel::stopCluster(cl)
-
+browser()
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
     fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
@@ -431,26 +455,28 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     # PLot simulated and predicted values for one realisation
     # First get simulated values
     sim <- all_sims[[m_plot]] %>% dplyr::pull(R_switch)
-    sim[T] <- R_switch_T_sim # All last years value back in
+    sim[T+1] <- R_switch_T_plus_1_sim # All last years value back in
 
     # Then add predicted values
-    df <- data.frame(Year = 1:T,
+    df <- data.frame(Year = 1:(T+1),
                      Abundance= sim,
                      Series="Simulated",
                      EstimationBias = NA)
-    df <- df %>% tibble::add_row(Year = 1:T,
-                                 Abundance =  t(fit_edm_full_series[m_plot, 2:(T+1)]),
+    df <- df %>% tibble::add_row(Year = 1:(T+1),
+                                 Abundance =  t(fit_edm_full_series[m_plot,
+    c(NA, 2:(T+1))]),   # TODO AE guessing that last bit a little, and two lines down
                                  Series = "EDM",
-                                 EstimationBias = t(fit_edm_full_series[m_plot, 2:(T+1)]) - sim) %>%
-      tibble::add_row(Year = 1:T,
-                      Abundance =  t(fit_lar_full_series[m_plot, 2:(T+1)]),
+                                 EstimationBias = t(fit_edm_full_series[m_plot,
+    c(NA, 2:(T+1))]) - sim) %>%
+      tibble::add_row(Year = 1:(T+1),
+                      Abundance =  t(fit_lar_full_series[m_plot, c(NA, 2:(T+1))]),
                       Series = "Larkin",
-                      EstimationBias = t(fit_lar_full_series[m_plot, 2:(T+1)]) - sim) %>%
-      tibble::add_row(Year = 1:T,
-                      Abundance = t(fit_ric_full_series[m_plot, 2:(T+1)]),
+                      EstimationBias = t(fit_lar_full_series[m_plot, c(NA, 2:(T+1))]) - sim) %>%
+      tibble::add_row(Year = 1:(T+1),
+                      Abundance = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]),
                       Series = "Ricker",
-                      EstimationBias = t(fit_ric_full_series[m_plot, 2:(T+1)]) - sim)
-
+                      EstimationBias = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]) - sim)
+# TODO TODO check these manually:
     cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+1)])),
                    use="pairwise.complete.obs")
     cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+1)])),
@@ -458,8 +484,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+1)])),
                    use="pairwise.complete.obs")
 
-    yMax <- max(sim, na.rm=T)
-
+    yMax <- max(sim, na.rm=TRUE)
+# TODO Andy not updated yet with T+1 idea
     plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) +
       geom_line(aes(colour=Series, linewidth=Series)) +
       scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
@@ -495,14 +521,14 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                    -1) <- ""     # This modifies R_switch (takes off final t so it's
                                  # either R_ or R_prime_)
 
-  names(res_realisations)[names(res_realisations) == "R_switch_T_sim"] <-
-    paste0(R_switch, "T_sim")
-  names(res_realisations)[names(res_realisations) == "R_switch_T_edm_fit"] <-
-    paste0(R_switch, "T_edm_fit")
-  names(res_realisations)[names(res_realisations) == "R_switch_T_lar_fit"] <-
-    paste0(R_switch, "T_lar_fit")
-  names(res_realisations)[names(res_realisations) == "R_switch_T_ric_fit"] <-
-    paste0(R_switch, "T_ric_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_sim"] <-
+    paste0(R_switch, "T_plus_1_sim")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_edm_fit"] <-
+    paste0(R_switch, "T_plus_1_edm_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_lar_fit"] <-
+    paste0(R_switch, "T_plus_1_lar_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_ric_fit"] <-
+    paste0(R_switch, "T_plus_1_ric_fit")
 
   # end_time <- Sys.time()
   # cat("runtime = ", round(end_time-start_time, 2), "minutes")
