@@ -398,7 +398,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                library(testthat), library(dplyr)))
 
   parallel::clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
-                      "T", "larkin_args", "ricker_args", "fit_models"), envir=environment())
+                                "T", "larkin_args", "ricker_args", "fit_models"), envir=environment())
 
   outputs <- parallel::parLapply(cl, all_sims, function(x) {
     fit_models(x,
@@ -408,8 +408,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                pbsEDM_args = pbsEDM_args,
                larkin_args = larkin_args,
                ricker_args = ricker_args)
-  	}
+  }
   )
+
   parallel::stopCluster(cl)
 
   for(m in 1:M){
@@ -419,7 +420,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     if(!larkin_fit) fit_lar_full_series[m,] <- NA
     if(ricker_fit) fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
     if(!ricker_fit) fit_lar_full_series[m,] <- NA
-    
+
   }
 
 
@@ -438,17 +439,17 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                      Series="Simulated",
                      EstimationBias = NA)
     df <- df %>% tibble::add_row(Year = 1:T,
-                         Abundance =  t(fit_edm_full_series[m_plot, 2:(T+1)]),
-                         Series = "EDM",
-                         EstimationBias = t(fit_edm_full_series[m_plot, 2:(T+1)]) - sim) %>%
+                                 Abundance =  t(fit_edm_full_series[m_plot, 2:(T+1)]),
+                                 Series = "EDM",
+                                 EstimationBias = t(fit_edm_full_series[m_plot, 2:(T+1)]) - sim) %>%
       tibble::add_row(Year = 1:T,
-              Abundance =  t(fit_lar_full_series[m_plot, 2:(T+1)]),
-              Series = "Larkin",
-              EstimationBias = t(fit_lar_full_series[m_plot, 2:(T+1)]) - sim) %>%
+                      Abundance =  t(fit_lar_full_series[m_plot, 2:(T+1)]),
+                      Series = "Larkin",
+                      EstimationBias = t(fit_lar_full_series[m_plot, 2:(T+1)]) - sim) %>%
       tibble::add_row(Year = 1:T,
-              Abundance = t(fit_ric_full_series[m_plot, 2:(T+1)]),
-              Series = "Ricker",
-              EstimationBias = t(fit_ric_full_series[m_plot, 2:(T+1)]) - sim)
+                      Abundance = t(fit_ric_full_series[m_plot, 2:(T+1)]),
+                      Series = "Ricker",
+                      EstimationBias = t(fit_ric_full_series[m_plot, 2:(T+1)]) - sim)
 
     cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+1)])),
                    use="pairwise.complete.obs")
@@ -476,8 +477,6 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       geom_text(x=5, y=yMax*0.,
                 label=paste0("realisation = ", m_plot))
 
-
-
     plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>%
       ggplot(aes(x=Year, y=EstimationBias, group=Series)) +
       geom_line(aes(colour=Series)) +
@@ -485,8 +484,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
     p1
-  		# ggsave(filename = paste0("report/realisation", m, ".png"), p1)
-  	# }
+    # ggsave(filename = paste0("report/realisation", m, ".png"), p1)
+    # }
 
   }
 
