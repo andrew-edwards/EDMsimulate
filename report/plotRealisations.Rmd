@@ -60,8 +60,8 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 			 omega = 0.4), 
 																						 target_hr = 0.2,
 																						 sigma_ou = 0.05,
-																						 larkin_fit = TRUE,
-																						 ricker_fit = TRUE,
+																						 larkin_fit = FALSE,
+																						 ricker_fit = FALSE,
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
 																						 M = 100)
 ```

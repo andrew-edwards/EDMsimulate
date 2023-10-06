@@ -415,13 +415,16 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
     fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
-    fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
-    fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
+    if(larkin_fit) fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
+    if(!larkin_fit) fit_lar_full_series[m,] <- NA
+    if(ricker_fit) fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
+    if(!ricker_fit) fit_lar_full_series[m,] <- NA
+    
   }
 
 
   plot_realisation <- TRUE#FALSE
-  if(plot_realisation){
+  if(plot_realisation & larkin_fit & ricker_fit){
     m_plot <- 1 #which realisation to plot
     # if(m==M){
     # PLot simulated and predicted values for one realisation
