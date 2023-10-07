@@ -1,16 +1,20 @@
-##' @title Fit EDM, Larkin, and Ricker models
-##' @description Fits EDM, Larkin, and Ricker models to simulated data using
+##' @title Fit EDM (Simplex), multiview embedding, Larkin, and Ricker models
+##' @description Fits EDM, multiview embedding, Larkin, and Ricker models to simulated data using
 ##'   parallel processing
 ##' @param all_sims List of simulated data generated from salmon_sim()
 ##' @param res_realisations Empty data frame with correct headers for outputs
 ##'   of estimation
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
-##'   the calculations are based on.
+##'   the calculations are based on, and what should be the response variable
+##'   for multiview embedding.
 ##' @param T number of time points being used to forecast `R_switch` at `T+1`
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 ##'   that `lags` has no default, so needs to be specified here. First one
 ##'   must be called `R_switch` to then get automatically changed to what is
 ##'   specified by the `R_switch` parameter
+##' @param mve_args List of arguments to pass onto
+##'   `pbsEDM::multiview_embedding()`, here we will add `R_switch` as the
+##'   response variable
 ##' @param larkin_args List of arguments to pass onto `larkin::....()`.
 ##' @param ricker_args List of arguments to pass onto `larkin::....()`.
 ##' @return List object call output with components:
@@ -25,13 +29,45 @@
 ##' @author Carrie Holt and Andrew Edwards
 ##' @examples
 ##' \dontrun{
+##' # Doesn't quite work. TODO create an example that works.
+##' set.seed(42)
+##' h_simulated <- 0.1095 + sample(1:180) * 0.001 # has mean of 0.2
+##' simulated_4 <- EDMsimulate::salmon_sim(h = h_simulated)
+##' res_fit_models <- fit_models(simulated_4,
+##'                              R_switch = "R_t",
+##'                              T = 80,
+##'                              pbsEDM_args = list(
+##'                                  lags = list(R_switch = 0,
+##                                               S_t = 0:3),
+##'                                  first_difference = TRUE,
+##'                                  centre_and_scale = TRUE),
+##'                              mve_args = list(
+##'                                     lags = list(R_t = 0:4,
+##'                                                   S_t = 0:8)),
+##'                                     larkin_args = list(
+##'                                       run_stan = FALSE,
+##'                                       prior_mean_alpha = 2,
+##'                                       prior_mean_beta = -rep(1,4),
+##'                                       prior_mean_sigma = 0.5,
+##'                                     prior_sd_alpha = 0.5,
+##'                                       prior_sd_beta = rep(0.25,4),
+##'                                       prior_sd_sigma = 0.25),
+##'                                  ricker_args = list(
+##'                                       run_stan = FALSE,
+##'                                    prior_mean_alpha = 2,
+##'                                       prior_mean_beta = -1,
+##'                                       prior_mean_sigma = 0.5,
+##'                                       prior_sd_alpha = 0.5,
+##'                                       prior_sd_beta = 0.25,
+##'                                       prior_sd_sigma = 0.25))
+##'
 ##' }
-
 fit_models <- function(all_sims,
                        res_realisations,
                        R_switch,
                        T,
                        pbsEDM_args,
+                       mve_args,
                        larkin_args,
                        ricker_args){
 
@@ -45,7 +81,7 @@ fit_models <- function(all_sims,
   # TO DO AE: Check that the time-series is aligned correctly
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
-  realisation <- pull(all_sims['m'][1,])
+  realisation <- dplyr::pull(all_sims['m'][1,])
 
   fit_edm_single  <- t(c(realisation,
                          fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
@@ -73,6 +109,22 @@ fit_models <- function(all_sims,
   single_realisation["X_rho"] <-  fit_edm$results$X_rho
   single_realisation["X_rmse"] <-  fit_edm$results$X_rmse
 
+  # Multiview embedding
+  fit_mve <- do.call(pbsEDM::multiview_embedding,
+                     c(list(data = all_sims,
+                            response = R_switch),
+                       mve_args))
+
+  single_realisation["R_switch_T_plus_1_mve_fit"] <-
+    fit_mve$response_predicted_from_mve[T+1]
+
+  single_realisation["mve_response_rho"]  <- fit_mve$rho_prediction_from_mve
+
+  fit_mve_single <- t(c(realisation,
+                        fit_mve$response_predicted_from_mve))
+                             # Need realisation first to keep track of
+
+  # Larkin fit
 
   fit_lar <- do.call(larkin::forecast,
                      c(list(data = all_sims,
@@ -127,6 +179,8 @@ fit_models <- function(all_sims,
   single_realisation["lar_rhat"] <-  fit_lar$forecasts$max_rhat
   # AE: Note max_rhat TODO check with Carrie
 
+  # Ricker fit
+
   fit_ric <- do.call(larkin::forecast,
                      c(list(data = all_sims,
                             recruits = "R_prime_t",
@@ -174,6 +228,7 @@ fit_models <- function(all_sims,
 
 
   return(list(fit_edm_single = fit_edm_single,
+              fit_mve_single = fit_mve_single,
               fit_lar_single = fit_lar_single,
               fit_ric_single = fit_ric_single,
               single_realisation = single_realisation))

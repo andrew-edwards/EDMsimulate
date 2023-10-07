@@ -32,7 +32,8 @@
 ##'   the same default assumption in salmon_sim()
 ##' @param sigma_ou Standard deviation in outcome uncertainty. Default = 0.
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
-##'   the calculations are based on. TODO NOT IMPLEMENTED YET FOR LARKIN OR
+##'   the calculations are based on. This is used as response variable for
+##'   multiview embedding.  TODO NOT IMPLEMENTED YET FOR LARKIN OR
 ##'   RICKER, ALWAYS DOES R_prime_t DESPITE WHAT IS NAMED IN THE OUTPUT. Remove
 ##'   message command when done.
 ##' @param pbsEDM_args List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
@@ -112,9 +113,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        centre_and_scale = TRUE),
                                      mve_args = list(
                                        lags = list(R_t = 0:4,
-                                                   S_t = 0:8),
-                                       response = R_switch),   # This can be
-                                         # different from any lags
+                                                   S_t = 0:8)),
                                      larkin_args = list(
                                        run_stan = FALSE,
                                        prior_mean_alpha = 2,
@@ -138,7 +137,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   stopifnot(R_switch %in% c("R_t", "R_prime_t"))
   stopifnot(names(pbsEDM_args$lags)[1] == "R_switch")    # This is okay for mve
   names(pbsEDM_args$lags)[1] <- R_switch                 # Simplex has to have
-                                        # R_switch as lag
+                                                         # R_switch as lag
 
   # Need explicit values for these various values here
   if(is.null(salmon_sim_args$p_prime)){
@@ -183,8 +182,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     X_rho = numeric(),
                                     X_rmse = numeric(),
                                     R_switch_T_plus_1_mve_fit = numeric(),
-                                    mve_N_rho = numeric(),
-                                    mve_X_rho = numeric(),   # TODO check definition
+                                    mve_response_rho = numeric(),
                                     R_switch_T_plus_1_lar_fit = numeric(),
                                     lar_5 = numeric(),
                                     lar_95 = numeric(),
@@ -420,9 +418,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   cl<- parallel::makeCluster(numCores, type = "PSOCK") # type of cluster
   parallel::clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
                                library(testthat), library(dplyr)))
-
-  parallel::clusterExport(cl, c("res_realisations", "all_sims", "pbsEDM_args", "R_switch",
-                                "T", "larkin_args", "ricker_args", "fit_models"), envir=environment())
+browser()
+  parallel::clusterExport(cl, c("res_realisations", "all_sims", "R_switch",
+                                "T", "pbsEDM_args", "mve_args", "larkin_args", "ricker_args", "fit_models"), envir=environment())
 
   outputs <- parallel::parLapply(cl, all_sims, function(x) {
     fit_models(x,
@@ -430,13 +428,14 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                R_switch = R_switch,
                T = T,
                pbsEDM_args = pbsEDM_args,
+               mve_args = mve_args,
                larkin_args = larkin_args,
                ricker_args = ricker_args)
   }
   )
 
   parallel::stopCluster(cl)
-browser()
+
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
     fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
