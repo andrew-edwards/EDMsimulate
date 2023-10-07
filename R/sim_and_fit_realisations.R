@@ -418,7 +418,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   cl<- parallel::makeCluster(numCores, type = "PSOCK") # type of cluster
   parallel::clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
                                library(testthat), library(dplyr)))
-browser()
+
   parallel::clusterExport(cl, c("res_realisations", "all_sims", "R_switch",
                                 "T", "pbsEDM_args", "mve_args", "larkin_args", "ricker_args", "fit_models"), envir=environment())
 

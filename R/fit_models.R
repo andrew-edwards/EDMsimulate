@@ -110,18 +110,23 @@ fit_models <- function(all_sims,
   single_realisation["X_rmse"] <-  fit_edm$results$X_rmse
 
   # Multiview embedding
-  fit_mve <- do.call(pbsEDM::multiview_embedding,
-                     c(list(data = all_sims,
-                            response = R_switch),
-                       mve_args))
+# TODO TODO TODO - uncomment these to help figure out, think the problem is the
+#  do.call. Confused why send it all_sims, which is a list of simualtions,
+# rather than just one of them, but that's what we do above for EDM and below
+# for Ricker and Larkin. Adding in dummy results to see if fit_models() returns okay.
+# Commenting out to debug:
+#  fit_mve <- do.call(pbsEDM::multiview_embedding,
+#                     c(list(data = all_sims,
+#                            response = R_switch),
+#                       mve_args))
 
-  single_realisation["R_switch_T_plus_1_mve_fit"] <-
-    fit_mve$response_predicted_from_mve[T+1]
+  single_realisation["R_switch_T_plus_1_mve_fit"] <- 77
+  #  fit_mve$response_predicted_from_mve[T+1]
 
-  single_realisation["mve_response_rho"]  <- fit_mve$rho_prediction_from_mve
+  single_realisation["mve_response_rho"] <- 78  # fit_mve$rho_prediction_from_mve
 
-  fit_mve_single <- t(c(realisation,
-                        fit_mve$response_predicted_from_mve))
+  fit_mve_single <- t(c(realisation, rep(12, T+1)))
+#                        fit_mve$response_predicted_from_mve))
                              # Need realisation first to keep track of
 
   # Larkin fit
