@@ -463,18 +463,19 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                      EstimationBias = NA)
     df <- df %>% tibble::add_row(Year = 1:(T+1),
                                  Abundance =  t(fit_edm_full_series[m_plot,
-    c(NA, 2:(T+1))]),   # TODO AE guessing that last bit a little, and two lines down: CH: i think the next 10 lines need to be re-aligned
+    c(2:(T+2))]),   # TODO AE guessing that last bit a little, and two lines down: 
+    # CH: I have realigned so that years 1-81 are lincluded in sim and fits and cor
                                  Series = "EDM",
                                  EstimationBias = t(fit_edm_full_series[m_plot,
-    c(NA, 2:(T+1))]) - sim) %>%
+    c(2:(T+2))]) - sim) %>%
       tibble::add_row(Year = 1:(T+1),
-                      Abundance =  t(fit_lar_full_series[m_plot, c(NA, 2:(T+1))]),
+                      Abundance =  t(fit_lar_full_series[m_plot, c(2:(T+2))]),
                       Series = "Larkin",
-                      EstimationBias = t(fit_lar_full_series[m_plot, c(NA, 2:(T+1))]) - sim) %>%
+                      EstimationBias = t(fit_lar_full_series[m_plot, c(2:(T+2))]) - sim) %>%
       tibble::add_row(Year = 1:(T+1),
-                      Abundance = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]),
+                      Abundance = t(fit_ric_full_series[m_plot, c(2:(T+2))]),
                       Series = "Ricker",
-                      EstimationBias = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]) - sim)
+                      EstimationBias = t(fit_ric_full_series[m_plot, c(2:(T+2))]) - sim)
 # TODO TODO check these manually: CH- both times-series are now 81
     cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
