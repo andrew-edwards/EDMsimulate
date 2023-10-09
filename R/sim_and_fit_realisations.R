@@ -454,7 +454,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     # PLot simulated and predicted values for one realisation
     # First get simulated values
     sim <- all_sims[[m_plot]] %>% dplyr::pull(R_switch)
-    sim[T+1] <- R_switch_T_plus_1_sim # All last years value back in
+    sim[T+1] <- R_switch_T_plus_1_sim # Add last years value back in
 
     # Then add predicted values
     df <- data.frame(Year = 1:(T+1),
@@ -463,7 +463,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                      EstimationBias = NA)
     df <- df %>% tibble::add_row(Year = 1:(T+1),
                                  Abundance =  t(fit_edm_full_series[m_plot,
-    c(NA, 2:(T+1))]),   # TODO AE guessing that last bit a little, and two lines down
+    c(NA, 2:(T+1))]),   # TODO AE guessing that last bit a little, and two lines down: CH: i think the next 10 lines need to be re-aligned
                                  Series = "EDM",
                                  EstimationBias = t(fit_edm_full_series[m_plot,
     c(NA, 2:(T+1))]) - sim) %>%
@@ -475,12 +475,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                       Abundance = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]),
                       Series = "Ricker",
                       EstimationBias = t(fit_ric_full_series[m_plot, c(NA, 2:(T+1))]) - sim)
-# TODO TODO check these manually:
-    cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+1)])),
+# TODO TODO check these manually: CH- both times-series are now 81
+    cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
-    cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+1)])),
+    cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
-    cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+1)])),
+    cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
 
     yMax <- max(sim, na.rm=TRUE)

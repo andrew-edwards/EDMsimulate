@@ -39,6 +39,8 @@ library(RColorBrewer)
 # 															 S_t = 0:3),
 # 									 first_difference = TRUE,
 # 									 centre_and_scale = TRUE)
+# mve_args <- list(lags = list(R_t = 0:4,
+# 														 S_t = 0:8))
 # larkin_args = list( run_stan = FALSE,
 # 										prior_mean_alpha = 2,
 # 										prior_mean_beta = -rep(1,4),
