@@ -524,7 +524,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_sim"] <-
     paste0(R_switch, "T_plus_1_sim")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_edm_fit"] <-
-    paste0(R_switch, "T_plus_1_edm_fit")
+  	paste0(R_switch, "T_plus_1_edm_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_mve_fit"] <-
+    paste0(R_switch, "T_plus_1_mve_fit")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_lar_fit"] <-
     paste0(R_switch, "T_plus_1_lar_fit")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_ric_fit"] <-

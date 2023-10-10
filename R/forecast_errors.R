@@ -18,19 +18,21 @@ forecast_errors <- function(run, label){
 	
 	# Rename predicted variables (e.g., "R_primeT_sim" or "R_T_sim" for ease of 
 	# handling)
-	if(names(run$res_realisations)[2]=="R_prime_T_sim"){
+	if(names(run$res_realisations)[2]=="R_prime_T_plus_1_sim"){
 		res_realisations_plot <- run$res_realisations %>% 
-			dplyr::rename( R_sim = R_prime_T_sim) %>% 
-			dplyr::rename( R_edm = R_prime_T_edm_fit) %>% 
-			dplyr::rename( R_lar = R_prime_T_lar_fit) %>% 
-			dplyr::rename( R_ric = R_prime_T_ric_fit)
+			dplyr::rename( R_sim = R_prime_T_plus_1_sim) %>% 
+			dplyr::rename( R_edm = R_prime_T_plus_1_edm_fit) %>% 
+			dplyr::rename( R_mve = R_prime_T_plus_1_mve_fit) %>% 
+			dplyr::rename( R_lar = R_prime_T_plus_1_lar_fit) %>% 
+			dplyr::rename( R_ric = R_prime_T_plus_1_ric_fit)
 	}
-	if(names(run$res_realisations)[2]=="R_T_sim"){
+	if(names(run$res_realisations)[2]=="R_T_plus_1_sim"){
 		res_realisations_plot <- run$res_realisations %>% 
-			dplyr::rename( R_sim = R_T_sim) %>% 
-			dplyr::rename( R_edm = R_T_edm_fit) %>% 
-			dplyr::rename( R_lar = R_T_lar_fit) %>% 
-			dplyr::rename( R_ric = R_T_ric_fit)
+			dplyr::rename( R_sim = R_T_plus_1_sim) %>% 
+			dplyr::rename( R_edm = R_T_plus_1_edm_fit) %>% 
+			dplyr::rename( R_mve = R_T_plus_1_mve_fit) %>% 
+			dplyr::rename( R_lar = R_T_plus_1_lar_fit) %>% 
+			dplyr::rename( R_ric = R_T_plus_1_ric_fit)
 	}
 	
 	# Calculate absolute error in forecast for EDM, Larkin and Ricker
