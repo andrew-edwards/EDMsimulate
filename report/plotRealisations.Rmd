@@ -255,13 +255,14 @@ Simulations were then run including temporal variability in productivity (Larkin
 ```{r alphaTrends}
 
 # Fraser Sockeye time-series run 1950-2016 BY, so 1970 is T minus 46 (or year 34 in 80 year time-series) and 1990 is T minus 26 (or year 54 in 80 year time-series)
-alpha1 <- c(rep(exp(2), 100), rep(exp(2), 76), seq(exp(2), exp(1.75), length.out=4))
-alpha2 <- c(rep(exp(2), 100), rep(exp(2), 34), seq(exp(2), exp(0.5), length.out=46))
-alpha3 <- c(rep(exp(2), 100), rep(exp(2), 54), seq(exp(2), exp(0.5), length.out=26))
-alpha4 <- c(rep(exp(2), 100), rep(exp(2), 34), rep(exp(0.5),46))
-df <- data.frame(year = rep(1:180,4),
-								 productivity = c(alpha1, alpha2, alpha3, alpha4),
-								 trend=c(rep(1,180), rep(2, 180), rep(3,180), rep(4,180)))
+
+alpha1 <- c(rep(exp(2), 100), rep(exp(2), 76), seq(exp(2), exp(1.75), length.out=5))
+alpha2 <- c(rep(exp(2), 100), rep(exp(2), 34), seq(exp(2), exp(0.5), length.out=47))
+alpha3 <- c(rep(exp(2), 100), rep(exp(2), 54), seq(exp(2), exp(0.5), length.out=27))
+alpha4 <- c(rep(exp(2), 100), rep(exp(2), 34), rep(exp(0.5),47))
+df <- data.frame(year = rep(1:181,4), 
+								 productivity = c(alpha1, alpha2, alpha3, alpha4), 
+								 trend=c(rep(1,181), rep(2, 181), rep(3,181), rep(4,181)))
 
 p1 <- df |> ggplot2::ggplot(aes(x=year, y=productivity, colour=as.factor(trend))) + geom_line()
 p1
