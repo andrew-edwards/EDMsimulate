@@ -106,8 +106,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      target_hr = 0.2,
                                      sigma_ou = 0,
                                      edm_fit = TRUE,
-                                     larkin_fit = FALSE,
-                                     ricker_fit = FALSE,
+                                     larkin_fit = TRUE,  # mostly ignored though
+                                     ricker_fit = TRUE,
                                      R_switch = "R_prime_t",
                                      pbsEDM_args = list(
                                        lags = list(R_switch = 0,
