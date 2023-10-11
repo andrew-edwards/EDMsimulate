@@ -29,7 +29,41 @@
 ##' @author Carrie Holt and Andrew Edwards
 ##' @examples
 ##' \dontrun{
-##' # Doesn't quite work. TODO create an example that works.
+##' # See Issue #17, kind of. Have copied into #18 (and Andy's READpbs) to paste
+##'   into R console. Need to get this working; currently get error because m
+##'   not defined.
+##' set.seed(42)
+##' R_switch_manual <- "R_t"
+##' simulated_5 <- EDMsimulate::salmon_sim()
+##' ##' edm_args_manual <- list(lags = list(R_switch = 0, S_t = 0:3),
+##'                                first_difference = TRUE,
+##'                                centre_and_scale = TRUE)
+##' mve_args_manual <- list(lags = list(R_t = 0:1, S_t = 0:3))
+##' larkin_args_manual = list(run_stan = FALSE,
+##'                           prior_mean_alpha = 2,
+##'                           prior_mean_beta = -rep(1,4),
+##'                           prior_mean_sigma = 0.5,
+##'                           prior_sd_alpha = 0.5,
+##'                           prior_sd_beta = rep(0.25,4),
+##'                           prior_sd_sigma = 0.25)
+##' ricker_args_manual = list(run_stan = FALSE,
+##'                           prior_mean_alpha = 2,
+##'                           prior_mean_beta = -1,
+##'                           prior_mean_sigma = 0.5,
+##'                           prior_sd_alpha = 0.5,
+##'                           prior_sd_beta = 0.25,
+##'                           prior_sd_sigma = 0.25)
+##'
+##' res_fit_models_5 <- fit_models(simulated_5,
+##'                                R_switch = R_switch_manual,
+##'                                T = nrow(simulated_5),
+##'                                mve_args = mve_args_manual),
+##'                                pbsEDM_args = edm_args_manual
+##'                                larkin_args = larkin_args_manual,
+##'                                ricker_args = ricker_args_manual)
+##'
+##'
+##' # This next one doesn't quite work.
 ##' set.seed(42)
 ##' h_simulated <- 0.1095 + sample(1:180) * 0.001 # has mean of 0.2
 ##' simulated_4 <- EDMsimulate::salmon_sim(h = h_simulated)
@@ -71,6 +105,8 @@ fit_models <- function(all_sims,
                        larkin_args,
                        ricker_args){
 
+  names(pbsEDM_args$lags)[names(pbsEDM_args$lags) == "R_switch"]  <- R_switch
+
   fit_edm <- do.call(pbsEDM::pbsEDM,
                      c(list(N = all_sims),
                        pbsEDM_args))
@@ -110,10 +146,7 @@ fit_models <- function(all_sims,
   single_realisation["X_rmse"] <-  fit_edm$results$X_rmse
 
   # Multiview embedding
-# TODO TODO TODO - uncomment these to help figure out, think the problem is the
-#  do.call. Confused why send it all_sims, which is a list of simualtions,
-# rather than just one of them, but that's what we do above for EDM and below
-# for Ricker and Larkin. Adding in dummy results to see if fit_models() returns okay.
+
 # Commenting out to debug:
   fit_mve <- do.call(pbsEDM::multiview_embedding,
                      c(list(data = all_sims,

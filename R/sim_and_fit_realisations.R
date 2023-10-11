@@ -203,12 +203,11 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                                   ncol = length(tbl_colnames)),
                                            .name_repair = ~ tbl_colnames)  # Empty tibble correctly named; columns are logical
                                                                            # but will get changed to double/numeric when they get filled in.
-  fit_lar_full_series <- tibble::as_tibble(matrix(NA,
-                                                  nrow = M,
-                                                  ncol = length(tbl_colnames)),
-                                           .name_repair = ~ tbl_colnames)
+  fit_mve_full_series <- fit_edm_full_series
 
-  fit_ric_full_series <-  fit_lar_full_series
+  fit_lar_full_series <- fit_edm_full_series
+
+  fit_ric_full_series <- fit_lar_full_series
 
 
   # First do all the simulations, to then paraellise the fitting.
@@ -447,6 +446,7 @@ print(paste0("length(h_t) is ", length(h_t)))   # TODO remove me
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
     fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
+    fit_mve_full_series[m,] <- outputs[[m]]$fit_mve_single
     if(larkin_fit) fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
     if(!larkin_fit) fit_lar_full_series[m,] <- NA
     if(ricker_fit) fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
