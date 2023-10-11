@@ -246,7 +246,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     		# Perhaps not needed because of set.seed at start of each trial, except
     		# if more uncertainties are added in the future below
     		blank <- rbeta(T_total, 0.5, 0.5, ncp = 0)
-    		h_t <- rep(T_total, target_hr)
+    		h_t <- rep(T_total, target_hr)    # TODO this seems to get
+                                        # ignored with target_hr = 0.2 and
+                                        # sigma_ou = 0, but it shouldn't.
     	}
     }
     if(target_hr == 0){
@@ -255,11 +257,17 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     	h_t <- rep(T_total, target_hr)
     }
 
-    salmon_sim_args$T <- T + 1          # Add 1 to simulate the extra year
+    salmon_sim_args$T <- T + 1          # Add 1 to simulate the extra year. Note
+                                        # that T_toal in salmon_sim gets defined
+                                        # as T + T_transient (hence fiddling here).
+print(length(h_t))   # TODO remove me
+
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
                            list(epsilon_tg = epsilon_tg,
                                 nu_t = nu_t)))
+                                # h_t = h_t)))  AE tried adding this, but see
+                                # TODO above, h_t specification was getting ignored.
                                         # will still get ignored
                                         # if use deterministic = TRUE TODO add
                                         # as test
@@ -463,7 +471,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                      EstimationBias = NA)
     df <- df %>% tibble::add_row(Year = 1:(T+1),
                                  Abundance =  t(fit_edm_full_series[m_plot,
-    c(2:(T+2))]),   # TODO AE guessing that last bit a little, and two lines down: 
+    c(2:(T+2))]),   # TODO AE guessing that last bit a little, and two lines down:
     # CH: I have realigned so that years 1-81 are lincluded in sim and fits and cor
                                  Series = "EDM",
                                  EstimationBias = t(fit_edm_full_series[m_plot,

@@ -24,7 +24,7 @@ library(RColorBrewer)
 
 # Run using stan-optim for Larkin model to speed up model runs
 # See larkin-compareMLE-Bayes.Rmd for a comparison
-# larkin_args() and ricker_args() have default values, but if one element 
+# larkin_args() and ricker_args() have default values, but if one element
 # changes, the entire list needs to be included here
 
 # # List of elements for running function separately
@@ -57,15 +57,15 @@ library(RColorBrewer)
 # 									 prior_sd_sigma = 0.25)
 # M <-  10
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 1, 
-																						 			 omega = 0.4), 
-																						 target_hr = 0.2,
-																						 sigma_ou = 0.05,
-																						 larkin_fit = TRUE,
-																						 ricker_fit = TRUE,
-																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
-																						 M = 100)
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+                                               list(sigma_nu = 1,
+                                                    omega = 0.4),
+                                             target_hr = 0.2,
+                                             sigma_ou = 0.05,
+                                             larkin_fit = TRUE,
+                                             ricker_fit = TRUE,
+                                             R_switch = "R_t",#"R_prime_t",#"R_t",#
+                                             M = 100)
 ```
 Then plot outputs.
 
@@ -75,27 +75,27 @@ Then plot outputs.
 results_bc <- forecast_errors(out, label="base_case")
 
 # Plot forecasts against true (simulated) values
-p1 <- results_bc$forecasts %>% 
-	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+p1 <- results_bc$forecasts %>%
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_bc$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_bc$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_bc$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_bc$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density")
-p4 <- results_bc$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -108,9 +108,9 @@ ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 The above example assumes returns are the variable being predicted. Another option is recruitment (by brood year), which is the more direct predictor of Larkin model. The simulation is repeated with recruitment, and EDM forecasts are (tentatively) less biased (why?)
 
 ```{r}
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 1, 
-																						 			 omega = 0.4), 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 1,
+																						 			 omega = 0.4),
 																						 target_hr = 0.2,
 																						 sigma_ou = 0.05,
 																						 larkin_fit = TRUE,
@@ -121,27 +121,27 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_rec <- forecast_errors(out, label="recruits")
 # Plot forecasts against true (simulated) values
-p1 <- results_rec$forecasts %>% 
-	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+p1 <- results_rec$forecasts %>%
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_rec$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_rec$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_rec$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_rec$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density") + xlim(-1000,1000)
-p4 <- results_rec$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_rec$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -157,10 +157,10 @@ The Larkin and Ricker models tend to have absolute errors in forecast that are c
 The simulation is then repeated, but with altered beta parameters where beta0 is dominant over the remaining beta parameters (more similar to a Ricker model).
 
 ```{r Beta0}
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 1, 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 1,
 																						 			 omega = 0.4,
-																						 			 beta = c(0.45, 0.25, 0.15, 0.15)), 
+																						 			 beta = c(0.45, 0.25, 0.15, 0.15)),
 																						 target_hr = 0.2,
 																						 sigma_ou = 0.05,
 																						 R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -171,27 +171,27 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_ric <- forecast_errors(out, label="ricker")
 
-p1 <- results_ric$forecasts %>% 
-	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+p1 <- results_ric$forecasts %>%
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_ric$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_ric$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_ric$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_ric$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density") + xlim(-1000,1000)
-p4 <- results_ric$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_ric$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -204,9 +204,9 @@ ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 Simulations were then run with low process variation (sigma_nu=0.1)
 
 ```{r}
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 0.1, 
-																						 			 omega = 0.4), 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 0.1,
+																						 			 omega = 0.4),
 																						 target_hr = 0.2,
 																						 sigma_ou = 0.05,
 																						 larkin_fit = TRUE,
@@ -220,27 +220,27 @@ results_sigma_nu_0.1 <- forecast_errors(out, label="sigma_nu_0.1")
 
 # Plot forecasts against true (simulated) values
 p1 <- results_sigma_nu_0.1$forecasts %>%
-	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density") + xlim(-100,100)
-p4 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -250,7 +250,7 @@ ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2)
 
 ```
 
-Simulations were then run including temporal variability in productivity (Larkin alpha parameter), with a trends similar to those observed historically for Fraser River Sockeye salmon (Pestal et al. in review; Huang et al. 2020 [Fraser Sockeye RPA]). Three patterns in temporal variability in productivity are evident in the historical time-series: (1) stable productivity throughout most of the time-series with the exception of declines in the most recent generation (e.g., Nadina, Seymour, Gates, Upper Pitt River, Scotch, Chilko, Late Shuswap) , (2) gradual declines starting in the 1970s (e.g.,Upper Barriere, Portage, Early Stuart, Bowron), and (3) relatively stable productivity in early time-series until 1990 followed by steeper declines (e.g., Weaver Creek, Raft, Birkenhead, Stellako, Quesnel, Late Stuart, Weaver Creek). 
+Simulations were then run including temporal variability in productivity (Larkin alpha parameter), with a trends similar to those observed historically for Fraser River Sockeye salmon (Pestal et al. in review; Huang et al. 2020 [Fraser Sockeye RPA]). Three patterns in temporal variability in productivity are evident in the historical time-series: (1) stable productivity throughout most of the time-series with the exception of declines in the most recent generation (e.g., Nadina, Seymour, Gates, Upper Pitt River, Scotch, Chilko, Late Shuswap) , (2) gradual declines starting in the 1970s (e.g.,Upper Barriere, Portage, Early Stuart, Bowron), and (3) relatively stable productivity in early time-series until 1990 followed by steeper declines (e.g., Weaver Creek, Raft, Birkenhead, Stellako, Quesnel, Late Stuart, Weaver Creek).
 
 ```{r alphaTrends}
 
@@ -259,8 +259,8 @@ alpha1 <- c(rep(exp(2), 100), rep(exp(2), 76), seq(exp(2), exp(1.75), length.out
 alpha2 <- c(rep(exp(2), 100), rep(exp(2), 34), seq(exp(2), exp(0.5), length.out=46))
 alpha3 <- c(rep(exp(2), 100), rep(exp(2), 54), seq(exp(2), exp(0.5), length.out=26))
 alpha4 <- c(rep(exp(2), 100), rep(exp(2), 34), rep(exp(0.5),46))
-df <- data.frame(year = rep(1:180,4), 
-								 productivity = c(alpha1, alpha2, alpha3, alpha4), 
+df <- data.frame(year = rep(1:180,4),
+								 productivity = c(alpha1, alpha2, alpha3, alpha4),
 								 trend=c(rep(1,180), rep(2, 180), rep(3,180), rep(4,180)))
 
 p1 <- df |> ggplot2::ggplot(aes(x=year, y=productivity, colour=as.factor(trend))) + geom_line()
@@ -272,10 +272,10 @@ These trends were then included in the simulation runs
 ```{r simRunAlphaTrends}
 
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 1, 
-																						 			 omega = 0.4), 
+																						 			 sigma_nu = 1,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -288,26 +288,26 @@ results_alpha_decline <- forecast_errors(out, label = "alpha_decline")
 
 
 p1 <- results_alpha_decline$forecasts %>%
-	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_alpha_decline$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_alpha_decline$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density") + xlim(-1000,1000)
-p4 <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -316,13 +316,13 @@ ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 
 ```
 
-And repeated with low process variation and alpha decline. 
+And repeated with low process variation and alpha decline.
 ```{r}
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 0.1, 
-																						 			 omega = 0.4), 
+																						 			 sigma_nu = 0.1,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -335,26 +335,26 @@ results_alpha_decline_sigma_nu_0.1 <- forecast_errors(out, label = "alpha_declin
 
 
 p1 <- results_alpha_decline_sigma_nu_0.1$forecasts %>%
-	ggplot(aes(x=R_sim,  y=R_fit, colour=forMethod)) + 
-	geom_point() + 
-	geom_smooth(method='lm', formula= y~x) + 
-	xlab("Simulated 'true' recruitment") + 
+	ggplot(aes(x=R_sim,  y=R_fit, colour=forMethod)) +
+	geom_point() +
+	geom_smooth(method='lm', formula= y~x) +
+	xlab("Simulated 'true' recruitment") +
 	ylab("Forecasted recruitment") +
 	geom_abline(slope=1, intercept = 0, col="dark grey")
 
 # Plot distribution of absolute errors in forecast
-p2 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "Err") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p2 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "Err") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Errors in forecast") +
 	ylab("Density")
-p3 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p3 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Percent errors in forecast") +
 	ylab("Density") + xlim(-100,100)
-p4 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr") %>% 
-	ggplot(aes(x=value, colour=forMethod)) + 
+p4 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr") %>%
+	ggplot(aes(x=value, colour=forMethod)) +
 	geom_density() +
 	xlab("Absolute errors in forecast") +
 	ylab("Density")
@@ -366,24 +366,24 @@ ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 Or, results can be presented from sensitivity analyses together
 ```{r}
 #Aggregate the df's of discrete sensitivity analyses, Percent Error
-discrete_sens_pe <- results_bc$errors %>% dplyr::filter(error == "perErr") %>% 
-	add_row(results_rec$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_ric$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>% 
+discrete_sens_pe <- results_bc$errors %>% dplyr::filter(error == "perErr") %>%
+	add_row(results_rec$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_ric$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
 	add_row(results_alpha_decline$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>% 
-	dplyr::mutate(model_label=factor(model_label, 
+	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("base_case", "recruits", "ricker",
 																	 				 "sigma_nu_0.1", "alpha_decline",
 																	 				 "alpha_decline_sigma_nu_0.1")))
 
-discrete_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>% 
-	add_row(results_rec$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_ric$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>% 
+discrete_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
+	add_row(results_rec$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_ric$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
 	add_row(results_alpha_decline$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>% 
-	dplyr::mutate(model_label=factor(model_label, 
+	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("base_case", "recruits", "ricker",
 																	 				 "sigma_nu_0.1", "alpha_decline",
 																	 				 "alpha_decline_sigma_nu_0.1")))
@@ -395,12 +395,12 @@ dodge_ae <- position_dodge(width = 0.7)
 p1 <- discrete_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
   geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
-	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") +
 	ggtitle("Discrete sensitivity analyses")
 p2 <- discrete_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
   geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
-	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") +
 	ggtitle("Discrete sensitivity analyses")
 
 p1
@@ -411,9 +411,9 @@ p2
 Run sensitivity analyses over a gradient in sigma_nu
 ```{r}
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 0.3, 
-																						 			 omega = 0.4), 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 0.3,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -424,9 +424,9 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_sigma_nu_0.3 <- forecast_errors(out, label = "sigma_nu_0.3")
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 0.5, 
-																						 			 omega = 0.4), 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 0.5,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -437,9 +437,9 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_sigma_nu_0.5 <- forecast_errors(out, label = "sigma_nu_0.5")
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
-																						 	list(sigma_nu = 0.7, 
-																						 			 omega = 0.4), 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
+																						 	list(sigma_nu = 0.7,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -451,22 +451,22 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 results_sigma_nu_0.7 <- forecast_errors(out, label = "sigma_nu_0.7")
 
 
-sigma_nu_sens_pe <- results_bc$errors %>% dplyr::filter(error == "perErr") %>% 
-	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>% 
+sigma_nu_sens_pe <- results_bc$errors %>% dplyr::filter(error == "perErr") %>%
+	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
 	add_row(results_sigma_nu_0.7$errors %>% dplyr::filter(error == "perErr")) %>%
-	dplyr::mutate(model_label=factor(model_label, 
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
 																	 				 "sigma_nu_0.7", "base_case")))
 
 
-sigma_nu_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>% 
-	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>% 
+sigma_nu_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
+	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
 	add_row(results_sigma_nu_0.7$errors %>% dplyr::filter(error == "absErr")) %>%
-	dplyr::mutate(model_label=factor(model_label, 
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
 																	 				 "sigma_nu_0.7", "base_case")))
 
@@ -476,12 +476,12 @@ dodge_ae <- position_dodge(width = 0.7)
 p1 <- sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
   geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
-	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") +
 	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
 p2 <- sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
   geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
-	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") +
 	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
 
 
@@ -491,10 +491,10 @@ p2
 
 And declines in productivity and a gradient in sigma_nu
 ```{r}
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 0.3, 
-																						 			 omega = 0.4), 
+																						 			 sigma_nu = 0.3,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -505,10 +505,10 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_alpha_decline_sigma_nu_0.3 <- forecast_errors(out, label = "sigma_nu_0.3")
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 0.5, 
-																						 			 omega = 0.4), 
+																						 			 sigma_nu = 0.5,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -519,10 +519,10 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_alpha_decline_sigma_nu_0.5 <- forecast_errors(out, label = "sigma_nu_0.5")
 
-out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args = 
+out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
-																						 			 sigma_nu = 0.8, 
-																						 			 omega = 0.4), 
+																						 			 sigma_nu = 0.8,
+																						 			 omega = 0.4),
 																							target_hr = 0.2,
 																						  sigma_ou = 0.05,
 																							R_switch = "R_t",#"R_prime_t",#"R_t",#
@@ -534,21 +534,21 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 results_alpha_decline_sigma_nu_0.8 <- forecast_errors(out, label = "sigma_nu_0.8")
 
 
-alpha_decline_sigma_nu_sens_pe <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>% 
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>% 
+alpha_decline_sigma_nu_sens_pe <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>%
+	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
 	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
-	dplyr::mutate(model_label=factor(model_label, 
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
 																	 				 "sigma_nu_0.8", "alpha_decline")))
 
-alpha_decline_sigma_nu_sens_ae <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>% 
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>% 
-	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>% 
+alpha_decline_sigma_nu_sens_ae <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>%
+	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
 	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
-	dplyr::mutate(model_label=factor(model_label, 
+	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
 																	 				 "sigma_nu_0.8", "alpha_decline")))
 
@@ -558,30 +558,29 @@ dodge_ae <- position_dodge(width = 0.7)
 p1 <- alpha_decline_sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
   geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
-	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") + 
+	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") +
 	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
-			 subtitle = "under scenario of declining alpha over time") + 
+			 subtitle = "under scenario of declining alpha over time") +
 	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
                               "sigma_nu_0.3" = "0.3",
 															"sigma_nu_0.5" = "0.5",
 															"sigma_nu_0.8" = "0.8",
-															"alpha_decline" = "1.0")) + 
+															"alpha_decline" = "1.0")) +
 	labs(x="sigma_nu")
 p2 <- alpha_decline_sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
   geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
-	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") + 
+	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") +
 	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
 		 subtitle = "under scenario of declining alpha over time")+
 	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
                               "sigma_nu_0.3" = "0.3",
 															"sigma_nu_0.5" = "0.5",
 															"sigma_nu_0.8" = "0.8",
-															"alpha_decline" = "1.0")) + 
+															"alpha_decline" = "1.0")) +
 	labs(x="sigma_nu")
 
 
 p1
 p2
 ```
-
