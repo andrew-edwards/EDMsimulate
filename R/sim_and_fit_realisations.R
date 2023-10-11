@@ -566,6 +566,7 @@ print(paste0("length(h_t) is ", length(h_t)))   # TODO remove me
 
   return(list(res_realisations = res_realisations,
               fit_edm_full_series = fit_edm_full_series,
+              fit_mve_full_series = fit_mve_full_series,
               fit_lar_full_series = fit_lar_full_series,
               fit_ric_full_series = fit_ric_full_series))
 }

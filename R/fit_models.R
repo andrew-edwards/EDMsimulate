@@ -159,7 +159,7 @@ fit_models <- function(all_sims,
   single_realisation["R_switch_T_plus_1_mve_fit"] <- fit_mve$response_predicted_from_mve[T+1]
 
   single_realisation["mve_response_rho"] <- fit_mve$rho_prediction_from_mve
-# TODO HERE HERE this has one extra value, think may be to do with the all_sims call
+# TODO HERE HERE this had one extra value, think may be to do with the all_sims call
 #  above, which was confusing me before. So tied in with Issue #18, #17. Not sure
                                         #if other functions are taking the last
                                         #value off?
