@@ -21,6 +21,8 @@
 ##'  - `single_realisation` forecasts from all models in last year
 ##'  - `fit_edm_single` predictions for each year from EDM, with realisation
 ##'   number appended to start
+##'  - `fit_mve_single` predictions for each year from multiview embedding, with realisation
+##'   number appended to start
 ##'  - `fit_lar_single` predictions for each year from larkin, with realisation
 ##'   number appended to start
 ##'  - `fit_ric_single` predictions for each year from ricker, with realisation
@@ -156,7 +158,10 @@ fit_models <- function(all_sims,
   single_realisation["R_switch_T_plus_1_mve_fit"] <- fit_mve$response_predicted_from_mve[T+1]
 
   single_realisation["mve_response_rho"] <- fit_mve$rho_prediction_from_mve
-
+HERE HERE this has one extra value, think may be to do with the all_sims call
+  above, which was confusing me before. So tied in with Issue #18, #17. Not sure
+                                        #if other functions are taking the last
+                                        #value off?
   fit_mve_single <- t(c(realisation, fit_mve$response_predicted_from_mve))
                              # Need realisation first to keep track of
 
