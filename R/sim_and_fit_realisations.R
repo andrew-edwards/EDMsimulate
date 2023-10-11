@@ -263,7 +263,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     salmon_sim_args$T <- T + 1          # Add 1 to simulate the extra year. Note
                                         # that T_toal in salmon_sim gets defined
                                         # as T + T_transient (hence fiddling here).
-print(paste0("length(h_t) is ", length(h_t)))   # TODO remove me
+   # print(paste0("length(h_t) is ", length(h_t)))
 
     simulated <- do.call(salmon_sim,
                          c(salmon_sim_args,
