@@ -91,6 +91,8 @@
 ##' res <- sim_and_fit_realisations(M=2)
 ##' res$fit_edm_full_series %>% as.data.frame()
 ##'
+##' res_2 <- sim_and_fit_realisations(M=2, do_parallel = FALSE)
+##'
 ##' TODO res <- sim_and_fit(pbsEDM_args = list(lags = list(R_prime_t = 0,
 ##'                                                   S_t = 0:3),
 ##'                                       first_difference = TRUE))
@@ -448,7 +450,8 @@ print(paste0("length(h_t) is ", length(h_t)))   # TODO remove me
   } else {                          # Not parallel
     outputs <- vector("list", M)    # create empty list
     for(m in 1:M){
-     outputs[[m]] <- fit_models(all_sims[[m]],
+     outputs[[m]] <- fit_models(all_sims[[m]],         # TODO But all_sims in
+                                        # fit_models is what??
                                 res_realisations = res_realisations,    # TODO
                                         # not sure exactly what should go here
                                 R_switch = R_switch,

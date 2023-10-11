@@ -119,7 +119,7 @@ fit_models <- function(all_sims,
   # TO DO AE: Check that the time-series is aligned correctly
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
-  realisation <- dplyr::pull(all_sims['m'][1,])     # CONFUSED: all_sims is a list
+  realisation <- dplyr::pull(all_sims['m'][1,])     # TODO CONFUSED: all_sims is a list
 
   fit_edm_single  <- t(c(realisation,
                          fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
@@ -151,7 +151,8 @@ fit_models <- function(all_sims,
 
 # Commenting out to debug:
   fit_mve <- do.call(pbsEDM::multiview_embedding,
-                     c(list(data = all_sims,
+                     c(list(data = all_sims[-nrow(all_sims), ],   # Take out
+                                        # final row, not sure why not for other methods.
                             response = R_switch),
                        mve_args))
 
