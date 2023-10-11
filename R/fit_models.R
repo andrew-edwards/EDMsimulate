@@ -119,7 +119,7 @@ fit_models <- function(all_sims,
   # TO DO AE: Check that the time-series is aligned correctly
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
-  realisation <- dplyr::pull(all_sims['m'][1,])
+  realisation <- dplyr::pull(all_sims['m'][1,])     # CONFUSED: all_sims is a list
 
   fit_edm_single  <- t(c(realisation,
                          fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
@@ -158,8 +158,8 @@ fit_models <- function(all_sims,
   single_realisation["R_switch_T_plus_1_mve_fit"] <- fit_mve$response_predicted_from_mve[T+1]
 
   single_realisation["mve_response_rho"] <- fit_mve$rho_prediction_from_mve
-HERE HERE this has one extra value, think may be to do with the all_sims call
-  above, which was confusing me before. So tied in with Issue #18, #17. Not sure
+# TODO HERE HERE this has one extra value, think may be to do with the all_sims call
+#  above, which was confusing me before. So tied in with Issue #18, #17. Not sure
                                         #if other functions are taking the last
                                         #value off?
   fit_mve_single <- t(c(realisation, fit_mve$response_predicted_from_mve))

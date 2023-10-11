@@ -46,8 +46,9 @@
 ##' @param mve_args List of arguments to pass onto `pbsEDM::multiview_embedding()`.
 ##' @param larkin_args List of arguments to pass onto `larkin::forecast()`.
 ##' @param ricker_args List of arguments to pass onto `larkin::forecast()`.
-##' @param M number of realisations
-##'
+##' @param M number of realisations.
+##' @param do_parallel logical, if TRUE then run fitting models in parallel
+##'   (easier to debug when doing sequentially.
 ##' @return List containing `res_realisations`, `fit_edm_full_series`,
 ##'   `fit_mve_full_series`, `fit_lar_full_series`,
 ##'   and `fit_ric_full_series`. These are:
@@ -130,7 +131,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                        prior_sd_alpha = 0.5,
                                        prior_sd_beta = 0.25,
                                        prior_sd_sigma = 0.25),
-                                     M = 10) {
+                                     M = 10,
+                                     do_parallel = TRUE){
 
   tictoc::tic("model run time")#start_time <- Sys.time()
 
@@ -420,28 +422,43 @@ print(paste0("length(h_t) is ", length(h_t)))   # TODO remove me
   #   }
   # }
 
-  numCores <- parallel::detectCores() - 1 # number of cores to use
+  if(do_parallel){
+    numCores <- parallel::detectCores() - 1 # number of cores to use
 
-  cl<- parallel::makeCluster(numCores, type = "PSOCK") # type of cluster
-  parallel::clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
-                               library(testthat), library(dplyr)))
+    cl<- parallel::makeCluster(numCores, type = "PSOCK") # type of cluster
+    parallel::clusterEvalQ(cl, c(library(EDMsimulate), library(pbsEDM), library(larkin),
+                                 library(testthat), library(dplyr)))
 
-  parallel::clusterExport(cl, c("res_realisations", "all_sims", "R_switch",
-                                "T", "pbsEDM_args", "mve_args", "larkin_args", "ricker_args", "fit_models"), envir=environment())
+    parallel::clusterExport(cl, c("res_realisations", "all_sims", "R_switch",
+                                  "T", "pbsEDM_args", "mve_args", "larkin_args", "ricker_args", "fit_models"), envir=environment())
 
-  outputs <- parallel::parLapply(cl, all_sims, function(x) {
-    fit_models(x,
-               res_realisations = res_realisations,
-               R_switch = R_switch,
-               T = T,
-               pbsEDM_args = pbsEDM_args,
-               mve_args = mve_args,
-               larkin_args = larkin_args,
-               ricker_args = ricker_args)
+    outputs <- parallel::parLapply(cl, all_sims, function(x) {
+      fit_models(x,
+                 res_realisations = res_realisations[m, ],
+                 R_switch = R_switch,
+                 T = T,
+                 pbsEDM_args = pbsEDM_args,
+                 mve_args = mve_args,
+                 larkin_args = larkin_args,
+                 ricker_args = ricker_args)
+    }
+    )
+
+    parallel::stopCluster(cl)
+  } else {                          # Not parallel
+    outputs <- vector("list", M)    # create empty list
+    for(m in 1:M){
+     outputs[[m]] <- fit_models(all_sims[[m]],
+                                res_realisations = res_realisations,    # TODO
+                                        # not sure exactly what should go here
+                                R_switch = R_switch,
+                                T = T,
+                                pbsEDM_args = pbsEDM_args,
+                                mve_args = mve_args,
+                                larkin_args = larkin_args,
+                                ricker_args = ricker_args)
+    }
   }
-  )
-
-  parallel::stopCluster(cl)
 
   for(m in 1:M){
     res_realisations[m,] <- outputs[[m]]$single_realisation
