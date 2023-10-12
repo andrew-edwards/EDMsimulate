@@ -1,7 +1,7 @@
 ##' @title Fit EDM (Simplex), multiview embedding, Larkin, and Ricker models
 ##' @description Fits EDM, multiview embedding, Larkin, and Ricker models to simulated data using
 ##'   parallel processing
-##' @param sim List of simulated data generated from salmon_sim()
+##' @param sim Tibble of simulated data generated from salmon_sim()
 ##' @param res_realisations Empty data frame with correct headers for outputs
 ##'   of estimation
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
@@ -119,9 +119,8 @@ fit_models <- function(sim,
   # TO DO AE: Check that the time-series is aligned correctly
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
-  # realisation <- dplyr::pull(sim['m'][1,])     # TODO CONFUSED: all_sims is a list
-  realisation <- dplyr::pull(sim[1,])     # TODO CONFUSED: all_sims is a list
-  
+  realisation <- dplyr::pull(sim[1,], "m")
+
   fit_edm_single  <- t(c(realisation,
                          fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
   # Note the realisation number added to the front (to keep track of in parallel calculations).
