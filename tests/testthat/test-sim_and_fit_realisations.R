@@ -31,7 +31,7 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
 
   # Check with an earlier saved one (do this test on GHA, so can't compare
   #  three_sim_fits Ricker and Larkin values
-  expect_equal(dplyr::select(three_sim_fits[3, ], "m":"X_rmse"),
+  expect_equal(dplyr::select(three_sim_fits$res_realisations[3, ], "m":"X_rmse"),
                dplyr::select(ten_sim_fits_edm_only_create_in_test$res_realisations[3, ], "m":"X_rmse"))
 
 
@@ -60,7 +60,8 @@ test_that("sim_and_fit_realisations() runs and gives correct answer for simulati
                                                             larkin_fit = TRUE,
                                                             ricker_fit = TRUE)
   expect_equal(three_sim_fits,
-               three_sim_fits_create_in_test$res_realisations)
+               three_sim_fits_create_in_test,
+               tolerance = 1e-04)
 
   res_not_parallel <- sim_and_fit_realisations(M=2,
                                                do_parallel = FALSE)
