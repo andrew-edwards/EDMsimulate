@@ -436,8 +436,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     outputs <- parallel::parLapply(cl, all_sims, function(x) {
       fit_models(x,
-                 res_realisations = res_realisations[m, ],
-                 R_switch = R_switch,
+                 # res_realisations = res_realisations[m, ],
+      					 res_realisations = res_realisations,
+      					 R_switch = R_switch,
                  T = T,
                  pbsEDM_args = pbsEDM_args,
                  mve_args = mve_args,
@@ -454,6 +455,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                         # fit_models is what??
                                 res_realisations = res_realisations,    # TODO
                                         # not sure exactly what should go here
+     																		# CH: this is the entire dataframe, each core slots in the results for the row corresponding to that realisation, which are aggregated below
                                 R_switch = R_switch,
                                 T = T,
                                 pbsEDM_args = pbsEDM_args,
@@ -475,7 +477,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   }
 
 
-  plot_realisation <- TRUE#FALSE
+  plot_realisation <- FALSE
   if(plot_realisation & larkin_fit & ricker_fit){
     m_plot <- 1 #which realisation to plot
     # if(m==M){

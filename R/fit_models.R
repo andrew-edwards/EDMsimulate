@@ -1,7 +1,7 @@
 ##' @title Fit EDM (Simplex), multiview embedding, Larkin, and Ricker models
 ##' @description Fits EDM, multiview embedding, Larkin, and Ricker models to simulated data using
 ##'   parallel processing
-##' @param all_sims List of simulated data generated from salmon_sim()
+##' @param sim List of simulated data generated from salmon_sim()
 ##' @param res_realisations Empty data frame with correct headers for outputs
 ##'   of estimation
 ##' @param R_switch either `R_prime_t` or `R_t` to specify which one
@@ -98,7 +98,7 @@
 ##'                                       prior_sd_sigma = 0.25))
 ##'
 ##' }
-fit_models <- function(all_sims,
+fit_models <- function(sim,
                        res_realisations,
                        R_switch,
                        T,
@@ -110,17 +110,18 @@ fit_models <- function(all_sims,
   names(pbsEDM_args$lags)[names(pbsEDM_args$lags) == "R_switch"]  <- R_switch
 
   fit_edm <- do.call(pbsEDM::pbsEDM,
-                     c(list(N = all_sims),
+                     c(list(N = sim),
                        pbsEDM_args))
 
-  testthat::expect_equal(dplyr::pull(all_sims, R_switch),
+  testthat::expect_equal(dplyr::pull(sim, R_switch),
                          fit_edm$N_observed[-(T+1)])  # Extra check
 
   # TO DO AE: Check that the time-series is aligned correctly
   # CH Changed to a single vector and revised the call to m from the all_sims
   # input
-  realisation <- dplyr::pull(all_sims['m'][1,])     # TODO CONFUSED: all_sims is a list
-
+  # realisation <- dplyr::pull(sim['m'][1,])     # TODO CONFUSED: all_sims is a list
+  realisation <- dplyr::pull(sim[1,])     # TODO CONFUSED: all_sims is a list
+  
   fit_edm_single  <- t(c(realisation,
                          fit_edm$N_forecast[-length(fit_edm$N_forecast)]))
   # Note the realisation number added to the front (to keep track of in parallel calculations).
@@ -151,7 +152,7 @@ fit_models <- function(all_sims,
 
 # Commenting out to debug:
   fit_mve <- do.call(pbsEDM::multiview_embedding,
-                     c(list(data = all_sims[-nrow(all_sims), ],   # Take out
+                     c(list(data = sim[-nrow(sim), ],   # Take out
                                         # final row, not sure why not for other methods.
                             response = R_switch),
                        mve_args))
@@ -169,7 +170,7 @@ fit_models <- function(all_sims,
   # Larkin fit
 
   fit_lar <- do.call(larkin::forecast,
-                     c(list(data = all_sims,
+                     c(list(data = sim,
                             recruits = "R_prime_t",
                             # This is simply the label for recruitment, and
                             # does not specify the type of forecasts.
@@ -224,7 +225,7 @@ fit_models <- function(all_sims,
   # Ricker fit
 
   fit_ric <- do.call(larkin::forecast,
-                     c(list(data = all_sims,
+                     c(list(data = sim,
                             recruits = "R_prime_t",
                             spawners = "S_t"),
                        ricker_args))

@@ -2,33 +2,39 @@
 % Please edit documentation in R/fit_models.R
 \name{fit_models}
 \alias{fit_models}
-\title{Fit EDM, Larkin, and Ricker models}
+\title{Fit EDM (Simplex), multiview embedding, Larkin, and Ricker models}
 \usage{
 fit_models(
-  all_sims,
+  sim,
   res_realisations,
   R_switch,
   T,
   pbsEDM_args,
+  mve_args,
   larkin_args,
   ricker_args
 )
 }
 \arguments{
-\item{all_sims}{List of simulated data generated from salmon_sim()}
+\item{sim}{List of simulated data generated from salmon_sim()}
 
-\item{res_realisations}{Empty data frame with correct headers for outputs 
+\item{res_realisations}{Empty data frame with correct headers for outputs
 of estimation}
 
 \item{R_switch}{either `R_prime_t` or `R_t` to specify which one
-the calculations are based on.}
+the calculations are based on, and what should be the response variable
+for multiview embedding.}
 
-\item{T}{to be filled in}
+\item{T}{number of time points being used to forecast `R_switch` at `T+1`}
 
 \item{pbsEDM_args}{List of arguments to pass onto `pbsEDM::pbsEDM()`. Note
 that `lags` has no default, so needs to be specified here. First one
 must be called `R_switch` to then get automatically changed to what is
 specified by the `R_switch` parameter}
+
+\item{mve_args}{List of arguments to pass onto
+`pbsEDM::multiview_embedding()`, here we will add `R_switch` as the
+response variable}
 
 \item{larkin_args}{List of arguments to pass onto `larkin::....()`.}
 
@@ -37,16 +43,86 @@ specified by the `R_switch` parameter}
 \value{
 List object call output with components:
  - `single_realisation` forecasts from all models in last year
- - `edm_fit_single` predictions for each year from EDM
- - `edm_lar_single` predictions for each year from larkin
- - `edm_ric_single` predictions for each year from ricker
+ - `fit_edm_single` predictions for each year from EDM, with realisation
+  number appended to start
+ - `fit_mve_single` predictions for each year from multiview embedding, with realisation
+  number appended to start
+ - `fit_lar_single` predictions for each year from larkin, with realisation
+  number appended to start
+ - `fit_ric_single` predictions for each year from ricker, with realisation
+  number appended to start
 }
 \description{
-Fits EDM, Larkin, and Ricker models to simulated data using 
+Fits EDM, multiview embedding, Larkin, and Ricker models to simulated data using
   parallel processing
 }
 \examples{
 \dontrun{
+# See Issue #17, kind of. Have copied into #18 (and Andy's READpbs) to paste
+  into R console. Need to get this working; currently get error because m
+  not defined.
+set.seed(42)
+R_switch_manual <- "R_t"
+simulated_5 <- EDMsimulate::salmon_sim()
+##' edm_args_manual <- list(lags = list(R_switch = 0, S_t = 0:3),
+                               first_difference = TRUE,
+                               centre_and_scale = TRUE)
+mve_args_manual <- list(lags = list(R_t = 0:1, S_t = 0:3))
+larkin_args_manual = list(run_stan = FALSE,
+                          prior_mean_alpha = 2,
+                          prior_mean_beta = -rep(1,4),
+                          prior_mean_sigma = 0.5,
+                          prior_sd_alpha = 0.5,
+                          prior_sd_beta = rep(0.25,4),
+                          prior_sd_sigma = 0.25)
+ricker_args_manual = list(run_stan = FALSE,
+                          prior_mean_alpha = 2,
+                          prior_mean_beta = -1,
+                          prior_mean_sigma = 0.5,
+                          prior_sd_alpha = 0.5,
+                          prior_sd_beta = 0.25,
+                          prior_sd_sigma = 0.25)
+
+res_fit_models_5 <- fit_models(simulated_5,
+                               R_switch = R_switch_manual,
+                               T = nrow(simulated_5),
+                               mve_args = mve_args_manual),
+                               pbsEDM_args = edm_args_manual
+                               larkin_args = larkin_args_manual,
+                               ricker_args = ricker_args_manual)
+
+
+# This next one doesn't quite work.
+set.seed(42)
+h_simulated <- 0.1095 + sample(1:180) * 0.001 # has mean of 0.2
+simulated_4 <- EDMsimulate::salmon_sim(h = h_simulated)
+res_fit_models <- fit_models(simulated_4,
+                             R_switch = "R_t",
+                             T = 80,
+                             pbsEDM_args = list(
+                                 lags = list(R_switch = 0,
+                                 first_difference = TRUE,
+                                 centre_and_scale = TRUE),
+                             mve_args = list(
+                                    lags = list(R_t = 0:4,
+                                                  S_t = 0:8)),
+                                    larkin_args = list(
+                                      run_stan = FALSE,
+                                      prior_mean_alpha = 2,
+                                      prior_mean_beta = -rep(1,4),
+                                      prior_mean_sigma = 0.5,
+                                    prior_sd_alpha = 0.5,
+                                      prior_sd_beta = rep(0.25,4),
+                                      prior_sd_sigma = 0.25),
+                                 ricker_args = list(
+                                      run_stan = FALSE,
+                                   prior_mean_alpha = 2,
+                                      prior_mean_beta = -1,
+                                      prior_mean_sigma = 0.5,
+                                      prior_sd_alpha = 0.5,
+                                      prior_sd_beta = 0.25,
+                                      prior_sd_sigma = 0.25))
+
 }
 }
 \author{
