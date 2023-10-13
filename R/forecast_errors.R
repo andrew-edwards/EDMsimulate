@@ -38,7 +38,7 @@ forecast_errors <- function(run, label){
 	# Calculate absolute error in forecast for EDM, Larkin and Ricker
 	out.plot <- res_realisations_plot %>% 
 		dplyr::mutate(Err_edm = (R_edm - R_sim), 
-									Err_mve = (R_mve = R_sim),
+									Err_mve = (R_mve - R_sim),
 									Err_lar = (R_lar - R_sim),
 									Err_ric = (R_ric - R_sim)) %>% 
 		dplyr::mutate(absErr_edm = abs(R_edm - R_sim), 
