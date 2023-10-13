@@ -261,8 +261,8 @@ alpha1 <- c(rep(exp(2), 100), rep(exp(2), 76), seq(exp(2), exp(1.75), length.out
 alpha2 <- c(rep(exp(2), 100), rep(exp(2), 34), seq(exp(2), exp(0.5), length.out=47))
 alpha3 <- c(rep(exp(2), 100), rep(exp(2), 54), seq(exp(2), exp(0.5), length.out=27))
 alpha4 <- c(rep(exp(2), 100), rep(exp(2), 34), rep(exp(0.5),47))
-df <- data.frame(year = rep(1:181,4), 
-								 productivity = c(alpha1, alpha2, alpha3, alpha4), 
+df <- data.frame(year = rep(1:181,4),
+								 productivity = c(alpha1, alpha2, alpha3, alpha4),
 								 trend=c(rep(1,181), rep(2, 181), rep(3,181), rep(4,181)))
 
 p1 <- df |> ggplot2::ggplot(aes(x=year, y=productivity, colour=as.factor(trend))) + geom_line()
@@ -467,10 +467,10 @@ sigma_nu_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
 	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
 	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
 	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_sigma_nu_0.7$errors %>% dplyr::filter(error == "absErr")) %>%
+	add_row(results_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
 	dplyr::mutate(model_label=factor(model_label,
 																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.7", "base_case")))
+																	 				 "sigma_nu_0.8", "base_case")))
 
 dodge_pe <- position_dodge(width = 0.6)
 dodge_ae <- position_dodge(width = 0.7)
