@@ -106,6 +106,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                      target_hr = 0.2,
                                      sigma_ou = 0,
                                      edm_fit = TRUE,
+																		 mvs_fit = FALSE,
                                      larkin_fit = TRUE,  # mostly ignored though
                                      ricker_fit = TRUE,
                                      R_switch = "R_prime_t",
@@ -187,7 +188,9 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                     X_rmse = numeric(),
                                     R_switch_T_plus_1_mve_fit = numeric(),
                                     mve_response_rho = numeric(),
-                                    R_switch_T_plus_1_lar_fit = numeric(),
+  																	R_switch_T_plus_1_mvs_fit = numeric(),
+  																	mvs_response_rho = numeric(),
+  																	R_switch_T_plus_1_lar_fit = numeric(),
                                     lar_5 = numeric(),
                                     lar_95 = numeric(),
                                     lar_sd = numeric(),
@@ -208,6 +211,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                            .name_repair = ~ tbl_colnames)  # Empty tibble correctly named; columns are logical
                                                                            # but will get changed to double/numeric when they get filled in.
   fit_mve_full_series <- fit_edm_full_series
+
+  fit_mvs_full_series <- fit_edm_full_series
 
   fit_lar_full_series <- fit_edm_full_series
 
@@ -443,7 +448,11 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                  pbsEDM_args = pbsEDM_args,
                  mve_args = mve_args,
                  larkin_args = larkin_args,
-                 ricker_args = ricker_args)
+                 ricker_args = ricker_args,
+      					 mvs_fit = mvs_fit,
+      					 larkin_fit = larkin_fit,
+      					 ricker_fit = ricker_fit
+      					 )
     }
     )
 
@@ -469,10 +478,12 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
     res_realisations[m,] <- outputs[[m]]$single_realisation
     fit_edm_full_series[m,] <- outputs[[m]]$fit_edm_single
     fit_mve_full_series[m,] <- outputs[[m]]$fit_mve_single
+    if(mvs_fit) fit_mvs_full_series[m,] <- outputs[[m]]$fit_mvs_single
+    # if(!mvs_fit) fit_mvs_full_series[m,] <- NA #This may be redudant
     if(larkin_fit) fit_lar_full_series[m,] <- outputs[[m]]$fit_lar_single
-    if(!larkin_fit) fit_lar_full_series[m,] <- NA
+    # if(!larkin_fit) fit_lar_full_series[m,] <- NA #This may be redudant
     if(ricker_fit) fit_ric_full_series[m,] <- outputs[[m]]$fit_ric_single
-    if(!ricker_fit) fit_lar_full_series[m,] <- NA
+    # if(!ricker_fit) fit_lar_full_series[m,] <- NA #This may be redudant
 
   }
 
@@ -557,6 +568,8 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   	paste0(R_switch, "T_plus_1_edm_fit")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_mve_fit"] <-
     paste0(R_switch, "T_plus_1_mve_fit")
+  names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_mvs_fit"] <-
+  	paste0(R_switch, "T_plus_1_mvs_fit")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_lar_fit"] <-
     paste0(R_switch, "T_plus_1_lar_fit")
   names(res_realisations)[names(res_realisations) == "R_switch_T_plus_1_ric_fit"] <-
@@ -569,6 +582,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
   return(list(res_realisations = res_realisations,
               fit_edm_full_series = fit_edm_full_series,
               fit_mve_full_series = fit_mve_full_series,
-              fit_lar_full_series = fit_lar_full_series,
+  						fit_mvs_full_series = fit_mvs_full_series,
+  						fit_lar_full_series = fit_lar_full_series,
               fit_ric_full_series = fit_ric_full_series))
 }

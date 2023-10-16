@@ -12,11 +12,14 @@ fit_models(
   pbsEDM_args,
   mve_args,
   larkin_args,
-  ricker_args
+  ricker_args,
+  mvs_fit,
+  larkin_fit,
+  ricker_fit
 )
 }
 \arguments{
-\item{sim}{List of simulated data generated from salmon_sim()}
+\item{sim}{Tibble of simulated data generated from salmon_sim()}
 
 \item{res_realisations}{Empty data frame with correct headers for outputs
 of estimation}
@@ -39,6 +42,12 @@ response variable}
 \item{larkin_args}{List of arguments to pass onto `larkin::....()`.}
 
 \item{ricker_args}{List of arguments to pass onto `larkin::....()`.}
+
+\item{mvs_fit}{Is the multivariate simplex fit? (TRUE/FALSE).}
+
+\item{larkin_fit}{Is the Larkin model fit? (TRUE/FALSE).}
+
+\item{ricker_fit}{Is the Ricker model fit? (TRUE/FALSE).}
 }
 \value{
 List object call output with components:

@@ -10,6 +10,7 @@ sim_and_fit_realisations(
   target_hr = 0.2,
   sigma_ou = 0,
   edm_fit = TRUE,
+  mvs_fit = FALSE,
   larkin_fit = TRUE,
   ricker_fit = TRUE,
   R_switch = "R_prime_t",
