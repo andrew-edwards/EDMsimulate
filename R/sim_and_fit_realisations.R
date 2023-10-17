@@ -437,7 +437,10 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                                  library(testthat), library(dplyr)))
 
     parallel::clusterExport(cl, c("res_realisations", "all_sims", "R_switch",
-                                  "T", "pbsEDM_args", "mve_args", "larkin_args", "ricker_args", "fit_models"), envir=environment())
+                                  "T", "pbsEDM_args", "mve_args", "larkin_args", 
+    															"ricker_args", "fit_models", "mvs_fit", 
+    															"larkin_fit", "ricker_fit"), 
+    												envir=environment())
 
     outputs <- parallel::parLapply(cl, all_sims, function(x) {
       fit_models(x,
@@ -490,7 +493,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
   plot_realisation <- FALSE
   if(plot_realisation & larkin_fit & ricker_fit){
-    m_plot <- 1 #which realisation to plot
+    m_plot <- 2 #which realisation to plot
     # if(m==M){
     # PLot simulated and predicted values for one realisation
     # First get simulated values
@@ -503,46 +506,47 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
                      Series="Simulated",
                      EstimationBias = NA)
     df <- df %>% tibble::add_row(Year = 1:(T+1),
-                                 Abundance =  t(fit_edm_full_series[m_plot,
+                                 Abundance =  t(fit_mve_full_series[m_plot,
     c(2:(T+2))]),   # TODO AE guessing that last bit a little, and two lines down:
     # CH: I have realigned so that years 1-81 are lincluded in sim and fits and cor
-                                 Series = "EDM",
-                                 EstimationBias = t(fit_edm_full_series[m_plot,
+                                 Series = "MVE",
+                                 EstimationBias = t(fit_mve_full_series[m_plot,
     c(2:(T+2))]) - sim) %>%
       tibble::add_row(Year = 1:(T+1),
                       Abundance =  t(fit_lar_full_series[m_plot, c(2:(T+2))]),
                       Series = "Larkin",
-                      EstimationBias = t(fit_lar_full_series[m_plot, c(2:(T+2))]) - sim) %>%
-      tibble::add_row(Year = 1:(T+1),
-                      Abundance = t(fit_ric_full_series[m_plot, c(2:(T+2))]),
-                      Series = "Ricker",
-                      EstimationBias = t(fit_ric_full_series[m_plot, c(2:(T+2))]) - sim)
+                      EstimationBias = t(fit_lar_full_series[m_plot, c(2:(T+2))]) - sim) #%>%
+      # tibble::add_row(Year = 1:(T+1),
+      #                 Abundance = t(fit_ric_full_series[m_plot, c(2:(T+2))]),
+      #                 Series = "Ricker",
+      #                 EstimationBias = t(fit_ric_full_series[m_plot, c(2:(T+2))]) - sim)
 # TODO TODO check these manually: CH- both times-series are now 81
-    cor.edm <- cor(sim, as.vector(t(fit_edm_full_series[m_plot, 2:(T+2)])),
+    cor.mve <- cor(sim, as.vector(t(fit_mve_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
     cor.lar <- cor(sim, as.vector(t(fit_lar_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
     cor.ric <- cor(sim, as.vector(t(fit_ric_full_series[m_plot, 2:(T+2)])),
-                   use="pairwise.complete.obs")
+                    use="pairwise.complete.obs")
 
     yMax <- max(sim, na.rm=TRUE)
 # TODO Andy not updated yet with T+1 idea
-    plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) +
+      plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) +
       geom_line(aes(colour=Series, linewidth=Series)) +
-      scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
-      scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2"),
-                                     "grey")) +
-      geom_text(x=(T-15), y=yMax*0.8,
-                label=paste0("EDM cor = ", round(cor.edm,2)),
-                colour = brewer.pal(n=3, name ="Dark2")[1]) +
-      geom_text(x=(T-15), y=yMax*0.7,
-                label=paste0("Larkin cor = ", round(cor.lar,2)),
-                colour = brewer.pal(n=3, name ="Dark2")[2]) +
-      geom_text(x=(T-15), y=yMax*0.6,
-                label=paste0("Ricker cor = ", round(cor.ric,2)),
-                colour = brewer.pal(n=3, name ="Dark2")[3]) +
-      geom_text(x=5, y=yMax*0.,
-                label=paste0("realisation = ", m_plot))
+      # scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
+    	scale_linewidth_manual(values = c(0.5, 0.5, 1)) +
+    	scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")[c(1,2)],
+                                     grey(0.5))) #+
+      # geom_text(x=(T-15), y=yMax*0.8,
+      #           label=paste0("MVE cor = ", round(cor.mve,2)),
+      #           colour = brewer.pal(n=3, name ="Dark2")[1]) +
+      # geom_text(x=(T-15), y=yMax*0.7,
+      #           label=paste0("Larkin cor = ", round(cor.lar,2)),
+      #           colour = brewer.pal(n=3, name ="Dark2")[2]) +
+      # geom_text(x=(T-15), y=yMax*0.6,
+      #           label=paste0("Ricker cor = ", round(cor.ric,2)),
+      #           colour = brewer.pal(n=3, name ="Dark2")[3]) #+
+      # # geom_text(x=5, y=yMax*0.,
+      #           label=paste0("realisation = ", m_plot))
 
     plot.errors <- df %>% dplyr::filter(Series!="Simulated") %>%
       ggplot(aes(x=Year, y=EstimationBias, group=Series)) +
@@ -551,7 +555,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
     p1
-    # ggsave(filename = paste0("report/realisation", m, ".png"), p1)
+    ggsave(filename = paste0("report/realisation", m_plot, ".png"), p1)
     # }
 
   }
