@@ -68,7 +68,7 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
                                              ricker_fit = TRUE,
                                              R_switch = "R_t",#"R_prime_t",#"R_t",#
                                              mvs_fit = FALSE,
-																						 M = 10)
+																						 M = 1000)
 ```
 Then plot outputs.
 
@@ -76,7 +76,11 @@ Then plot outputs.
 
 # Extract forecasts and forecast errors
 results_bc <- forecast_errors(out, label="base_case")
-
+if (file.exists(here::here("report/out")) == FALSE){
+  dir.create(here::here("report/out"))
+}
+write.csv(results_bc, here::here("report/out/results_bc.csv"))
+    
 # Plot forecasts against true (simulated) values
 p1 <- results_bc$forecasts %>%
 	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
@@ -217,11 +221,12 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 ricker_fit = TRUE,
 																						 mvs_fit = FALSE,
 																						 R_switch = "R_t",#"R_t",#
-																						 M = 100)
+																						 M = 1000)
 
 # Extract forecasts and forecast errors
 results_sigma_nu_0.1 <- forecast_errors(out, label="sigma_nu_0.1")
-
+write.csv(results_sigma_nu_0.1, here::here("report/out/results_sigma_nu_0.1.csv"))
+ 
 
 # Plot forecasts against true (simulated) values
 p1 <- results_sigma_nu_0.1$forecasts %>%
@@ -288,11 +293,12 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																							larkin_fit = TRUE,
 																							ricker_fit = TRUE,
 																						  mvs_fit = FALSE,
-																							M = 100)
+																							M = 500)
 
 # Extract forecasts and forecast errors
-results_alpha_decline <- forecast_errors(out, label = "alpha_decline")
-
+results_alpha_decline500 <- forecast_errors(out, label = "alpha_decline")
+write.csv(results_alpha_decline500, here::here("report/out/results_alpha_decline500.csv"))
+ 
 
 p1 <- results_alpha_decline$forecasts %>%
 	ggplot(aes(x=R_sim, y=R_fit, colour=forMethod)) +
@@ -321,11 +327,7 @@ p4 <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>%
 
 ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 
-```
-
-And repeated with low process variation and alpha decline.
-```{r}
-
+#And repeated with low process variation and alpha decline.
 out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																						 	list(alpha = alpha2,
 																						 			 sigma_nu = 0.1,
@@ -336,11 +338,12 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 																							larkin_fit = TRUE,
 																							ricker_fit = TRUE,
 																						  mvs_fit = FALSE,
-																							M = 100)
+																							M = 500)
 
 # Extract forecasts and forecast errors
-results_alpha_decline_sigma_nu_0.1 <- forecast_errors(out, label = "alpha_decline_sigma_nu_0.1")
-
+results_alpha_decline_sigma_nu_0.1_500 <- forecast_errors(out, label = "alpha_decline_sigma_nu_0.1")
+write.csv(results_alpha_decline_sigma_nu_0.1_500, here::here("report/out/results_alpha_decline_sigma_nu_0.1_500.csv"))
+ 
 
 p1 <- results_alpha_decline_sigma_nu_0.1$forecasts %>%
 	ggplot(aes(x=R_sim,  y=R_fit, colour=forMethod)) +
@@ -369,6 +372,12 @@ p4 <- results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absE
 
 ggpubr::ggarrange(p1, p2, p3, p4,  ncol=2, nrow=2 )
 
+
+
+```
+
+
+```{r}
 
 ```
 Or, results can be presented from sensitivity analyses together
@@ -461,43 +470,122 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 # Extract forecasts and forecast errors
 results_sigma_nu_0.8 <- forecast_errors(out, label = "sigma_nu_0.8")
 
+#### Get saved results:
+# results_bc <- read.csv(here::here('report/out/results_bc.csv'),
+#                stringsAsFactors = F,check.names = F)
+# 
+# results_bc$errors <- results_bc %>% select(grep('errors',names(results_bc)))
+# 
+# names(results_bc$errors) <- gsub(x = names(results_bc$errors), 
+# 																 pattern = "errors.", replacement = "") 
+# results_bc$forecasts <- results_bc %>% 
+# 	select(grep('forecasts',names(results_bc)))
+# 
+# names(results_bc$forecasts) <- gsub(x = names(results_bc$forecasts), 
+# 																 pattern = "forecasts.", replacement = "") 
+# 
+# results_sigma_nu_0.1 <- 
+# 	read.csv(here::here('report/out/results_sigma_nu_0.1.csv'), 
+# 					 stringsAsFactors = F,check.names = F)
+# 
+# results_sigma_nu_0.1$errors <- 
+# 	results_sigma_nu_0.1 %>% select(grep('errors',names(results_sigma_nu_0.1)))
+# 
+# names(results_sigma_nu_0.1$errors) <- 
+# 	gsub(x = names(results_sigma_nu_0.1$errors), pattern = "errors.", 
+# 			 replacement = "") 
+# 
+# results_sigma_nu_0.1$forecasts <- 
+# 	results_sigma_nu_0.1 %>% 
+# 	select(grep('forecasts',names(results_sigma_nu_0.1)))
+# 
+# names(results_sigma_nu_0.1$forecasts) <- 
+# 	gsub(x = names(results_sigma_nu_0.1$forecasts),  pattern = "forecasts.", 
+# 			 replacement = "") 
+
+# Compile results from various model runs
 
 sigma_nu_sens_pe <- results_bc$errors %>% dplyr::filter(error == "perErr") %>%
 	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
+	# add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
+	# add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
+	# add_row(results_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
 	dplyr::mutate(model_label=factor(model_label,
-																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.8", "base_case")))
+																	 levels=c("sigma_nu_0.1", 
+																	 				 # "sigma_nu_0.3", "sigma_nu_0.5",
+																	 				 # "sigma_nu_0.8", 
+																	 				 "base_case")))
+
+sigma_nu_sens_pe <- sigma_nu_sens_pe %>% dplyr::filter(forMethod == "mve"|
+																											 	forMethod == "lar"|
+																											 	forMethod =="ric")
+	
+sigma_nu_sens_pe$forMethod <- factor(sigma_nu_sens_pe$forMethod, levels = c("ric", "lar", "mve"))
 
 
 sigma_nu_sens_ae <- results_bc$errors %>% dplyr::filter(error == "absErr") %>%
 	add_row(results_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
+	# add_row(results_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
+	# add_row(results_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
+	# add_row(results_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
 	dplyr::mutate(model_label=factor(model_label,
-																	 levels=c("sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.8", "base_case")))
+																	 levels=c("sigma_nu_0.1", 
+																	 				 # "sigma_nu_0.3", "sigma_nu_0.5",
+																	 				 # "sigma_nu_0.8", 
+																	 				 "base_case")))
+sigma_nu_sens_ae <- sigma_nu_sens_ae %>% dplyr::filter(forMethod == "mve"|
+																											 	forMethod=="lar"|
+																											 	forMethod =="ric")
+	
+sigma_nu_sens_ae$forMethod <- factor(sigma_nu_sens_ae$forMethod, levels = c("ric", "lar", "mve"))
+# dodge_pe <- position_dodge(width = 0.6)
+# dodge_ae <- position_dodge(width = 0.7)
+dodge_pe <- position_dodge(width = 0.3)
+dodge_ae <- position_dodge(width = 0.3)
 
-dodge_pe <- position_dodge(width = 0.6)
-dodge_ae <- position_dodge(width = 0.7)
-
-p1 <- sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
+p1 <- sigma_nu_sens_pe %>% 
+	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
   geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
-	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") +
-	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
-p2 <- sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
+	ylim(-100,150) + guides(alpha = FALSE) + ylab("Percent error") +
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error)",
+			 subtitle = "") +
+	scale_x_discrete(labels = c("sigma_nu_0.1" = "0.1",
+                              "sigma_nu_0.3" = "0.3",
+															"sigma_nu_0.5" = "0.5",
+															"sigma_nu_0.8" = "0.8",
+															"base_case" = "1.0")) +
+	labs(x="SD of recruitment residuals") + 
+	scale_fill_discrete(name = element_blank(), 
+											labels = c("Ricker", "Larkin", "MVE")) +
+	geom_hline(yintercept = 0, col=grey(0.4)) + 
+	theme_classic()
+
+p2 <- sigma_nu_sens_ae %>% 
+	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
   geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
-	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") +
-	ggtitle("Effects of increasing sigma_nu (recruitment residual error")
+	ylim(0,1.5) + guides(alpha = FALSE) + ylab("Absolute error") +
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error)",
+		 subtitle = "")+
+	scale_x_discrete(labels = c("sigma_nu_0.1" = "0.1",
+                              "sigma_nu_0.3" = "0.3",
+															"sigma_nu_0.5" = "0.5",
+															"sigma_nu_0.8" = "0.8",
+															"base_case" = "1.0")) +
+	labs(x="SD of recruitment residuals") + 
+	scale_fill_discrete(name = element_blank(), 
+											labels = c("Ricker", "Larkin", "MVE")) + theme_classic()
+
 
 
 p1
 p2
+# ggsave(filename = here::here("report/out/pe.png"), p1, 
+# 			 width = 6, height = 5, units ="in", dpi=350)
+# ggsave(filename = here::here("report/out/ae.png"), p2, 
+# 			 width = 6, height = 5, units ="in", dpi=350)
+
 ```
 
 And declines in productivity and a gradient in sigma_nu
@@ -548,53 +636,92 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
 results_alpha_decline_sigma_nu_0.8 <- forecast_errors(out, label = "sigma_nu_0.8")
 
 
-alpha_decline_sigma_nu_sens_pe <- results_alpha_decline$errors %>% dplyr::filter(error == "perErr") %>%
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
+alpha_decline_sigma_nu_sens_pe <- results_alpha_decline500$errors %>% 
+	dplyr::filter(error == "perErr") %>%
+	add_row(results_alpha_decline_sigma_nu_0.1_500$errors %>% 
+						dplyr::filter(error == "perErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "perErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "perErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "perErr")) %>%
 	dplyr::mutate(model_label=factor(model_label,
-																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.8", "alpha_decline")))
+																	 levels=c("alpha_decline_sigma_nu_0.1", 
+																	 				 # "sigma_nu_0.3", "sigma_nu_0.5",
+																	 				 # "sigma_nu_0.8", 
+																	 				 "alpha_decline")))
 
-alpha_decline_sigma_nu_sens_ae <- results_alpha_decline$errors %>% dplyr::filter(error == "absErr") %>%
-	add_row(results_alpha_decline_sigma_nu_0.1$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
-	add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
+alpha_decline_sigma_nu_sens_pe <- alpha_decline_sigma_nu_sens_pe %>% 
+	dplyr::filter(forMethod == "mve"|	
+									forMethod=="lar"| 
+									forMethod=="ric")
+
+alpha_decline_sigma_nu_sens_pe$forMethod <- 
+	factor( alpha_decline_sigma_nu_sens_pe$forMethod, 
+				 levels = c("ric", "lar", "mve") )
+
+alpha_decline_sigma_nu_sens_ae <- results_alpha_decline500$errors %>% 
+	dplyr::filter(error == "absErr") %>%
+	add_row(results_alpha_decline_sigma_nu_0.1_500$errors %>% 
+						dplyr::filter(error == "absErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.3$errors %>% dplyr::filter(error == "absErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.5$errors %>% dplyr::filter(error == "absErr")) %>%
+	# add_row(results_alpha_decline_sigma_nu_0.8$errors %>% dplyr::filter(error == "absErr")) %>%
 	dplyr::mutate(model_label=factor(model_label,
-																	 levels=c("alpha_decline_sigma_nu_0.1", "sigma_nu_0.3", "sigma_nu_0.5",
-																	 				 "sigma_nu_0.8", "alpha_decline")))
+																	 levels=c("alpha_decline_sigma_nu_0.1", 
+																	 				 # "sigma_nu_0.3", "sigma_nu_0.5",
+																	 				 # "sigma_nu_0.8", 
+																	 				 "alpha_decline")))
+alpha_decline_sigma_nu_sens_ae <- alpha_decline_sigma_nu_sens_ae %>% 
+	dplyr::filter(forMethod == "mve"|
+									forMethod=="lar"| 
+									forMethod=="ric")
+alpha_decline_sigma_nu_sens_ae$forMethod <- 
+	factor( alpha_decline_sigma_nu_sens_ae$forMethod, 
+				 levels = c("ric", "lar", "mve") )
 
 dodge_pe <- position_dodge(width = 0.6)
 dodge_ae <- position_dodge(width = 0.7)
 
-p1 <- alpha_decline_sigma_nu_sens_pe %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
+p1 <- alpha_decline_sigma_nu_sens_pe %>% 
+	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_pe, width=1.6,  aes(alpha = 0.5))+
   geom_boxplot(width = .15, outlier.colour = NA, position = dodge_pe) +
-	ylim(-100,100) + guides(alpha = FALSE) + ylab("Percent error") +
-	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
+	ylim(-100,200) + guides(alpha = FALSE) + ylab("Percent error") +
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error)",
 			 subtitle = "under scenario of declining alpha over time") +
 	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
                               "sigma_nu_0.3" = "0.3",
 															"sigma_nu_0.5" = "0.5",
 															"sigma_nu_0.8" = "0.8",
 															"alpha_decline" = "1.0")) +
-	labs(x="sigma_nu")
-p2 <- alpha_decline_sigma_nu_sens_ae %>% ggplot(aes(x = model_label, y = value, fill = forMethod)) +
+	labs(x="SD of recruitment residuals") + 
+	scale_fill_discrete(name = element_blank(), 
+											labels = c("Ricker", "Larkin", "MVE")) +
+	geom_hline(yintercept = 0, col=grey(0.4)) + 
+	theme_classic()
+
+p2 <- alpha_decline_sigma_nu_sens_ae %>% 
+	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
   geom_violin(position = dodge_ae, width=1.5,  aes(alpha = 0.5))+
   geom_boxplot(width = .2, outlier.colour = NA, position = dodge_ae) +
-	ylim(0,1) + guides(alpha = FALSE) + ylab("Absolute error") +
-	labs(title = "Effects of increasing sigma_nu (recruitment residual error",
+	ylim(0,1.5) + guides(alpha = FALSE) + ylab("Absolute error") +
+	labs(title = "Effects of increasing sigma_nu (recruitment residual error)",
 		 subtitle = "under scenario of declining alpha over time")+
 	scale_x_discrete(labels = c("alpha_decline_sigma_nu_0.1" = "0.1",
                               "sigma_nu_0.3" = "0.3",
 															"sigma_nu_0.5" = "0.5",
 															"sigma_nu_0.8" = "0.8",
 															"alpha_decline" = "1.0")) +
-	labs(x="sigma_nu")
+	labs(x="SD of recruitment residuals") + 
+	scale_fill_discrete(name = element_blank(), 
+											labels = c("Ricker", "Larkin", "MVE")) + theme_classic()
+
 
 
 p1
 p2
+# ggsave(filename = here::here("report/out/pe_alpha_decline.png"), p1, 
+# 			 width = 6, height = 5, units ="in", dpi=350)
+# ggsave(filename = here::here("report/out/ae_alpha_decline.png"), p2, 
+# 			 width = 6, height = 5, units ="in", dpi=350)
+
 ```
