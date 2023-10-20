@@ -68,7 +68,7 @@ out <- EDMsimulate::sim_and_fit_realisations(salmon_sim_args =
                                              ricker_fit = TRUE,
                                              R_switch = "R_t",#"R_prime_t",#"R_t",#
                                              mvs_fit = FALSE,
-																						 M = 1000)
+																						 M = 2)
 ```
 Then plot outputs.
 
@@ -540,8 +540,8 @@ sigma_nu_sens_ae <- sigma_nu_sens_ae %>% dplyr::filter(forMethod == "mve"|
 sigma_nu_sens_ae$forMethod <- factor(sigma_nu_sens_ae$forMethod, levels = c("ric", "lar", "mve"))
 # dodge_pe <- position_dodge(width = 0.6)
 # dodge_ae <- position_dodge(width = 0.7)
-dodge_pe <- position_dodge(width = 0.3)
-dodge_ae <- position_dodge(width = 0.3)
+dodge_pe <- position_dodge(width = 0.8)
+dodge_ae <- position_dodge(width = 0.8)
 
 p1 <- sigma_nu_sens_pe %>% 
 	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
@@ -581,9 +581,9 @@ p2 <- sigma_nu_sens_ae %>%
 
 p1
 p2
-# ggsave(filename = here::here("report/out/pe.png"), p1, 
+# ggsave(filename = here::here("report/out/pe.png"), p1,
 # 			 width = 6, height = 5, units ="in", dpi=350)
-# ggsave(filename = here::here("report/out/ae.png"), p2, 
+# ggsave(filename = here::here("report/out/ae.png"), p2,
 # 			 width = 6, height = 5, units ="in", dpi=350)
 
 ```
@@ -678,8 +678,8 @@ alpha_decline_sigma_nu_sens_ae$forMethod <-
 	factor( alpha_decline_sigma_nu_sens_ae$forMethod, 
 				 levels = c("ric", "lar", "mve") )
 
-dodge_pe <- position_dodge(width = 0.6)
-dodge_ae <- position_dodge(width = 0.7)
+dodge_pe <- position_dodge(width = 0.8)
+dodge_ae <- position_dodge(width = 0.8)
 
 p1 <- alpha_decline_sigma_nu_sens_pe %>% 
 	ggplot(aes(x = model_label, y = value, fill = forMethod)) +
@@ -719,9 +719,9 @@ p2 <- alpha_decline_sigma_nu_sens_ae %>%
 
 p1
 p2
-# ggsave(filename = here::here("report/out/pe_alpha_decline.png"), p1, 
+# ggsave(filename = here::here("report/out/pe_alpha_decline.png"), p1,
 # 			 width = 6, height = 5, units ="in", dpi=350)
-# ggsave(filename = here::here("report/out/ae_alpha_decline.png"), p2, 
+# ggsave(filename = here::here("report/out/ae_alpha_decline.png"), p2,
 # 			 width = 6, height = 5, units ="in", dpi=350)
 
 ```

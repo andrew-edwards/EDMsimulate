@@ -515,11 +515,11 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
       tibble::add_row(Year = 1:(T+1),
                       Abundance =  t(fit_lar_full_series[m_plot, c(2:(T+2))]),
                       Series = "Larkin",
-                      EstimationBias = t(fit_lar_full_series[m_plot, c(2:(T+2))]) - sim) #%>%
-      # tibble::add_row(Year = 1:(T+1),
-      #                 Abundance = t(fit_ric_full_series[m_plot, c(2:(T+2))]),
-      #                 Series = "Ricker",
-      #                 EstimationBias = t(fit_ric_full_series[m_plot, c(2:(T+2))]) - sim)
+                      EstimationBias = t(fit_lar_full_series[m_plot, c(2:(T+2))]) - sim) %>%
+      tibble::add_row(Year = 1:(T+1),
+                      Abundance = t(fit_ric_full_series[m_plot, c(2:(T+2))]),
+                      Series = "Ricker",
+                      EstimationBias = t(fit_ric_full_series[m_plot, c(2:(T+2))]) - sim)
 # TODO TODO check these manually: CH- both times-series are now 81
     cor.mve <- cor(sim, as.vector(t(fit_mve_full_series[m_plot, 2:(T+2)])),
                    use="pairwise.complete.obs")
@@ -530,11 +530,17 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     yMax <- max(sim, na.rm=TRUE)
 # TODO Andy not updated yet with T+1 idea
+    
+    df$Series <- 	factor( df$Series, 
+    											levels = c("Ricker", "Larkin", "MVE", "Simulated") )
+    
       plot.timeseries <- df %>% ggplot(aes(x=Year, y=Abundance, group=Series)) +
       geom_line(aes(colour=Series, linewidth=Series)) +
       # scale_linewidth_manual(values = c(0.5,0.5,0.5,1)) +
-    	scale_linewidth_manual(values = c(0.5, 0.5, 1)) +
-    	scale_colour_manual(values = c(brewer.pal(n=3, name ="Dark2")[c(1,2)],
+    	scale_linewidth_manual(values = c(0.5, 0.5, 0.5,1)) +
+    	scale_colour_manual(values = 
+    												c(scales::hue_pal()(3),
+    												# c(brewer.pal(n=3, name ="Dark2")[c(1,2,3)],
                                      grey(0.5))) #+
       # geom_text(x=(T-15), y=yMax*0.8,
       #           label=paste0("MVE cor = ", round(cor.mve,2)),
@@ -555,7 +561,7 @@ sim_and_fit_realisations <- function(salmon_sim_args = list(),
 
     p1 <- gridExtra::grid.arrange(plot.timeseries, plot.errors, ncol=1)
     p1
-    ggsave(filename = paste0("report/realisation", m_plot, ".png"), p1)
+    ggsave(filename = paste0("realisation", m_plot, ".png"), p1)
     # }
 
   }
